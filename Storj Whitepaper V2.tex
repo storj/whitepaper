@@ -15,14 +15,15 @@
 \renewcommand{\baselinestretch}{1.2}
 
 \title{\textbf{Storj\\A Peer-to-Peer Cloud Storage Network}}
-\author{Contributors:\\
+\author{\\
 Shawn Wilkinson (shawn@storj.io),\\
 Tome Boshevski (tome@storj.io),\\
 Josh Brandoff (josh.brandoff@gmail.com),\\
-James Prestwich (james@prestwi.ch),\\
+James Prestwich (james@storj.io),\\
 Gordon Hall (gordonhall@openmailbox.org),\\
-Patrick Gerbes (patrickgerbes@gmail.com),\\
-Vitalik Buterin (v@buterin.com)
+Patrick Gerbes (patrickgerbes@gmail.com)\\
+\\
+With contributions from: Vitalik Buterin (v@buterin.com)
 }
 \date {December 15, 2016 \\ v2.0}
 
@@ -40,7 +41,7 @@ A decentralized cloud storage network offers many advantages compared to datacen
 
 
 \section{Design}
-Storj is a protocol that creates a distributed network for the formation and execution of storage contracts between peers. The Storj protocol enables autonomous agents on the network to negotiate contracts, transfer data, verify the integrity and availability of remote data, retrieve data, and pay other nodes. Many of the basic tools for doing so are described here. Full protocol documentation can be found elsewhere \cite{1}.
+Storj is a protocol that creates a distributed network for the formation and execution of storage contracts between peers. The Storj protocol enables peers on the network to negotiate contracts, transfer data, verify the integrity and availability of remote data, retrieve data, and pay other nodes. Each peer is an autonomous agent, capable of performing these actions without significant human intervention. Many of the basic tools for these interactions are described here. Full protocol documentation can be found elsewhere \cite{1}.
 
 \subsection{Files as Encrypted Shards}
 A shard is a portion of a file consisting of $ S $ bytes to be stored on this network. Sharding has a number of advantages to security, privacy, performance, and availability.
@@ -51,16 +52,16 @@ The data owner may separately secure knowledge of how a file is sharded and wher
 
 Shard size is a negotiable contract parameter. To preserve privacy, it is recommended that shard sizes be standardized as a byte multiple, such as 8 or 32 MB. Smaller files may be filled with zeroes or random data. Standardized sizes dissuade side-channel attempts to determine the content of a given shard, and can mask the flow of shards through the network.
 
-Sharding large files like video content and distributing the shards across unrelated nodes reduces the impact of content delivery on any given node. Bandwidth demands are distributed more evenly across the network. In addition, the end-user can take advantage of parallel transfer, similar to BitTorrent or other peer-to-peer networks.
+Sharding large files like video content and distributing the shards across nodes reduces the impact of content delivery on any given node. Bandwidth demands are distributed more evenly across the network. In addition, the end-user can take advantage of parallel transfer, similar to BitTorrent or other peer-to-peer networks.
 
-Because peers on the network are generally unrelated, and rely on separate infrastructure, data failure is not correlated. This implies that creating redundant mirrors of shards, or applying a parity scheme across the set of shards is an extremely effective method of securing availability. Availability is proportional to the number of nodes storing the data.
+Because peers generally rely on separate hardware and infrastructure, data failure is not correlated. This implies that creating redundant mirrors of shards, or applying a parity scheme across the set of shards is an extremely effective method of securing availability. Availability is proportional to the number of nodes storing the data.
 
 % TODO: Graphic
 
 \begin{enumerate}
 \item Files are split into shards, or multiple files are combined to form a shard.
 \item Each shard is encrypted.
-\item Audit pre-processing is performed for each shard.
+\item Audit pre-processing is performed for each shard (see Section 2.3).
 \item Shards are transmitted to the network.
 \end{enumerate}
 
@@ -69,11 +70,6 @@ Storj is built on a Kademlia \cite{2}, a distributed hash table. It is important
 
 \subsubsection{Signature Verification}
 Similar to S/Kademlia \cite{3}, the Storj network requires peers to sign messages. To join the network a node must create an ECDSA keypair, $ (k_{priv}, k_{pub}) $. The Kademlia Node ID corresponds to $ ripemd160(sha256(k_{pub})) $. As such, each Node ID in the Storj network is also a valid Bitcoin address, which the node can spend from. Nodes sign all messages, and validate message signatures before processing messages. This modification enforces long-term identity on the network, and provides a proof of work deterrent to Sybil and Eclipse attacks on Kademlia routing. In the future there are a variety of other uses for this address.
-
-\subsubsection{Triggers}
-To provide a standardized format for future extensions, Storj extends Kademlia with a TRIGGER message type [\cite{4}]. TRIGGER messages are designed to allow remote activation of specific behavior. These messages consist of a behavior string, which identifies the expected action, and a content payload. A node in receipt of a TRIGGER message decides whether and how to validate and handle TRIGGER messages based on a variety of factors.
-
-A wide variety of uses can be envisioned. Because they create a basic general purpose messaging layer within the Storj network, TRIGGER messages can be used to recreate a wide variety of functionality. Planned future uses include a notification system to allow network-wide or targeted announcements.
 
 \subsection{Proofs of Retrievability}
 Proofs of retrievability guarantee the existence of a certain piece of data on a remote host. The ideal proof minimizes message size, can be calculated quickly, requires minimal pre-processing, and provides a high degree of confidence that the file is available and intact. To provide knowledge of data integrity and availability to the data owner, Storj provides a standard format for issuing and verifying proofs of retrievability via a challenge-response interaction called an “audit” or “heartbeat.”
@@ -129,7 +125,9 @@ MIRROR messages instruct a farmer to retrieve data from another farmer. This all
 \subsection{Payment}
 Storj is payment agnostic. Neither the protocol nor the contract requires a specific payment system. The current implementation assumes Storjcoin, but many different payment types could be implemented, including Storjcoin, BTC, Ether, ACH transfer, or physical transfer of live goats.
 
-The reference implementation will use Storjcoin micropayment channels, which are currently under development. Micropayment channels allow for pairing of payment directly to audit, thus minimizing the amount of trust necessary between farmers and data owners. However, because data storage is inexpensive, audit payments are incredibly small, often below \$0.000001 per audit. Storjcoin was chosen because it allows much more granular payments than other candidate currencies, thereby minimizing trust between parties.
+The reference implementation will use Storjcoin micropayment channels, which are currently under development. Micropayment channels allow for pairing of payment directly to audit, thus minimizing the amount of trust necessary between farmers and data owners. However, because data storage is inexpensive, audit payments are incredibly small, often below \$0.000001 per audit.
+
+Storjcoin allows much more granular payments than other candidate currencies, thereby minimizing trust between parties. In addition, the mechanics of micropayment channels require the total value of the channel to be escrowed for the life of the channel. This decreases currency velocity, and implies that value fluctuations severely impact the economic incentives of micropayment channels. The use of a separate token creates a certain amount of insulation from outside volatility, and Storjcoin's large supply minimizes the impact of token escrow on the market.
 
 New payment strategies must include a currency, a price for the storage, a price for retrieval, and a payment destination. It is strongly advised that new payment strategies consider how data owners prove payment, and farmers verify receipt without human interaction. Implementation details of other payment strategies are left as an exercise for interested parties.
 
@@ -144,9 +142,9 @@ UPDATE pushes local filter changes to the three nearest neighbors. When a node s
 
 PUBLISH broadcasts a message to the network. In Storj, these are typically public offers of storage contracts (see Section 2.4). PUBLISH messages are sent to a node’s three nearest neighbors, and include a topic parameter whose digest is compared to each filter in the filter list. If the topic digest is found in the filter at $ K = 0 $, the node processes the message. If the topic is found in any other filters in the filter list, the node forwards the message to its neighbors. If no matching filter is found, the message is forwarded to a randomly selected peer in that node’s routing table.
 
-PUBLISH also include a time-to-live (TTL) parameter. Nodes do not process or forward messages whose TTL has passed. To prevent spam attacks, nodes will not forward or process PUBLISH messages whose TTL is longer than that node would give to a new PUBLISH message.
+To prevent re-circulation of messages,  nodes add their node ID to PUBLISH messages when they are forwarded, indicating that that node has already received the message. When forwarding messages, nodes ignore other nodes whose IDs are present in that list. This prevents redundant recirculation of messages with minimal communication overhead.
 
-In addition, to prevent re-circulation of messages,  nodes add their node ID to PUBLISH messages when they are forwarded, indicating that that node has already received the message. When forwarding messages, nodes ignore other nodes whose IDs are present in that list. This prevents redundant recirculation of messages with minimal communication overhead.
+PUBLISH messages also include a time-to-live (TTL) parameter, measured in hops. Nodes will not relay messages whose hops have exceeded the TTL. To prevent spam attacks, nodes will also refuse to relay messages whose TTL exceeds the network default.
 
 Because of this routing process based on subscription filters, PUBLISH propagate through the network randomly until they find a node whose filter list contains a subscription or a false positive. Once a subscription is indicated by a filter, the message moves towards the subscriber quickly. If a false positive is encountered the message resumes random routing.
 
@@ -163,12 +161,7 @@ To prevent loss of the file, data owners should set shard loss tolerance levels.
 
 Because node uptimes are known via the audit process, tolerance levels may be optimized based on the characteristics of the nodes involved. Many strategies may be implemented to handle this process.
 
-Erasure coding is desirable because it drastically decreases the probability of losing access to a file. It also decreases the on-disk overhead required to achieve a given level of availability for a file. Rather than being limited by the least available shard, erasure coding schemes are limited by the least-available $ n + 1 $ nodes.
-
-\subsubsection{Layered Erasure Coding}
-Erasure coding can also be applied at several layers. Consider a file split into 20 shards. Erasure coding could be applied at the shard level as described above to create a set of 40 shards. Then these 40 shards could be grouped into 10 groups of 4 shards. Each group could then be erasure coded again to create 2 additional shards per group, giving a total of 60 shards.
-
-Layered erasure coding has the advantage that missing shards can now be rebuilt with only 4 shard retrievals, rather than 20. The data owner is essentially trading additional pre-processing time and storage space for reduced bandwidth obligations in the future.
+Erasure coding is desirable because it drastically decreases the probability of losing access to a file. It also decreases the on-disk overhead required to achieve a given level of availability for a file. Rather than being limited by the least available shard, erasure coding schemes are limited by the least-available $ n + 1 $ nodes (see Section 6.1).
 
 \subsection{KFS}
 To facilitate on-disk storage for farmers, Storj implements a local file store called KFS \cite{12}. The farming client initially used the filesystem directly to store shards. Later the farming client used a single LevelDB instance. Both of these approaches failed to scale. For example, LevelDB compaction processing time scales linearly with store size, and locks both reads and writes while in progress. This significantly impacted performance and availability for nodes storing more than 100GB. KFS is an abstraction layer over a set of LevelDB instances that seeks to address scaling problems.
@@ -216,7 +209,7 @@ In initial testing KFS outperforms vanilla LevelDB in reads, writes, and unlinks
 \subsection{NAT Traversal and Diglet Tunneling}
 Due to the presence of NATs and other adverse network conditions, not all devices are publicly accessible. To enable non-public nodes to participate in the network, Storj implements a connection tunneling system.
 
-Storj extends Kademlia with three additional message types: PROBE, FIND\_TUNNEL, and OPEN\_TUNNEL The tunneling system also makes use of the publish/subscribe system detailed in section 2.6.
+To facilitate this tunneling system, Storj extends Kademlia with three additional message types: PROBE, FIND\_TUNNEL, and OPEN\_TUNNEL The tunneling system also makes use of the publish/subscribe system detailed in section 2.6.
 
 PROBE messages allow a node to determine whether it is publically addressable. The message is sent to a publicly addressable node, typically a known network seed. The receiving node issues a separate PING message. The receiving node then responds to the PROBE message with the result of the PING. Nodes joining the network should immediately send a PROBE to any known node.
 
@@ -283,12 +276,12 @@ Key and file management tools for web backends are in early planning stages, inc
 Bridges to other protocols and workflows are also planned. The Storj CLI lends itself to shell scripting automation. Similar tools for FTP, FUSE, and common tools for interacting with files will be developed in the future.
 
 \subsection{Bridge as an Authorization Mechanism}
-Bridge can be used to manage authorization for private files stored on the network. Because Bridge manages the state of each contract under its jurisdiction it is a logical provider of these services. It can manage a variety of authorization-related services to enable sharing and collaboration.
+Bridge can be used to manage authorization for private files stored on the network. Because Bridge manages the state of each contract under its care, it is a logical provider of these services. It can manage a variety of authorization-related services to enable sharing and collaboration.
 
 \subsubsection{Identity and Permissioning}
 The Bridge API uses public-key cryptography to verify clients. Rather than the Bridge server issuing an API key to each user, users register public keys with the Bridge. API requests are signed, and the Bridge verifies that the signature matches a registered public key. Bridge organizes file metadata into buckets to facilitate management. Buckets can be permissioned individually by registering a set of public keys to the Bucket.
 
-Application developers can use this to easily delegate permissions to applications, servers, or  other developers. For instance, the developer of a file syncing service could create a keypair for each user of that service, and divide each user into a separate Bucket accessible only by that user’s keypair. Usage of each Bucket is tracked separately, so users who have exceeded their allotment could have write permissions revoked programmatically. This provides a logical separation of user permissions, as well as a variety of management tools.
+Application developers can use this to easily delegate permissions to applications, servers, or  other developers. For instance, the developer of a file syncing service could create a keypair for each user of that service, and divide each user into a separate Bucket accessible only by that user’s keypair. Usage of each Bucket is tracked separately, so users who have exceeded their allotment could have write permissions revoked programmatically. This provides a logical separation of user permissions, as well as a variety of organizational tools.
 
 \subsubsection{Key Migration}
 Because shard encryption keys are stored on the device that generated them, data portability is an issue. The reference implementation of Bridge and the client facilitate the transfer of file encryption keys between clients in a safe way. Clients generate a cryptographically strong passphrase, like a twelve word seed. To encrypt a given file the client generates a deterministic key based on the seed, Bucket ID and File ID. The user can then transmit the seed phrase between devices, and rely on Bridge to provide the Bucket ID and File ID.
@@ -315,9 +308,9 @@ In other words, the Bridge can leverage its knowledge about peers on the network
 This function is nearly impossible to distribute, as the retrieval and processing overhead of a distributed network are unsuitable to the high-performance demands of most storage applications. This also cannot be easily replicated by a data-center based object store. In a distributed network, knowledge about the network is incredibly valuable.
 
 \subsection{Bridge as a Service}
-In cases where the cost of delegating trust is not excessively high, clients may use third-party Bridges. Because Bridges do not store or transit data and have no access to keys, this is still a large improvement on the traditional data-center model. Many of the management features the Bridge provides, like permissioning and intelligent contracting, contain considerable network effects. Larger data sets create far better performance for clients.
+In cases where the cost of delegating trust is not excessively high, clients may use third-party Bridges. Because Bridges do not store or transit data and have no access to keys, this is still a large improvement on the traditional data-center model. Many of the features Bridge servers provide, like permissioning and intelligent contracting, leverage considerable network effects. Larger data sets create far better performance for clients.
 
-Applications that use object storage already delegate significant amounts of trust to the storage providers. It follows that most application developers don’t see a significant risk from doing so, and that operating a reliable Bridge as a service is viable. This further allows developers to pay for storage with a credit card or other standard payment mechanism, rather than managing a cryptocurrency wallet. Storj Labs Inc. currently provides this service.
+Applications using object stores delegate significant amounts of trust to the storage providers. Providers may choose to operate public Bridges as a service. Application developers then delegate trust to the Bridge, exactly as they would to a traditional object store. This shifts significant operational burdens from the application developer to the service-provider with minimal trust delegation. This would also allow developers to pay for storage with standard payment mechanisms, like credit cards, rather than managing a cryptocurrency wallet. Storj Labs Inc. currently provides this service.
 
 
 \section{Future Areas of Research}
@@ -335,7 +328,7 @@ Applications implementing these standards would be broadly cross-compatible. Whe
 
 Permissioning in this system may be managed by a service like a Bridge, tied to a web of trust identity via services like Keybase, or handled by a distributed self-sovereign identity system. Smart contract systems, e.g. Ethereum \cite{17} contracts, seem like a sensible long-term choice, as they can provide file permissions based on arbitrary code execution. Some problems may exist with respect to management of the private information required for identity and permissioning systems, but sufficient solutions likely exist.
 
-While this system represents a significant step up in both usability and value, there are unmitigable security issues. Unfortunately, as in any cryptographic system, it is impossible to revoke access to data. Applications may cache data or forward it to third parties. Users, by definition, trust application developers to handle their data responsibly. To mitigate these risks, Storj Labs intends to provide incentives to developers to build free and open-source software. No application can be completely secure, but auditable code is the best defense of user’s privacy.
+While this system represents a significant step up in both usability and value, there are unmitigable security issues. Unfortunately, as in any cryptographic system, it is impossible to revoke access to data. Applications may cache data or forward it to third parties. Users, by definition, trust application developers to handle their data responsibly. To mitigate these risks, Storj Labs intends to provide incentives to developers to build free and open-source software. No application can be completely secure, but auditable code is the best defense of user’s privacy and security.
 
 The potential advantages in terms of user experience and privacy are great, but more research is needed. Many open questions exist with respect to permissioning mechanisms,  At worst a unified backend powering interoperable applications provides equivalent security to current data-center based models. Storj hopes to collaborate with other forward-thinking data-driven projects to create and advocate for these open standards.
 
@@ -387,8 +380,11 @@ The Honest Geppetto attack is a storage-specific variant of the Google attack. T
 \subsection{Eclipse}
 An eclipse attack attempts to isolate a node or set of node in the network graph, by ensuring that all outbound connections reach malicious nodes. Eclipse attacks can be hard to identify, as malicious nodes can be made to function normally in most cases, only eclipsing certain important messages or information. Storj addresses eclipse attacks by using public key hashes as Node IDs. In order to eclipse any node in the network, the attacker must repeatedly generate key pairs until it finds three keys whose hashes are closer to the targeted node than its nearest non-malicious neighbor, and must defend that position against any new nodes with closer IDs. This is, in essence, a proof-of-work problem whose difficulty is proportional to the number of nodes in the network. For large networks it becomes prohibitively expensive to perform an eclipse attack (see Section 6.2). Furthermore, any node that suspects it has been eclipsed may trivially generate a new keypair and node ID, thus restarting the proof-of-work challenge.
 
+\subsubsection{Tunnel Eclipse}
+%TODO
+
 \subsection{Hostage Bytes}
-The hostage byte attack is a storage-specific attack where malicious farmers refuse to transfer shards, or portions of shards, in order to extort additional payments from data owners. Data owners should protect themselves against hostage byte attacks by storing shards redundantly across several nodes, as described in section 2.7. Redundant storage is not a complete solution for this attack, but addresses the vast majority of practical applications of this attack. Defeating redundancy requires collusion across multiple malicious nodes, which, because farmers have no knowledge of the structure of the file or distribution of the shards, is difficult to execute in practice.
+The hostage byte attack is a storage-specific attack where malicious farmers refuse to transfer shards, or portions of shards, in order to extort additional payments from data owners. Data owners should protect themselves against hostage byte attacks by storing shards redundantly across several nodes (see Section 2.7). As long as the client keeps the bounds of its erasure encoding a secret, the malicious farmer cannot know what the last byte is. Redundant storage is not a complete solution for this attack, but addresses the vast majority of practical applications of this attack. Defeating redundancy requires collusion across multiple malicious nodes, which is difficult to execute in practice.
 
 \subsection{Cheating Owner}
 A data owner may attempt to avoid paying a farmer for data storage by refusing to verify a correct audit. In response the farmer may drop the data-owner’s shard. This attack primarily poses a problem for any future distributed reputation system, as it is difficult for outside observers to verify the claims of either party. There is no known practical publicly verifiable proof of storage, and no known scheme for independently verifying that a privately verifiable audit was issued or answered as claimed. This indicates that a cheating client attack is a large unsolved problem for any reputation system.
@@ -533,12 +529,6 @@ def prob_false_pos(N,K,n): return prob(N,K,n,0)
 \item MIRROR - Instruct a farmer to retrieve and mirror data from another farmer.
 \item AUDIT - Issue an audit challenge to a farmer.
 \item RETRIEVE - Initiate a download data channel with a farmer.
-\setcounter{enumTemp}{\theenumi}
-\end{enumerate}
-\subsection{Other}
-\begin{enumerate}
-\setcounter{enumi}{\theenumTemp}
-\item TRIGGER - General purpose message to trigger remote handlers.
 \end{enumerate}
 
 
