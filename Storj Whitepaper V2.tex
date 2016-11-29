@@ -93,11 +93,7 @@ This extension relies on two additional selectable parameters: a byte index $ x 
 
 %TODO: Graphic
 
-Partial audits provide only probabilistic assurance that the farmer retains the entire file. They allow for false positive results, where the verifier believes the farmer retains the intact shard, when it has actually been modified or partially deleted. The probability of a false positive on an individual partial audit when the farmer has modified or deleted $ M $ bytes corresponds to the hypergeometric distribution
-
-\begin{math}
-%TODO: Equation
-\end{math}
+Partial audits provide only probabilistic assurance that the farmer retains the entire file. They allow for false positive results, where the verifier believes the farmer retains the intact shard, when it has actually been modified or partially deleted. The probability of a false positive on an individual partial audit is easily calculable (see Section 6.4)
 
 Thus the data owner can have a known confidence level that a shard is still intact and available. In practice, this is more complex, as farmers may implement intelligent strategies to attempt to defeat partial audits. Fortunately, this is a bounded problem in the case of iterative audits. The probability of several consecutive false positives becomes very low, even for small deletions of the file.
 
@@ -124,7 +120,7 @@ The contracting system extends Kademlia with four new message types: OFFER, CONS
 
 To negotiate a contract, a node creates an OFFER message and sends it to a prospective partner. The message contains a partially-constructed contract that describes the desired relationship. The two nodes repeatedly swap signed OFFER messages. For each new message in the OFFER loop, the node either chooses to terminate negotiations, respond with a new signed counter-offer, or accept the contract by countersigning it. Once an OFFER is accepted by both parties, they each store it locally, keyed by the hash of the data.
 
-Once an agreement is reached, the data owner sends a CONSIGN message to the farmer. The message contains the leaves of the audit-tree. The farmer must respond with a PUSH token that authorizes the data owner to upload the data via a separate data channel (see section 2.10). This token is a random number, and can be delegated to a third party.
+Once an agreement is reached, the data owner sends a CONSIGN message to the farmer. The message contains the leaves of the audit-tree. The farmer must respond with a PUSH token that authorizes the data owner to upload the data via a separate data channel (see Section 2.10). This token is a random number, and can be delegated to a third party.
 
 RETRIEVE messages signify the intent to retrieve a shard from a farmer. These messages are nearly identical to CONSIGN messages, but do not contain the audit-tree leaves. The farmer responds to a valid RETRIEVE message with a PULL token that authorizes download of the data via a separate data channel.
 
@@ -138,7 +134,7 @@ The reference implementation will use Storjcoin micropayment channels, which are
 New payment strategies must include a currency, a price for the storage, a price for retrieval, and a payment destination. It is strongly advised that new payment strategies consider how data owners prove payment, and farmers verify receipt without human interaction. Implementation details of other payment strategies are left as an exercise for interested parties.
 
 \subsection{Quasar}
-Storj implements kad-quasar \cite{8} a peer-to-peer publish/subscribe system based on Quasar \cite{9}. Kad-quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Current topic options include size and bandwidth commitment, and the topic list is easily extensible \cite{11}. This facilitates the contract offer and negotiation process (see section 2.4)
+Storj implements kad-quasar \cite{8} a peer-to-peer publish/subscribe system based on Quasar \cite{9}. Kad-quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Current topic options include size and bandwidth commitment, and the topic list is easily extensible \cite{11}. This facilitates the contract offer and negotiation process (see Section 2.4)
 
 Kad-quasar extends Kademlia with three new message types: SUBSCRIBE, UPDATE, and PUBLISH. These messages facilitate the creation and propagation of filters. Each node maintains information about topics to which it subscribes, as well as topics to which its neighbors subscribe in the form of an attenuated Bloom filter with depth $ K = 3 $. The filter at level 1 represents the subscriptions of nodes 1 hop away.
 
@@ -389,7 +385,7 @@ The Google attack, or nation-state attack, is a hypothetical variant of the Sybi
 The Honest Geppetto attack is a storage-specific variant of the Google attack. The attacker operates a large number of ‘puppet’ nodes on the network, accumulating trust and contracts over time. Once he reaches a certain threshold he pulls the strings on each puppet to execute a hostage attack with the data involved, or simply drops each node from the network. Again, the best defence against this attack is to create a network of sufficient scale that this attack is ineffective. In the meantime, this can be partially addressed by relatedness analysis of nodes. Bayesian inference across downtime, latency and other attributes can be used to assess the likelihood that two nodes are operated by the same organization, and data owners can and should attempt to distribute shards across as many unrelated nodes as possible.
 
 \subsection{Eclipse}
-An eclipse attack attempts to isolate a node or set of node in the network graph, by ensuring that all outbound connections reach malicious nodes. Eclipse attacks can be hard to identify, as malicious nodes can be made to function normally in most cases, only eclipsing certain important messages or information. Storj addresses eclipse attacks by using public key hashes as Node IDs. In order to eclipse any node in the network, the attacker must repeatedly generate key pairs until it finds three keys whose hashes are closer to the targeted node than its nearest non-malicious neighbor, and must defend that position against any new nodes with closer IDs. This is, in essence, a proof-of-work problem whose difficulty is proportional to the number of nodes in the network. For large networks it becomes prohibitively expensive to perform an eclipse attack (see section 6.2). Furthermore, any node that suspects it has been eclipsed may trivially generate a new keypair and node ID, thus restarting the proof-of-work challenge.
+An eclipse attack attempts to isolate a node or set of node in the network graph, by ensuring that all outbound connections reach malicious nodes. Eclipse attacks can be hard to identify, as malicious nodes can be made to function normally in most cases, only eclipsing certain important messages or information. Storj addresses eclipse attacks by using public key hashes as Node IDs. In order to eclipse any node in the network, the attacker must repeatedly generate key pairs until it finds three keys whose hashes are closer to the targeted node than its nearest non-malicious neighbor, and must defend that position against any new nodes with closer IDs. This is, in essence, a proof-of-work problem whose difficulty is proportional to the number of nodes in the network. For large networks it becomes prohibitively expensive to perform an eclipse attack (see Section 6.2). Furthermore, any node that suspects it has been eclipsed may trivially generate a new keypair and node ID, thus restarting the proof-of-work challenge.
 
 \subsection{Hostage Bytes}
 The hostage byte attack is a storage-specific attack where malicious farmers refuse to transfer shards, or portions of shards, in order to extort additional payments from data owners. Data owners should protect themselves against hostage byte attacks by storing shards redundantly across several nodes, as described in section 2.7. Redundant storage is not a complete solution for this attack, but addresses the vast majority of practical applications of this attack. Defeating redundancy requires collusion across multiple malicious nodes, which, because farmers have no knowledge of the structure of the file or distribution of the shards, is difficult to execute in practice.
@@ -399,7 +395,7 @@ A data owner may attempt to avoid paying a farmer for data storage by refusing t
 
 \subsection{Faithless Farmer}
 While the farming software is built to require authentication via signature and token before serving download requests, it is reasonable to imagine a modification of the farming software that will provide shards to any paying requestor. In a network dominated by faithless farmers, any third-party can aggregate and inspect arbitrary shards present on the network.
-However, even should faithless farmers dominate the network, data privacy is not significantly compromised. Because the location of the shards that comprise a given file is held solely by the data owner, it is prohibitively difficult to locate a target file without compromising the owner (see section 6.3). Storj is not designed to protect against compromised data owners. In addition, should a third-party gather all shards, strong client-side encryption protects the contents of the file from inspection. The pointers and the encryption key may be secured separately. In the current implementation of Bridge, the pointers and the keys are held by the Bridge and the client, respectively.
+However, even should faithless farmers dominate the network, data privacy is not significantly compromised. Because the location of the shards that comprise a given file is held solely by the data owner, it is prohibitively difficult to locate a target file without compromising the owner (see Section 6.3). Storj is not designed to protect against compromised data owners. In addition, should a third-party gather all shards, strong client-side encryption protects the contents of the file from inspection. The pointers and the encryption key may be secured separately. In the current implementation of Bridge, the pointers and the keys are held by the Bridge and the client, respectively.
 
 \subsection{Defeated Audit Attacks}
 A typical Merkle proof verification does not require the verifier to know the depth of the tree. Instead the verifier is expected to have the data being validated. In the Storj audit tree, if the depth is unknown to the verifier the farmer may attack the verification process by sending a Merkle proof for any hash in the tree. This proof still generates the Merkle root, and is thus a valid proof of some node. But, because the verifier does not hold the data used to generate the tree, it has no way to verify that the proof is for the specific leaf that corresponds to the challenge. The verifier must store some information about the bottom of the tree, such as the depth of the tree, the set of leaves nodes, or the set of pre-leaves. Of these, the depth is most compact, and thus preferable.
@@ -421,10 +417,6 @@ $\Pr_{failure}(n; k,p) = \displaystyle \sum_{i=0}^{k-1} p^{k}(1-p)^{n-k }{n \cho
 \begin{center}
 \begin{tabular}{r r l r}
 n & k & p & $\Pr_{failure}{n,k,p}$\\
-\hline  9&  3&    0.5  &  8.984e-02 \\
-\hline  9&  3&    0.75& 1.342e-03\\
-\hline  9&  3&    0.9  &  2.998e-06\\
-\hline  9&  3&    0.98& 4.448e-11\\
 \hline  18& 6&   0.5  & 4.812e-02\\
 \hline  18& 6&   0.75&3.424e-05\\
 \hline  18& 6&   0.9  & 5.266e-10\\
@@ -433,10 +425,6 @@ n & k & p & $\Pr_{failure}{n,k,p}$\\
 \hline  36& 12&  0.75&2.615e-08\\
 \hline  36& 12&  0.9  &1.977e-17\\
 \hline  36& 12&  0.98&1.628e-34\\
-\hline  72& 24& 0.5  &1.471e-03\\
-\hline  72& 24& 0.75&1.937e-14\\
-\hline  72& 24& 0.9  &3.636e-32\\
-\hline  72& 24& 0.98&1.390e-65\\
 \hline
 \end{tabular}
 \end{center}
@@ -447,7 +435,7 @@ Code:
 def fac(n): return 1 if n==0 else n * fac(n-1)
 def choose(n,k): return fac(n) / fac(k) / fac(n-k)
 def prob(n,k,p): return choose(n,k) * p ** k * (1-p) ** (n-k)
-def prob\_fail(n,k,p): return sum([prob(n,i,p) for i in range(0, k)])
+def prob_fail(n,k,p): return sum([prob(n,i,p) for i in range(0, k)])
 \end{lstlisting}
 
 Therefore, with well-chosen $ k $ and $ n $, in addition to recovery methods described above, the statistical chance of shard or file loss is quite small.
@@ -456,7 +444,7 @@ Therefore, with well-chosen $ k $ and $ n $, in addition to recovery methods des
 The probability of eclipsing a targeted node in the a network with $ i $ nodes in $ h $ hashes is modeled by a similar binomial distribution:
 
 {\centering
-$\Pr_{success}(h, i) = \displaystyle \sum_{k=3}^{h-1} (1/i)^{k}(1-\frac{1}{i})^{h-k}{k \choose h}$
+$\Pr_{success}(h, i) = \displaystyle \sum_{k=3}^{h-1} (i)^{-k}(1-\frac{1}{i})^{h-k}{k \choose h}$
 \\}
 
 %TODO TABLE
@@ -477,8 +465,8 @@ As the number of shards on the network grows, it becomes progressively more diff
 The probability of locating a targeted file consisting of $ k $ shards by $ n $ random draws from a network containing $ N $ shards is modeled as a hypergeometric distribution with $ K = k $:
 
 {\centering
-$Pr_{Success}(N,k,n,k) = \displaystyle \frac{{N-k \choose n-k}}{{N \choose n}}$
-}
+$Pr_{Success}(N,k,n) = \displaystyle \frac{{N-k \choose n-k}}{{N \choose n}}$
+\\}
 
 %TODO: table
 
@@ -486,14 +474,28 @@ Code:
 \begin{lstlisting}
 def fac(k): return 1 if k==0 else k * fac(k-1)
 def choose(k,h): return fac(k) / fac(h) / fac(k-h)
-def prob(N,K,n,k): return choose(K,k) * choose(N-k, n-k) / choose(N,n)
+def prob(N,K,n,k): return choose(N-K, n-k) / choose(N,n)
 def prob_success(N,k,n): return prob(N,k,n,k)
 \end{lstlisting}
 
 \subsection{Partial Audit Confidence Levels}
-% TODO
+Farmers attempting to game the system may rely on data owners to issue partial audits. Partial audits allow false positives, where the data appears intact, but in fact has been modified. Data owners may account for this by ascribing confidence values to each partial audit, based on the likelihood of a false positive. Partial audit results then update prior confidence of availability. Data owners may adjust audit parameters to provide desired confidence levels.
 
+The probability of a false positive on a parital audit of $ n $ bytes of an $ N $ byte shard, with $ K $ bytes modified adversarially by the farmer is a hypergeometric distribution with $ k = 0 $:
 
+{\centering
+$Pr_{false positive}(N,K,n) = \displaystyle \frac{{N-K \choose n}} {{N \choose n}}$
+\\}
+
+%TODO: table
+
+Code:
+\begin{lstlisting}
+def fac(k): return 1 if k==0 else k * fac(k-1)
+def choose(k,h): return fac(k) / fac(h) / fac(k-h)
+def prob(N,K,n,k): choose(N-K, n-k) / choose(N,n)
+def prob_false_pos(N,K,n): return prob(N,K,n,0)
+\end{lstlisting}
 
 \newpage
 \appendix
