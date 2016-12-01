@@ -197,9 +197,17 @@ S-Buckets that have reached $ S $ bytes cannot store more shards. Farmers can de
 \subsubsection{Keying By Shard Hash}
 As mentioned earlier, LevelDB sorts items lexicographically by key. KFS takes advantage of this to optimize the efficiency of reads and writes. Data is stored in chunks of $ C $ bytes (or less). By default $ C = 128 $ KiB. These chunks are keyed by the full content's hash followed by a space and a numerical index. This ensures that key/value pairs are small, and that reads and writes to and from a S-Bucket are sequential. It also allows for efficient streaming of data both in and out of the S-bucket.
 
-To preserve order and therefore maximize read/write performance, the keys for the chunks of a specific shard should be strings defined by the following pattern: $ concat(H(data), ' ', index) $.
+Because of the idiosyncrasies of sorting numerical strings lexicographically, the index substring should be expressed in base 10, and have a constant number of characters. The length $ l $ of the index string should be defined by $ l = \lceil log_{10} \frac{S}{C} \rceil $. For default parameters $ l = 6 $, meaning that the chunk at index 3753 will have have the index number 003753. This ensures that chunks of a shard are stored consecutively.
 
-Because of the idiosyncrasies of sorting numerical strings lexicographically, the index substring should be expressed in base 10, and have a constant number of characters. The length $ l $ of the index string should be defined by $ l = \lceil log_{10} \frac{S}{C} \rceil $. For default parameters $ l = 6 $, meaning that the chunk at index 3753 will have have the index number 003753.
+To preserve order and therefore maximize read/write performance, the keys for the chunks of a specific shard should be strings generated as follows:
+
+\begin{enumerate}
+\item Determine the chunk index number, and encode it as a string.
+\item Prepend the chunk index string with '0' until it reaches length $ l $.
+\item Encode $ H(data) $ as a string of hexadecimal characters.
+\item Append a single space to the hash.
+\item Append the modfied chunk index to the hash.
+\end{enumerate}
 
 \subsubsection{Performance Benefits}
 In initial testing KFS outperforms vanilla LevelDB in reads, writes, and unlinks at a variety of file sizes. KFS displays lower means and lower variance across almost all combinations of file size, operation, and storage device type. It particularly excels at unlinks and writes of large files, reducing variance by several orders of magnitude. The full methodology of these tests, and their results, can be found elsewhere \cite{13}.
@@ -324,7 +332,7 @@ Bridges could also, with the consent of users, cooperate to share file metadata 
 \subsection{Data Portability}
 By encouraging use of data format and access standards, Storj aims to allow portability of data between applications. Unlike a traditional model, where control of data is tied to the service used to access the data, data access may be tied to individual users because Storj forms a common underlying layer. User data can be tied to persistent cryptographic identities, and authenticated without exposing data to third parties. Siloing data in applications is a harmful relic of traditional models. Building cross-compatibility into the future of data storage greatly improves user privacy and user experience.
 
-Applications implementing these standards would be broadly cross-compatible. When access is tied to users rather than services, privacy and control are preserved. A user may grant access to a service that backs up their hard drive, which places those files in Storj. The user could separately grant access to a photo-sharing service, which could then access any photos in the backup. The user gains seamless portability of data across many applications, and application developers gain access to a large pool of existing users.
+Applications implementing these standards would be broadly compatible. When access is tied to users rather than services, privacy and control are preserved. A user may grant access to a service that backs up their hard drive, which places those files in Storj. The user could separately grant access to a photo-sharing service, which could then access any photos in the backup. The user gains seamless portability of data across many applications, and application developers gain access to a large pool of existing users.
 
 Permissioning in this system may be managed by a service like a Bridge, tied to a web of trust identity via services like Keybase, or handled by a distributed self-sovereign identity system. Smart contract systems, e.g. Ethereum \cite{17} contracts, seem like a sensible long-term choice, as they can provide file permissions based on arbitrary code execution. Some problems may exist with respect to management of the private information required for identity and permissioning systems, but sufficient solutions likely exist.
 
@@ -341,7 +349,7 @@ One inherent downside of distributing information across a network is the additi
 IPFS presents the concept of BitSwap ledgers \cite{18}. BitSwap ledgers are simple local accounting of past interactions with other nodes. As IPFS and the BitSwap protocols are primarily concerned with distribution of objects in a Kademlia-style DHT, BitSwap ledgers counts bytes sent and bytes received. Rather than attempt to reach global consensus about the reputation state of the system, these ledgers deal only with one-to-one relationships, and do not account for latency, bandwidth, availability, or other quality of service factors. Most of the behavior of nodes is left to the implementer, with some discussion given to potential exchange strategies. This implies that BitSwap ledgers scale well and are extremely versatile.
 
 \subsubsection{Eigentrust and Eigentrust++}
-Eigentrust \cite{19} attempts to generalize ledger-based approaches to generate global trust values in a distributed system using a transitive-trust approach. Nodes keep and exchange trust vectors. For networks with a large majority of trustworthy peers, the value of each local trust vector converges to a shared global trust vector as nodes learn more about the network via information exchange.
+Eigentrust \cite{19} attempts to generalize the ledger approach to generate global trust values in a distributed system using a transitive-trust model. Nodes keep and exchange trust vectors. For networks with a large majority of trustworthy peers, the value of each local trust vector converges to a shared global trust vector as nodes learn more about the network via information exchange.
 
 Eigentrust++ \cite{20} identifies several attack vectors and modifies Eigentrust to improve performance and reliability in the presence of malicious nodes. Eigentrust++ is currently implemented in NEM \cite{21}.  Secure global convergence to a shared trust value for each node is a key feature for any distributed reputation system.
 
