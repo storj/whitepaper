@@ -107,6 +107,8 @@ Proof of retrievability is an area of ongoing research, and other practical sche
 \subsubsection{Issuing Audits}
 To issue audits, Storj extends the Kademlia message set with a new type: AUDIT. These messages are sent from data owners to farmers and contain the hash of the data and a challenge number. The farmer must respond with a merkle proof as described above. Upon receipt and validation of the Merkle proof, the data owner must issue payment to the farmer according to agreed-upon terms.
 
+%TODO: Graphic
+
 \subsection{Contracts and Negotiation}
 Data storage is negotiated via a standard contract format \cite{7}. The contract is a versioned data structure that describes the relationship between data owner and farmer. Contracts should contain all information necessary for each node to form a relationship, transfer the data, create and respond to audits over time, and arbitrate payments. This includes shard hash, shard size, audit strategy, and payment information. Storj implements a publish/subscribe system to connect parties interested in forming a contract (see Section 2.6).
 
@@ -188,9 +190,14 @@ KFS requires that there be a reference identifier, which can be any arbitrary $ 
 \item Store the shard in $ L_{n} $.
 \end{enumerate}
 
-This sorting algorithm is fast, deterministic, and uses only readily-available information. Where $ B $ is a power of two, it also provides an even distribution of shards across all S-Buckets, as shown in Figure TODO below.
+This sorting algorithm is fast, deterministic, and uses only readily-available information. Where $ B $ is a power of two, it also provides an even distribution of shards across all S-Buckets, as shown in Figure 5 below.
 
-% TODO: Frequency Chart
+
+%insert Figure 5
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{5}
+\end{figure}
 
 S-Buckets that have reached $ S $ bytes cannot store more shards. Farmers can determine if bucket $ L_{n} $ is full during contract negotiation by calculating $ n $ using the data-hash field in the contract, and should reject contracts that would cause them to overfill an S-Bucket. When all buckets in a KFS instance are full, a second instance may be made. Given that the 8 TiB upper limit of a farmer’s KFS instance is larger than most available drives, this is unlikely for most hardware.
 
@@ -212,7 +219,11 @@ To preserve order and therefore maximize read/write performance, the keys for th
 \subsubsection{Performance Benefits}
 In initial testing KFS outperforms vanilla LevelDB in reads, writes, and unlinks at a variety of file sizes. KFS displays lower means and lower variance across almost all combinations of file size, operation, and storage device type. It particularly excels at unlinks and writes of large files, reducing variance by several orders of magnitude. The full methodology of these tests, and their results, can be found elsewhere \cite{13}.
 
-% TODO: Graphic
+%insert Figure 6
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{6}
+\end{figure}
 
 \subsection{NAT Traversal and Reverse HTTP Tunneling}
 Due to the presence of NATs and other adverse network conditions, not all devices are publicly accessible. To enable non-public nodes to participate in the network, Storj implements a reverse tunnel system.
@@ -364,10 +375,7 @@ Storj is exploring a reputation system that leverages public Blockchains to solv
 The payment required to participate in this system should be significantly less than the expected return of operating a network node. If set correctly, this recurring monetary payment for an identity bounds the size and duration of Sybil attacks without affecting cooperative nodes. Legitimate nodes would easily recoup their identity expense, while Sybil operators would find their expenses outstripping their returns. This approach solves a relatively small subset of identity issues on the network, and it is difficult to see how it could be extended to other problem sets.
 
 \subsection{OFFER Loop Strategies}
-Many negotiation strategies can exist and interact via the OFFER loop. Simple examples include price floors and ceilings, but complex models could be built to base strategies on market trends and the subjective value of a shard. Negotiation strategies executed by autonomous agents are an area of (fascinating) ongoing research. Storj will be one of the first large-scale machine-driven marketplaces. As such, improving negotiation efficiency is critical to the long-term efficiency of the market.
-
-%TODO A few interesting areas of research present themselves.
-
+Many negotiation strategies can exist and interact via the OFFER loop. Full exploration of negotiation strategies is beyond the scope of this paper, but a few interesting areas are immediately apparent. Simple examples include price floors and ceilings, but complex models could be built to base strategies on market trends and the subjective value of a shard. Negotiation strategies executed by autonomous agents are an area of (fascinating) ongoing research. Storj will be one of the first large-scale machine-driven marketplaces. As such, improving negotiation efficiency is critical to the long-term efficiency of the market.
 
 \section{Attacks}
 As with any distributed system, a variety of attack vectors exist. Many of these are common to all distributed systems. Some are storage-specific, and will apply to any distributed storage system.
@@ -430,7 +438,6 @@ n & k & p & $\Pr_{failure}{n,k,p}$\\
 \hline  36& 12&  0.75&2.615e-08\\
 \hline  36& 12&  0.9  &1.977e-17\\
 \hline  36& 12&  0.98&1.628e-34\\
-\hline
 \end{tabular}
 \end{center}
 \end{table}
@@ -452,7 +459,7 @@ The probability of eclipsing a targeted node in the a network with $ i $ nodes i
 $\Pr_{success}(h, i) = \displaystyle \sum_{k=3}^{h-1} (i)^{-k}(1-\frac{1}{i})^{h-k}{k \choose h}$
 \\}
 
-%TODO TABLE
+%TODO table
 
 Code:
 \begin{lstlisting}
