@@ -442,7 +442,7 @@ n & k & p & $\Pr_{failure}{n,k,p}$\\
 \end{center}
 \end{table}
 
-Code:
+Pseudocode:
 \begin{lstlisting}
 def fac(n): return 1 if n==0 else n * fac(n-1)
 def choose(n,k): return fac(n) / fac(k) / fac(n-k)
@@ -461,12 +461,16 @@ $\Pr_{success}(h, i) = \displaystyle \sum_{k=3}^{h-1} (i)^{-k}(1-\frac{1}{i})^{h
 
 %TODO table
 
-Code:
+Pseudocode:
 \begin{lstlisting}
 def fac(k): return 1 if k==0 else k * fac(k-1)
-def choose(k,h): return fac(k) / fac(h) / fac(k-h)
-def prob(k,h,i): return choose(k,h) * (1/i) ** h * (1-1/i) ** (k-h)
-def prob_succ(h,i): return sum([prob(e,h,i) for e in range(3,h)])
+
+def choose(h,k): return fac(h) / fac(k) / fac(h-k)
+
+def prob(k,h,i): return choose(h,k) * i ** -k * (1-(1.0/i)) ** (h-k)
+
+def prob_succ(h,i): return sum([prob(k,h,i) for k in range(3,h)])
+
 \end{lstlisting}
 
 
