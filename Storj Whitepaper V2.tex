@@ -114,13 +114,13 @@ Each party should store a signed copy of the contract. Contracts exist solely fo
 
 The contracting system extends Kademlia with four new message types: OFFER, CONSIGN, MIRROR, and RETRIEVE.
 
-To negotiate a contract, a node creates an OFFER message and sends it to a prospective partner. The message contains a partially-constructed contract that describes the desired relationship. The two nodes repeatedly swap signed OFFER messages. For each new message in the OFFER loop, the node either chooses to terminate negotiations, respond with a new signed counter-offer, or accept the contract by countersigning it. Once an OFFER is accepted by both parties, they each store it locally, keyed by the hash of the data.
+To negotiate a contract, a node creates an OFFER message and sends it to a prospective partner. Prospective partners are found via the publish/subscribe system described in Section 2.6. The OFFER message contains a fully-constructed contract that describes the desired relationship. The two nodes repeatedly swap signed OFFER messages. For each new message in the OFFER loop, the node either chooses to terminate negotiations, respond with a new signed counter-offer, or accept the contract by countersigning it. Once an OFFER is signed by both parties, they each store it locally, keyed by the hash of the data.
 
-Once an agreement is reached, the data owner sends a CONSIGN message to the farmer. The message contains the leaves of the audit-tree. The farmer must respond with a PUSH token that authorizes the data owner to upload the data via a separate data channel (see Section 2.10). This token is a random number, and can be delegated to a third party.
+Once an agreement is reached, the data owner sends a CONSIGN message to the farmer. The message contains the leaves of the audit-tree. The farmer must respond with a PUSH token that authorizes the data owner to upload the data via HTTP transfer (see Section 2.10). This token is a random number, and can be delegated to a third party.
 
-RETRIEVE messages signify the intent to retrieve a shard from a farmer. These messages are nearly identical to CONSIGN messages, but do not contain the audit-tree leaves. The farmer responds to a valid RETRIEVE message with a PULL token that authorizes download of the data via a separate data channel.
+RETRIEVE messages signify the intent to retrieve a shard from a farmer. These messages are nearly identical to CONSIGN messages, but do not contain the audit-tree leaves. The farmer responds to a valid RETRIEVE message with a PULL token that authorizes download of the data via a separate HTTP transfer.
 
-MIRROR messages instruct a farmer to retrieve data from another farmer. This allows data owners to create redundant copies of a shard without expending significant additional bandwidth or time. After a successful OFFER/CONSIGN process, the data owner may initiate a separate OFFER loop for the same data with another farmer. Instead of issuing a CONSIGN message to the mirroring farmer, the data owner instead issues a RETRIEVE message to the original farmer, and then includes the retrieval token in a MIRROR message to the mirroring farmer. This authorizes the mirroring farmer to open a data channel to the original and retrieve the data via a data channel.
+MIRROR messages instruct a farmer to retrieve data from another farmer. This allows data owners to create redundant copies of a shard without expending significant additional bandwidth or time. After a successful OFFER/CONSIGN process, the data owner may initiate a separate OFFER loop for the same data with another farmer. Instead of issuing a CONSIGN message to the mirroring farmer, the data owner instead issues a RETRIEVE message to the original farmer, and then includes the retrieval token in a MIRROR message to the mirroring farmer. This authorizes the mirroring farmer to retrieve the data from the original farmer. The success of the MIRROR process should be verified immediately via an AUDIT message.
 
 \subsection{Payment}
 Storj is payment agnostic. Neither the protocol nor the contract requires a specific payment system. The current implementation assumes Storjcoin, but many different payment types could be implemented, including Storjcoin, BTC, Ether, ACH transfer, or physical transfer of live goats.
@@ -132,17 +132,17 @@ Storjcoin allows much more granular payments than other candidate currencies, th
 New payment strategies must include a currency, a price for the storage, a price for retrieval, and a payment destination. It is strongly advised that new payment strategies consider how data owners prove payment, and farmers verify receipt without human interaction. Implementation details of other payment strategies are left as an exercise for interested parties.
 
 \subsection{Quasar}
-Storj implements kad-quasar \cite{8} a peer-to-peer publish/subscribe system based on Quasar \cite{9}. Kad-quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Current topic options include size and bandwidth commitment, and the topic list is easily extensible \cite{11}. This facilitates the contract offer and negotiation process (see Section 2.4)
+Storj implements a peer-to-peer publish/subscribe system called Quasar \cite{8}\cite{9}. Quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Current topic options include size and bandwidth commitment, and the topic list is easily extensible \cite{11}. This facilitates the contract offer and negotiation process (see Section 2.4)
 
-Kad-quasar extends Kademlia with three new message types: SUBSCRIBE, UPDATE, and PUBLISH. These messages facilitate the creation and propagation of filters. Each node maintains information about topics to which it subscribes, as well as topics to which its neighbors subscribe in the form of an attenuated Bloom filter with depth $ K = 3 $. The filter at level 1 represents the subscriptions of nodes 1 hop away.
+To operate Quasar, Storj extends Kademlia with three new message types: SUBSCRIBE, UPDATE, and PUBLISH. These messages facilitate the creation and propagation of filters. Each node maintains information about topics to which it subscribes, as well as topics to which its neighbors subscribe in the form of an attenuated Bloom filter with depth $ K = 3 $. The filter at level 1 represents the subscriptions of nodes 1 hop away.
 
 SUBSCRIBE requests filter lists from neighbors. To build an initial filter list, nodes issue SUBSCRIBE messages to their three nearest neighbors. Nodes respond to a SUBSCRIBE with their current filter list. The requesting node adds the received filter lists to its own attenuate Bloom filter.
 
 UPDATE pushes local filter changes to the three nearest neighbors. When a node subscribes to a new topic it must issue a SUBSCRIBE request to learn about its neighbors’ states, then an UPDATE request to notify neighbors of its new subscription. By exchanging filter lists via SUBSCRIBE/UPDATE loops nodes gain progressively better knowledge of what information is desirable to their neighbors, and to nodes reachable by their neighbors.
 
-PUBLISH broadcasts a message to the network. In Storj, these are typically public offers of storage contracts (see Section 2.4). PUBLISH messages are sent to a node’s three nearest neighbors, and include a topic parameter whose digest is compared to each filter in the filter list. If the topic digest is found in the filter at $ K = 0 $, the node processes the message. If the topic is found in any other filters in the filter list, the node forwards the message to its neighbors. If no matching filter is found, the message is forwarded to a randomly selected peer in that node’s routing table.
+PUBLISH broadcasts a message to the network. In Storj, these are typically public announcements of partially-constructed contracts (see Section 2.4). PUBLISH messages are sent to a node’s three nearest neighbors, and include a topic parameter whose digest is compared to each filter in the filter list. If the topic digest is found in the filter at $ K = 0 $, the node processes the message. If the topic is found in any other filters in the filter list, the node forwards the message to its neighbors. If no matching filter is found, the message is forwarded to a randomly selected peer in that node’s routing table.
 
-To prevent re-circulation of messages,  nodes add their node ID to PUBLISH messages when they are forwarded, indicating that that node has already received the message. When forwarding messages, nodes ignore other nodes whose IDs are present in that list. This prevents redundant recirculation of messages with minimal communication overhead.
+To prevent re-circulation of messages, nodes add their node ID to PUBLISH messages when they are forwarded, indicating that that node has already received the message. When forwarding messages, nodes ignore other nodes whose IDs are present in that list. This prevents redundant recirculation of messages with minimal communication overhead.
 
 PUBLISH messages also include a time-to-live (TTL) parameter, measured in hops. Nodes will not relay messages whose hops have exceeded the TTL. To prevent spam attacks, nodes will also refuse to relay messages whose TTL exceeds the network default.
 
@@ -206,10 +206,10 @@ In initial testing KFS outperforms vanilla LevelDB in reads, writes, and unlinks
 
 % TODO: Graphic
 
-\subsection{NAT Traversal and Diglet Tunneling}
-Due to the presence of NATs and other adverse network conditions, not all devices are publicly accessible. To enable non-public nodes to participate in the network, Storj implements a connection tunneling system.
+\subsection{NAT Traversal and Reverse HTTP Tunneling}
+Due to the presence of NATs and other adverse network conditions, not all devices are publicly accessible. To enable non-public nodes to participate in the network, Storj implements a reverse tunnel system.
 
-To facilitate this tunneling system, Storj extends Kademlia with three additional message types: PROBE, FIND\_TUNNEL, and OPEN\_TUNNEL The tunneling system also makes use of the publish/subscribe system detailed in section 2.6.
+To facilitate this system, Storj extends Kademlia with three additional message types: PROBE, FIND\_TUNNEL, and OPEN\_TUNNEL The tunneling system also makes use of the publish/subscribe system detailed in section 2.6.
 
 PROBE messages allow a node to determine whether it is publically addressable. The message is sent to a publicly addressable node, typically a known network seed. The receiving node issues a separate PING message. The receiving node then responds to the PROBE message with the result of the PING. Nodes joining the network should immediately send a PROBE to any known node.
 
@@ -217,10 +217,10 @@ Nodes that receive a negative response to their initial PROBE should issue a FIN
 
 Once the non-public node has received a list of tunnel providers, it issues OPEN\_TUNNEL requests to the tunnel providers. The providers must provide a tunnel for that node if they are capable. To open a connection, the provider sends back an affirmative response with tunnel information. The tunneled node then opens a long-lived connection to the provider, and updates its own contact information to reflect the tunnel address.
 
-Tunnels are currently operated over simple websockets. However, a replacement library, Diglet, is nearing completion \cite{14}. Diglet provides a simple and flexible interface for general-purpose tunneling. It is accessible both by command-line and programmatically.
+Tunnels are operated over TCP sockets by a custom reverse-tunneling library, Diglet \cite{14}. Diglet provides a simple and flexible interface for general-purpose reverse tunneling. It is accessible both by command-line and programmatically.
 
-\subsection{Data Channels}
-Data is currently transferred via WebSockets \cite{15}. Farmers must expose a WebSocket server at the same path as the JSON-RPC server that handles Kademlia messages. Connections are upgraded from JSON-RPC to WebSockets when a valid PUSH or PULL token is provided to the farmer. As the protocol is transport-layer agnostic, in the future a variety of means may be used to transfer data.
+\subsection{Data Transfer}
+Data is transferred via HTTP \cite{15}. Farmers expose endpoints where client applications may upload or download shards. Clients requests are authenticated via tokens provide by previous CONSIGN and RETRIEVE messages. This transfer mechanism is not essential to the protocol, and many alternatives may be implemented in the future.
 
 
 \section{Network Access}
@@ -432,7 +432,7 @@ Code:
 def fac(n): return 1 if n==0 else n * fac(n-1)
 def choose(n,k): return fac(n) / fac(k) / fac(n-k)
 def prob(n,k,p): return choose(n,k) * p ** k * (1-p) ** (n-k)
-def prob_fail(n,k,p): return sum([prob(n,i,p) for i in range(0, k)])
+def prob_fail(n,k,p): return sum([prob(n,i,p) for i in range(0,k)])
 \end{lstlisting}
 
 Therefore, with well-chosen $ k $ and $ n $, in addition to recovery methods described above, the statistical chance of shard or file loss is quite small.
@@ -451,7 +451,7 @@ Code:
 def fac(k): return 1 if k==0 else k * fac(k-1)
 def choose(k,h): return fac(k) / fac(h) / fac(k-h)
 def prob(k,h,i): return choose(k,h) * (1/i) ** h * (1-1/i) ** (k-h)
-def prob_success(h,i): return sum([prob(e,h,i)] for e in range(3,h))
+def prob_succ(h,i): return sum([prob(e,h,i) for e in range(3,h)])
 \end{lstlisting}
 
 
@@ -526,10 +526,10 @@ def prob_false_pos(N,K,n): return prob(N,K,n,0)
 \begin{enumerate}
 \setcounter{enumi}{\theenumTemp}
 \item OFFER - Propose or finalize a contract.
-\item CONSIGN - Initiate an upload data channel with a farmer.
+\item CONSIGN - Request a PUSH token from a farmer.
 \item MIRROR - Instruct a farmer to retrieve and mirror data from another farmer.
 \item AUDIT - Issue an audit challenge to a farmer.
-\item RETRIEVE - Initiate a download data channel with a farmer.
+\item RETRIEVE - Request a PULL token from a farmer.
 \end{enumerate}
 
 
