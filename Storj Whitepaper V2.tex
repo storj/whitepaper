@@ -498,7 +498,7 @@ $Pr_{Success}(N,k,n) = \displaystyle \frac{{N-k \choose n-k}}{{N \choose n}}$
 \begin{table}[hbt!]
 \begin{center}
 \begin{tabular}{r r l r}
-N & k & n & $\Pr_{success}{h,i}$\\
+N & k & n & $\Pr_{success}{N,k,n}$\\
 \hline 100 & 10 & 10  & 5.777e-14\\
 \hline 100 & 10 & 50  & 5.934e-04\\
 \hline 100 & 10 & 90  & 3.305e-01\\
@@ -536,7 +536,12 @@ $Pr_{false positive}(N,K,n) = \displaystyle \frac{{N-K \choose n}} {{N \choose n
 \begin{table}[hbt!]
 \begin{center}
 \begin{tabular}{r r l r}
-
+N & K & n & $\Pr_{falsepositive}{N,K,n}$\\
+\hline 8192 & 512  & 512 & 1.466e-15\\
+\hline 8192 & 1024 & 512 & 1.867e-31\\
+\hline 8192 & 2048 & 512 & 3.989e-67\\
+\hline 8192 & 3072 & 512 & 1.228e-109\\
+\hline 8192 & 4096 & 512 & 2.952e-162\\
 \end{tabular}
 \end{center}
 \end{table}
@@ -544,14 +549,12 @@ $Pr_{false positive}(N,K,n) = \displaystyle \frac{{N-K \choose n}} {{N \choose n
 Code:
 \begin{lstlisting}
 def fac(k): return 1 if k==0 else k * fac(k-1)
-
 def choose(h,k): return fac(h) / fac(k) / fac(h-k)
-
-def hyp(N,K,n): choose(N-K, n) / choose(N,n)
-
+def hyp(N,K,n): return float(choose(N-K, n) / choose(N,n)
 def prob_false_pos(N,K,n): return hyp(N,K,n)
-
 \end{lstlisting}
+
+As demonstrated, the chance of false positives on even small partial audits becomes vanishingly small. Farmers failing audits risk losing payouts from current contracts, as well as potential future contracts as a result of failed audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\% of the contract value. Thus it stands to reason that partially deleting shards to increase perceived storage capcity is not a viable economic strategy.
 
 \newpage
 \appendix
