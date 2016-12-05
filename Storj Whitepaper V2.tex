@@ -56,7 +56,12 @@ Sharding large files like video content and distributing the shards across nodes
 
 Because peers generally rely on separate hardware and infrastructure, data failure is not correlated. This implies that creating redundant mirrors of shards, or applying a parity scheme across the set of shards is an extremely effective method of securing availability. Availability is proportional to the number of nodes storing the data.
 
-% TODO: Graphic
+%insert Figure 1
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{1}
+\caption{Visualizing the Sharding Process}
+\end{figure}
 
 \begin{enumerate}
 \item Files are split into shards, or multiple files are combined to form a shard.
@@ -76,18 +81,28 @@ Proofs of retrievability guarantee the existence of a certain piece of data on a
 
 Our reference implementation uses Merkle trees \cite{5} and Merkle proofs. After the sharding process the data owner generates a set of $ n $ random challenge salts $ s_{0}, s_{1}, ... s_{n-1} $ and stores the set of salts $ s $. The challenge salts are each prepended to the data $ d $, and the resulting string is hashed to form a “pre-leaf” $ p $ as such: $ p_{i} = H(s_{i} + d) $. Pre-leaves are hashed again, and the resulting digests become the set of leaves $ l $ of a standard Merkle tree such that $ l_{i} = H(H(s_{i} + d)) $. The leaf set is filled with hashes of a blank string until its length is a power of two, to simplify the proof process.
 
-% TODO: Graphic
+%insert Figure 2
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{2}
+\caption{Storj Audit Tree with $ |l| = 4 $}
+\end{figure}
 
 The data owner stores the set of challenges, the Merkle root and the depth of the Merkle tree, then transmits the Merkle tree’s leaves to the farmer. The farmer stores them along with the shard. Periodically, the data owner selects a challenge from the stored set, and transmits it to the farmer. The farmer uses the challenge and the data to generate the pre-leaf. The pre-leaf, along with the set of leaves, is used to generate a Merkle proof, which is sent back to the data owner.
 
-The Merkle proof always consists of exactly $ log_{2}(l) $ hashes, and thus is a very compact transmission, even for large trees. The data owner uses the stored Merkle root and tree depth to verify the proof by verifying that its length is equal to the tree depth and the hashes provided recreate the stored root. This scheme does not allow false negatives or false positives, as the hash function requires each bit to remain intact to produce the same output.
+The Storj Merkle proof always consists of exactly $ log_{2}(|l|)+1 $ hashes, and thus is a compact transmission, even for large trees. The data owner uses the stored Merkle root and tree depth to verify the proof by verifying that its length is equal to the tree depth and the hashes provided recreate the stored root. This scheme does not allow false negatives or false positives, as the hash function requires each bit to remain intact to produce the same output.
 
 \subsubsection{Partial Audits}
 The Merkle tree audit scheme requires significant computational overhead for the data owner, as the entire shard must be hashed many times to generate pre-leaves. An extension of this scheme utilizes subsets of the data to perform partial audits, reducing computational overhead. This also has the advantage of significantly reducing I/O burden on farmer resources.
 
-This extension relies on two additional selectable parameters: a byte index $ x $ within the shard and a number of bytes, $ b $. The data owner stores a set of 3-tuples $ (s, x, b) $. To generate pre-leaf $ i $, the data owner prepends $ s_{i} $ to the $ b_{i} $ bytes found at $ x_{i} $. During the audit process, the verifier transmits $ (s, x, b)_{i} $, which the farmer uses to generate a pre-leaf. The Merkle proof is generated and verified as normal.
+This extension relies on two additional selectable parameters: a set of byte indices $ x $ within the shard and a set of section lengths in bytes, $ b $. The data owner stores a set of 3-tuples $ (s, x, b) $. To generate pre-leaf $ i $, the data owner prepends $ s_{i} $ to the $ b_{i} $ bytes found at $ x_{i} $. During the audit process, the verifier transmits $ (s, x, b)_{i} $, which the farmer uses to generate a pre-leaf. The Merkle proof is generated and verified as normal.
 
-%TODO: Graphic
+%insert Figure 3
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{3}
+\caption{Storj Audit Tree with $ |l| = 4 $ and Partial Audits}
+\end{figure}
 
 Partial audits provide only probabilistic assurance that the farmer retains the entire file. They allow for false positive results, where the verifier believes the farmer retains the intact shard, when it has actually been modified or partially deleted. The probability of a false positive on an individual partial audit is easily calculable (see Section 6.4)
 
@@ -105,9 +120,14 @@ However, initial implementations indicate that the client-side pre-processing re
 Proof of retrievability is an area of ongoing research, and other practical schemes may be discovered in the future. As proof of retrievability schemes are discovered and implemented, the choice of scheme may become a negotiable contract parameter. This would allow each data owner and node to implement a wide variety of schemes, and select the most advantageous scheme for a given purpose.
 
 \subsubsection{Issuing Audits}
-To issue audits, Storj extends the Kademlia message set with a new type: AUDIT. These messages are sent from data owners to farmers and contain the hash of the data and a challenge number. The farmer must respond with a merkle proof as described above. Upon receipt and validation of the Merkle proof, the data owner must issue payment to the farmer according to agreed-upon terms.
+To issue audits, Storj extends the Kademlia message set with a new type: AUDIT (for a full list of Kademlia extensions, see Appendix A). These messages are sent from data owners to farmers and contain the hash of the data and a challenge number. The farmer must respond with a merkle proof as described above. Upon receipt and validation of the Merkle proof, the data owner must issue payment to the farmer according to agreed-upon terms.
 
-%TODO: Graphic
+%insert Figure 4
+\begin{figure}[hbt]
+\centering
+\includegraphics[width=\linewidth]{4}
+\caption{Issuing and Verifying Storj Audits}
+\end{figure}
 
 \subsection{Contracts and Negotiation}
 Data storage is negotiated via a standard contract format \cite{7}. The contract is a versioned data structure that describes the relationship between data owner and farmer. Contracts should contain all information necessary for each node to form a relationship, transfer the data, create and respond to audits over time, and arbitrate payments. This includes shard hash, shard size, audit strategy, and payment information. Storj implements a publish/subscribe system to connect parties interested in forming a contract (see Section 2.6).
@@ -197,6 +217,7 @@ This sorting algorithm is fast, deterministic, and uses only readily-available i
 \begin{figure}[hbt]
 \centering
 \includegraphics[width=\linewidth]{5}
+\caption{XOR Distance of Random Bytes}
 \end{figure}
 
 S-Buckets that have reached $ S $ bytes cannot store more shards. Farmers can determine if bucket $ L_{n} $ is full during contract negotiation by calculating $ n $ using the data-hash field in the contract, and should reject contracts that would cause them to overfill an S-Bucket. When all buckets in a KFS instance are full, a second instance may be made. Given that the 8 TiB upper limit of a farmer’s KFS instance is larger than most available drives, this is unlikely for most hardware.
@@ -223,6 +244,7 @@ In initial testing KFS outperforms vanilla LevelDB in reads, writes, and unlinks
 \begin{figure}[hbt]
 \centering
 \includegraphics[width=\linewidth]{6}
+\caption{Relative Performance of KFS and LevelDB}
 \end{figure}
 
 \subsection{NAT Traversal and Reverse HTTP Tunneling}
