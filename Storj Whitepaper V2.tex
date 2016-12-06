@@ -22,6 +22,7 @@ Josh Brandoff (josh.brandoff@gmail.com),\\
 James Prestwich (james@storj.io),\\
 Gordon Hall (gordonhall@openmailbox.org),\\
 Patrick Gerbes (patrickgerbes@gmail.com)\\
+Chris Pollard (cpollard1001@gmail.com)\\
 \\
 With contributions from: Vitalik Buterin (v@buterin.com)
 }
@@ -325,7 +326,9 @@ The Bridge API uses public-key cryptography to verify clients. Rather than the B
 Application developers can use this to easily delegate permissions to applications, servers, or  other developers. For instance, the developer of a file syncing service could create a keypair for each user of that service, and divide each user into a separate Bucket accessible only by that user’s keypair. Usage of each Bucket is tracked separately, so users who have exceeded their allotment could have write permissions revoked programmatically. This provides a logical separation of user permissions, as well as a variety of organizational tools.
 
 \subsubsection{Key Migration}
-Because shard encryption keys are stored on the device that generated them, data portability is an issue. The reference implementation of Bridge and the client facilitate the transfer of file encryption keys between clients in a safe way. Clients generate a cryptographically strong passphrase, like a twelve word seed. To encrypt a given file the client generates a deterministic key based on the seed, Bucket ID and File ID. The user can then transmit the seed phrase between devices, and rely on Bridge to provide the Bucket ID and File ID.
+Because shard encryption keys are stored on the device that generated them, data portability is an issue. The reference implementation of Bridge and the client facilitate the transfer of file encryption keys between clients in a safe way. Clients generate a cryptographically strong seed, by default a randomly generated twelve word phrase. To encrypt a given file, the client generates a key deterministically based on the seed, Bucket ID and File ID.
+
+The user can import the seed one time to each new device, which permanantly keeps the devices syncronized. This also facilitates backup since users only have to store the seed, not every newly generated file key.
 
 \subsubsection{Public Files}
 Bridge, like other object stores, allows developers to create and disseminate public files via public Buckets. The Bridge server allows the developer to upload the encryption key, and then allows anonymous users to retrieve the file key and the set of file pointers. Public Buckets are useful for content delivery to webpages, or to public-facing applications.
