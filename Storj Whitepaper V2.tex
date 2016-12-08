@@ -275,14 +275,14 @@ Our reference implementation of this model consists of a Bridge server, and a cl
 
 In the current implementation, Bridge assumes responsibility for contract negotiation, audit issuance and verification, payments, and file state, while the client is responsible for encryption, pre-processing, and file key management. The Bridge exposes access to these services through a RESTful API. In this way, the client can be completely naive of the Storj protocol and network while still taking advantage of the network. In addition, because the dedicated server can be relied on to have high uptime, the client can be integrated into unreliable user-space applications.
 
-Bridge is designed to store only metadata, and to never transit or store shards. Bridge cannot cache encrypted shards, and does not hold keys to them. The client maintains complete control over access to the data, regardless of any action Bridge takes. Bridge can expose only metadata like access patterns to third parties.
+Bridge is designed to store only metadata. It cannot cache encrypted shards and, with the exception of public buckets, does not hold encryption keys. The only knowledge of the file that Bridge is able to share with third parties is metadata such as access patterns. This system protects the client's privacy and gives the client complete control over access to the data, while delegating the responsibility of keeping files available on the network to Bridge.
 
 It is possible to envision Bridge upgrades that allow for different levels of delegated trust. A Bridge client may want to retain control over issuing and validating audits, or managing pointers to shards. Or a client may choose to authorize two or more unrelated Bridges to manage its audits in order to minimize the trust it places in either Bridge server. In the long run, any function of the data owner can be split across two or more parties by delegating trust.
 
 \subsection{Bridge API and Client}
-Full documentation of the Bridge API is outside the scope of this whitepaper, but is available elsewhere \cite{16}. The first complete client implementation is in JavaScript. Implementations are in progress in C, Python, and Java.
+Full documentation of the Bridge API is outside the scope of this whitepaper, but is available elsewhere \cite{16}. The first complete client implementation is in JavaScript. Implementations in C, Python, and Java are in progress.
 
-Because files cannot simply be POSTed to API endpoints, the structures of the Bridge API and client are different from existing object stores. Clients, as much as possible, to hide this from users and application developers by exposing simple, familiar interfaces. Complex network operations should be distilled to individual function calls.
+Because files cannot simply be POSTed to API endpoints, the structures of the Bridge API and client are different from existing object stores. Clients are implemented to hide the complexity of managing files on the storj network through simple and familiar interfaces. As much as possible, complex network operations are abstracted away behind simple function calls.
 
 A brief summary of the upload process follows:
 
