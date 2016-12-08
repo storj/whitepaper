@@ -22,6 +22,7 @@ Josh Brandoff (josh.brandoff@gmail.com),\\
 James Prestwich (james@storj.io),\\
 Gordon Hall (gordonhall@openmailbox.org),\\
 Patrick Gerbes (patrickgerbes@gmail.com)\\
+Philip Hutchins (flipture@gmail.com)\\
 Chris Pollard (cpollard1001@gmail.com)\\
 \\
 With contributions from: Vitalik Buterin (v@buterin.com)
@@ -42,7 +43,7 @@ A decentralized cloud storage network offers many advantages compared to datacen
 
 
 \section{Design}
-Storj is a protocol that creates a distributed network for the formation and execution of storage contracts between peers. The Storj protocol enables peers on the network to negotiate contracts, transfer data, verify the integrity and availability of remote data, retrieve data, and pay other nodes. Each peer is an autonomous agent, capable of performing these actions without significant human intervention. Many of the basic tools for these interactions are described here. Full protocol documentation can be found elsewhere \cite{1}.
+Storj is a protocol that creates a distributed network for the formation and execution of storage contracts between peers. The Storj protocol enables peers on the network to negotiate contracts, transfer data, verify the integrity and availability of remote data, retrieve data, and pay other nodes. Each peer is an autonomous agent, capable of performing these actions without significant human interaction. Many of the basic tools for these interactions are described in this document. Full protocol documentation can be found elsewhere \cite{1}.
 
 \subsection{Files as Encrypted Shards}
 A shard is a portion of an encrypted file to be stored on this network. Sharding has a number of advantages to security, privacy, performance, and availability.
@@ -107,7 +108,7 @@ This extension relies on two additional selectable parameters: a set of byte ind
 
 Partial audits provide only probabilistic assurance that the farmer retains the entire file. They allow for false positive results, where the verifier believes the farmer retains the intact shard, when it has actually been modified or partially deleted. The probability of a false positive on an individual partial audit is easily calculable (see Section 6.4)
 
-Thus the data owner can have a known confidence level that a shard is still intact and available. In practice, this is more complex, as farmers may implement intelligent strategies to attempt to defeat partial audits. Fortunately, this is a bounded problem in the case of iterative audits. The probability of several consecutive false positives becomes very low, even for small deletions of the file.
+Thus the data owner can have a known confidence level that a shard is still intact and available. In practice, this is more complex, as farmers may implement intelligent strategies to attempt to defeat partial audits. Fortunately, this is a bounded problem in the case of iterative audits. The probability of several consecutive false positives becomes very low, even when small portions of the file have been deleted.
 
 In addition, partial audits can be easily mixed with full audits without restructuring the Merkle tree or modifying the proof verification process. Many audit strategies that mix full and partial verification can be envisioned, each of which provides different levels of confidence over time.
 
@@ -169,7 +170,7 @@ To prevent re-circulation of messages, nodes add their node ID to PUBLISH messag
 
 PUBLISH messages also include a time-to-live (TTL) parameter, measured in hops. Nodes will not relay messages whose hops have exceeded the TTL. To prevent spam attacks, nodes will also refuse to relay messages whose TTL exceeds the network default.
 
-Because of this routing process based on subscription filters, PUBLISH propagate through the network randomly until they find a node whose filter list contains a subscription or a false positive. Once a subscription is indicated by a filter, the message moves towards the subscriber quickly. If a false positive is encountered the message resumes random routing.
+Because of this routing process based on subscription filters, PUBLISH messages propagate through the network randomly until they find a node whose filter list contains a subscription or a false positive. Once a subscription is indicated by a filter, the message moves towards the subscriber quickly. If a false positive is encountered the message resumes random routing.
 
 \subsection{Redundancy Schemes}
 Cloud object stores typically own or lease servers to store their customers’ files. They use RAID schemes or a multi-datacenter approach to protect the file from physical or network failure. Because Storj objects exist in a distributed network of untrusted peers, farmers should not be relied upon to employ the same safety measures against data loss as a traditional cloud storage company. Indeed, farmers may simply turn off their node at any time. As such, it is strongly recommended that the data owner implement redundancy schemes to ensure the safety of their file. Because the protocol deals only with contracts for individual shards, many redundancy schemes may be used. Three are described below.
