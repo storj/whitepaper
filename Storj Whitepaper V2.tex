@@ -72,7 +72,7 @@ Because peers generally rely on separate hardware and infrastructure, data failu
 \end{enumerate}
 
 \subsection{Kademlia and Modifications}
-Storj is built on a Kademlia \cite{2}, a distributed hash table. It is important to note that shards are not stored in the hash table. Rather, Kademlia creates a distributed network with efficient message routing and other desirable qualities. Storj adds several message types, and enhancements to core Kademlia functionality. In the future, the hash table may be used as a store for data location information, or other purposes.
+Storj is built on a Kademlia \cite{2}, a distributed hash table. It is important to note that shards are not stored in the hash table. Rather, Kademlia creates a distributed network with efficient message routing and other desirable qualities. Storj adds several message types, and enhancements to core Kademlia functionality (see Appendix A). In the future, the hash table may be used as a store for data location information, or other purposes.
 
 \subsubsection{Signature Verification}
 Similar to S/Kademlia \cite{3}, the Storj network requires peers to sign messages. To join the network a node must create an ECDSA keypair, $ (k_{priv}, k_{pub}) $. The Kademlia Node ID corresponds to $ ripemd160(sha256(k_{pub})) $. As such, each Node ID in the Storj network is also a valid Bitcoin address, which the node can spend from. Nodes sign all messages, and validate message signatures before processing messages. This modification enforces long-term identity on the network, and provides a proof of work deterrent to Sybil and Eclipse attacks on Kademlia routing (see Section 5.2). In the future there are a variety of other uses for this address.
