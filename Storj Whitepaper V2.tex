@@ -337,8 +337,6 @@ Bridge, like other object stores, allows developers to create and disseminate pu
 \subsubsection{File Sharing}
 In the future, the Bridge could enable sharing of specific files between applications or users. Because all files co-exist on a shared network, this is a problem of standardization and identity management.
 
-Standardization of file and metadata formats could create file portability between applications. Intelligent use of Bridge’s permissioning systems could allow end users to migrate data between many interoperable applications while preserving privacy and data security. A photo stored via a phone syncing service could also be available in a browser-based photo editor offered by an unrelated developer.
-
 Bridge could also use a third-party source of identity, like a PGP keyserver or Keybase, to enable secure person-to-person file sharing. A tiered keying strategy (like Lastpass uses) could also allow for the sharing of individual files. Other cryptographic schemes like proxy re-encryption seem promising. For a simplified example: if file keys are strongly encrypted and escrowed with a Bridge, files could be shared to any social media handle that could be authenticated via Keybase. Bridge could send the corresponding client a single encrypted file key along with a transposition key, thus enabling access to a file without exposing the file to Bridge, or modifying the file in any way.
 
 A thorough description of these key management schemes is outside the scope of this paper. It is enough to note that they exist, that many useful strategies can be implemented in parallel, and that a dedicated Bridge can facilitate them in many useful ways.
