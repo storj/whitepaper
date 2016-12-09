@@ -122,7 +122,7 @@ However, initial implementations indicate that the client-side pre-processing re
 Proof of retrievability is an area of ongoing research, and other practical schemes may be discovered in the future. As proof of retrievability schemes are discovered and implemented, the choice of scheme may become a negotiable contract parameter. This would allow each data owner and node to implement a wide variety of schemes, and select the most advantageous scheme for a given purpose.
 
 \subsubsection{Issuing Audits}
-To issue audits, Storj extends the Kademlia message set with a new type: AUDIT (for a full list of Kademlia extensions, see Appendix A). These messages are sent from data owners to farmers and contain the hash of the data and a challenge number. The farmer must respond with a merkle proof as described above. Upon receipt and validation of the Merkle proof, the data owner must issue payment to the farmer according to agreed-upon terms.
+To issue audits, Storj extends the Kademlia message set with a new type: AUDIT (for a full list of Kademlia extensions, see Appendix A). These messages are sent from data owners to farmers and contain the hash of the data and a challenge. The farmer must respond with a merkle proof as described above. Upon receipt and validation of the Merkle proof, the data owner must issue payment to the farmer according to agreed-upon terms.
 
 %insert Figure 4
 \begin{figure}[hbt]
@@ -156,7 +156,7 @@ Storjcoin allows much more granular payments than other candidate currencies, th
 New payment strategies must include a currency, a price for the storage, a price for retrieval, and a payment destination. It is strongly advised that new payment strategies consider how data owners prove payment, and farmers verify receipt without human interaction. Implementation details of other payment strategies are left as an exercise for interested parties.
 
 \subsection{Quasar}
-Storj implements a peer-to-peer publish/subscribe system called Quasar \cite{8}\cite{9}. Quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Current topic options include size and bandwidth commitment, and the topic list is easily extensible \cite{11}. This facilitates the contract offer and negotiation process (see Section 2.4)
+Storj implements a peer-to-peer publish/subscribe system called Quasar \cite{8}\cite{9}. Quasar offers topic-based pub/sub utilizing Bloom filters \cite{10}. Topics describe ranges of contract parameters the broadcasting node desires, including contract size and bandwidth commitment. The topic list is standardized on the protocol level, and easily extensible \cite{11}. This facilitates the contract offer and negotiation process by ensuring messages reach interested nodes (see Section 2.4)
 
 To operate Quasar, Storj extends Kademlia with three new message types: SUBSCRIBE, UPDATE, and PUBLISH. These messages facilitate the creation and propagation of filters. Each node maintains information about topics to which it subscribes, as well as topics to which its neighbors subscribe in the form of an attenuated Bloom filter with depth $ K = 3 $. The filter at level 1 represents the subscriptions of nodes 1 hop away.
 
