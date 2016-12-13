@@ -1,3 +1,3 @@
 # Storj Whitepaper v2
 
-DRAFT
+Available at [https://storj.io/storj.pdf](https://storj.io/storj.pdf)
