@@ -27,7 +27,7 @@ Chris Pollard (cpollard1001@gmail.com)\\
 \\
 With contributions from: Vitalik Buterin (v@buterin.com)
 }
-\date {December 15, 2016 \\ v2.0 Pre-release}
+\date {December 15, 2016 \\ v2.0}
 
 \begin{document}
 \maketitle
@@ -37,7 +37,7 @@ A peer-to-peer cloud storage network implementing client-side encryption would a
 
 
 \section{Introduction}
-Cloud storage has come to rely almost exclusively on storage providers acting as trusted third parties to transfer and store data. While this system works in most cases, it still suffers from the inherent weaknesses of a trust-based model. Because client-side encryption is nonstandard, the traditional cloud is vulnerable to a variety of security threats, including man-in-the-middle attacks, malware, and application flaws that expose private consumer and corporate data. Furthermore, current cloud storage providers charge large markups over the core costs of data storage hardware in order to maintain expensive infrastructure. Moreover, because many storage devices rely on the same infrastructure, the impact of any failure is magnified.
+Cloud storage has come to rely almost exclusively on large storage providers acting as trusted third parties to transfer and store data. This system suffers from the inherent weaknesses of a trust-based model. Because client-side encryption is nonstandard, the traditional cloud is vulnerable to a variety of security threats, including man-in-the-middle attacks, malware, and application flaws that expose private consumer and corporate data. Moreover, because many storage devices rely on the same infrastructure, failures is correlated across files and systems.
 
 A decentralized cloud storage network offers many advantages compared to datacenter-based cloud storage. Data security can be maintained using client-side encryption, while data integrity will be maintained via a proof of retrievability. The impact of infrastructure failures and security breaches will be greatly reduced. An open market for data storage may drive down costs for various storage services by enabling more parties to compete using existing devices. Data on the network will be resistant to censorship, tampering, unauthorized access, and data failures. This paper describes a concrete implementation of such a network, and a set of tools for interacting with that network.
 
@@ -351,10 +351,10 @@ For instance, via the execution of a contract, a Bridge node gathers data about 
 
 In other words, the Bridge can leverage its knowledge about peers on the network to tailor the service to the client’s requirements. Rather than a limited set of service tiers, a Bridge could assemble a package of contracts on the fly to meet any service requirement. This allows the client to determine the optimal latency, bandwidth, or location of a file, and have confidence that its goals will be met. For instance, a streaming video application may specify a need for high bandwidth, while archival storage needs only high availability. In a sufficiently large network, any need could be met.
 
-This function is nearly impossible to distribute, as the retrieval and processing overhead of a distributed network are unsuitable to the high-performance demands of most storage applications. This also cannot be easily replicated by a data-center based object store. In a distributed network, knowledge about the network is incredibly valuable.
+Secure distributed computation is an unsolved problem and, as such, each Bridge server uses its accumulated knowledge of the network. The Bridge is able to provide a probabilistic quality of service based on its knowledge the performance and reliability of farmers that a distributed network alone cannot provide.
 
 \subsection{Bridge as a Service}
-In cases where the cost of delegating trust is not excessively high, clients may use third-party Bridges. Because Bridges do not store data and have no access to keys, this is still a large improvement on the traditional data-center model. Many of the features Bridge servers provide, like permissioning and intelligent contracting, leverage considerable network effects. Larger data sets create far better performance for clients.
+In cases where the cost of delegating trust is not excessively high, clients may use third-party Bridges. Because Bridges do not store data and have no access to keys, this is still a large improvement on the traditional data-center model. Many of the features Bridge servers provide, like permissioning and intelligent contracting, leverage considerable network effects. Data sets grow exponentially more useful as they increse in size, indicating that there are strong economic incentives to share infrastructure and information in a Bridge.
 
 Applications using object stores delegate significant amounts of trust to the storage providers. Providers may choose to operate public Bridges as a service. Application developers then delegate trust to the Bridge, as they would to a traditional object store, but to a lesser degree. Future updates will allow for various distributions of responsibilities (and thus levels of trust) between clients and Bridges. This shifts significant operational burdens from the application developer to the service-provider. This would also allow developers to pay for storage with standard payment mechanisms, like credit cards, rather than managing a cryptocurrency wallet. Storj Labs Inc. currently provides this service.
 
