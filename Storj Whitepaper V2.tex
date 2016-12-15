@@ -87,7 +87,7 @@ Our reference implementation uses Merkle trees \cite{5} and Merkle proofs. After
 \begin{figure}[hbt]
 \centering
 \includegraphics[width=\linewidth]{2}
-\caption{Storj Audit Tree with $ |l| = 4 $\\'Red outlines indicate the elements of a Merkle proof for $ s_{0} $}
+\caption{Storj Audit Tree with $ |l| = 4 $\\Red outlines indicate the elements of a Merkle proof for $ s_{0} $}
 \end{figure}
 
 The data owner stores the set of challenges, the Merkle root and the depth of the Merkle tree, then transmits the Merkle tree’s leaves to the farmer. The farmer stores the leaves along with the shard. Periodically, the data owner selects a challenge from the stored set, and transmits it to the farmer. Challenges may be selected according to any reasonable pattern, but should not be reused. The farmer uses the challenge and the data to generate the pre-leaf. The pre-leaf, along with the set of leaves, is used to generate a Merkle proof, which is sent back to the data owner.
