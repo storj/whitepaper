@@ -451,7 +451,7 @@ The following are several interesting calculations related to the operation of t
 The chance of failure of k-of-n erasure coding, assuming probability $ p $ every shard stays online, is calculated as a binomial distribution:
 
 {\centering
-$\Pr_{failure}(n; k,p) = \displaystyle \sum_{i=0}^{k-1} p^{k}(1-p)^{n-k }{n \choose k}$
+$\Pr_{failure}(n; k,p) = \displaystyle \sum_{i=0}^{k-1} p^{i}(1-p)^{n-i}{n \choose i}$
 \\}
 
 %code formatting
@@ -482,10 +482,10 @@ def prob_fail(n,k,p): return sum([bin(n,i,p) for i in range(0,k)])
 Therefore, with well-chosen $ k $ and $ n $, in addition to recovery methods described above, the statistical chance of shard or file loss is quite small.
 
 \subsection{Difficulty of Eclipsing a Target Node}
-The probability of eclipsing a targeted node in the a network with $ i $ nodes in $ h $ hashes is modeled by a similar binomial distribution:
+The probability of eclipsing a targeted node in the a network with $ k $ nodes in $ h $ hashes is modeled by a similar binomial distribution:
 
 {\centering
-$\Pr_{success}(h, i) = \displaystyle \sum_{k=3}^{h-1} (i)^{-k}(1-\frac{1}{i})^{h-k}{k \choose h}$
+$\Pr_{success}(h, k) = \displaystyle \sum_{i=3}^{h-1} (k)^{-i}(1-\frac{1}{k})^{h-i}{h \choose i}$
 \\}
 
 \begin{table}[hbt!]
@@ -509,8 +509,8 @@ Code:
 \begin{lstlisting}
 def fac(k): return 1 if k==0 else k * fac(k-1)
 def choose(h,k): return fac(h) / fac(k) / fac(h-k)
-def bin(k,h,i): return choose(h,k) * i ** -k * (1-(1.0/i)) ** (h-k)
-def prob_succ(h,i): return sum([bin(k,h,i) for k in range(3,h)])
+def bin(k,h,i): return choose(h,i) * k ** -i * (1-(1.0/k)) ** (h-i)
+def prob_succ(h,i): return sum([bin(i,h,k) for i in range(3,h)])
 \end{lstlisting}
 
 \subsection{Beach Size}
