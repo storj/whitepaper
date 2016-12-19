@@ -485,7 +485,7 @@ Therefore, with well-chosen $ k $ and $ n $, in addition to recovery methods des
 The probability of eclipsing a targeted node in the a network with $ k $ nodes in $ h $ hashes is modeled by a similar binomial distribution:
 
 {\centering
-$\Pr_{success}(h, k) = \displaystyle \sum_{i=3}^{h-1} (k)^{-i}(1-\frac{1}{k})^{h-i}{h \choose i}$
+$\Pr_{success}(h, k) = \displaystyle \sum_{i=3}^{h-1} k^{-i}(1-\frac{1}{k})^{h-i}{h \choose i}$
 \\}
 
 \begin{table}[hbt!]
@@ -509,8 +509,8 @@ Code:
 \begin{lstlisting}
 def fac(k): return 1 if k==0 else k * fac(k-1)
 def choose(h,k): return fac(h) / fac(k) / fac(h-k)
-def bin(k,h,i): return choose(h,i) * k ** -i * (1-(1.0/k)) ** (h-i)
-def prob_succ(h,i): return sum([bin(i,h,k) for i in range(3,h)])
+def bin(i,h,k): return choose(h,i) * k ** -i * (1-(1.0/k)) ** (h-i)
+def prob_succ(h,k): return sum([bin(i,h,k) for i in range(3,h)])
 \end{lstlisting}
 
 \subsection{Beach Size}
