@@ -121,7 +121,7 @@ Other audit schemes were examined, but deemed generally unfeasible. For example,
 
 However, initial implementations indicate that the client-side pre-processing required for the Shacham-Waters scheme requires at least one order of magnitude more computation time than hash-based methods, rendering it too slow for most applications.
 
-It is also conceivable that audit schemes may be augmented via the use of 3rd party adjudicators such as smart contracts. A smart contract holding deposits from both renter and farmer may be able to function as an impartial adjudicator with the ability to determine fault and allocate value accordingly. A brief discussion of several potential architectures may be found in Appendix B.
+It is also conceivable that audit schemes may be augmented via the use of external adjudicators such as smart contracts. A smart contract holding deposits from both renter and farmer may be able to function as an impartial adjudicator with the ability to determine fault and allocate value accordingly. A brief discussion of one potential architecture may be found in Appendix B.
 
 Proof of retrievability is an area of ongoing research, and other practical schemes may be discovered in the future. As proof of retrievability schemes are discovered and implemented, the choice of scheme may become a negotiable contract parameter. This would allow each data owner and node to offer a wide variety of schemes, and select the most advantageous scheme for a given purpose.
 
@@ -397,7 +397,7 @@ Eigentrust++ \cite{20} identifies several attack vectors and modifies Eigentrust
 \subsubsection{TrustDavis}
 TrustDavis \cite{22} implements reputation as insurance. Nodes provide references for other nodes in the form of insurance contracts. Nodes seeking a prospective partner for an economic transaction also seek insurance contracts protecting them from the actions of that partner. Reputation in this system may be thought of as a graph, with vertices representing nodes, and directed edges representing the monetary value that a node is willing to stake on behalf of another. Nodes that are distant in this graph may still transact by purchasing a set of insurance contracts that traverses these edges. TrustDavis in practice thus encounters the same routing problem found on other distributed systems like the Lightning Network.
 
-Denominating trust in terms of monetary value is attractive for an economic network like Storj, but the mechanics of insurance contracts in a system like this represent an extremely difficult problem.  Notably, because failures to deliver payment propagate backwards through the insurance route, the financial burden always falls on the node that trusted an untrustworthy node, rather than the untrustworthy nodes. At first blush, smart contracts seem capable of enforcing TrustDavis-style insurance or bond contracts, however there are many implementation issues to resolve. Because current-generation smart contracts cannot contain hidden information (e.g. audit challenge salts), they cannot be relied on to issue and verify the outcome of audit interactions. A potential scheme for using smart contracts as third party adjudicators is discussed in Appendix B.
+Denominating trust in terms of monetary value is attractive for an economic network like Storj, but the mechanics of insurance contracts in a system like this represent an extremely difficult problem.  Notably, because failures to deliver payment propagate backwards through the insurance route, the financial burden always falls on the node that trusted an untrustworthy node, rather than the untrustworthy nodes. At first blush, smart contracts seem capable of enforcing TrustDavis-style insurance or bond contracts, however there are many implementation issues to resolve. Because current-generation smart contracts cannot contain hidden information (e.g. audit challenge salts), they cannot be relied on to issue and verify the outcome of audit interactions. A potential scheme for using smart contracts as untrusted adjudicators is discussed in Appendix B.
 
 \subsubsection{Identity Maintenance Costs}
 Storj is exploring a reputation system that leverages public Blockchains to solve a narrow set of identity problems \cite{23}. This system requires nodes to spend money directly to maintain reputation. Nodes invest in their identity over time by making small standardized payments to their own Storj network node ID. Because the ID is a Bitcoin address to which the node holds the private key, these funds are fully recoupable, except for the miners’ fees. In this system, nodes prefer to interact with nodes that have a long history of regular transactions. Over time these indicate monetary investment in an identity equal to the sum of the miners’ fees paid.
@@ -438,9 +438,9 @@ The hostage byte attack is a storage-specific attack where malicious farmers ref
 A data owner may attempt to avoid paying a farmer for data storage by refusing to verify a correct audit. In response the farmer may drop the data-owner’s shard. This attack primarily poses a problem for any future distributed reputation system, as it is difficult for outside observers to verify the claims of either party. There is no known practical publicly verifiable proof of storage, and no known scheme for independently verifying that a privately verifiable audit was issued or answered as claimed. This indicates that a cheating client attack is a large unsolved problem for any reputation system.
 
 \subsection{Faithless Farmer}
-While the farming software is built to require authentication via signature and token before serving download requests, it is reasonable to imagine a modification of the farming software that will provide shards to any paying requestor. In a network dominated by faithless farmers, any third-party can aggregate and inspect arbitrary shards present on the network.
+While the farming software is built to require authentication via signature and token before serving download requests, it is reasonable to imagine a modification of the farming software that will provide shards to any paying requestor. In a network dominated by faithless farmers, any third party can aggregate and inspect arbitrary shards present on the network.
 
-However, even should faithless farmers dominate the network, data privacy is not significantly compromised. Because the location of the shards that comprise a given file is held solely by the data owner, it is prohibitively difficult to locate a target file without compromising the owner (see Section 6.3). Storj is not designed to protect against compromised data owners. In addition, should a third-party gather all shards, strong client-side encryption protects the contents of the file from inspection. The pointers and the encryption key may be secured separately. In the current implementation of Bridge, the pointers and the keys are held by the Bridge and the client, respectively.
+However, even should faithless farmers dominate the network, data privacy is not significantly compromised. Because the location of the shards that comprise a given file is held solely by the data owner, it is prohibitively difficult to locate a target file without compromising the owner (see Section 6.3). Storj is not designed to protect against compromised data owners. In addition, should a third party gather all shards, strong client-side encryption protects the contents of the file from inspection. The pointers and the encryption key may be secured separately. In the current implementation of Bridge, the pointers and the keys are held by the Bridge and the client, respectively.
 
 \subsection{Defeated Audit Attacks}
 A typical Merkle proof verification does not require the verifier to know the depth of the tree. Instead the verifier is expected to have the data being validated. In the Storj audit tree, if the depth is unknown to the verifier the farmer may attack the verification process by sending a Merkle proof for any hash in the tree. This proof still generates the Merkle root, and is thus a valid proof of some node. But, because the verifier does not hold the data used to generate the tree, it has no way to verify that the proof is for the specific leaf that corresponds to the challenge. The verifier must store some information about the bottom of the tree, such as the depth of the tree, the set of leaves nodes, or the set of pre-leaves. Of these, the depth is most compact, and thus preferable.
@@ -584,7 +584,7 @@ def hyp(N,K,n): return float(choose(N-K, n) / choose(N,n)
 def prob_false_pos(N,K,n): return hyp(N,K,n)
 \end{lstlisting}
 
-As demonstrated, the chance of false positives on even small partial audits becomes vanishingly small. Farmers failing audits risk losing payouts from current contracts, as well as potential future contracts as a result of failed audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\% of the contract value. Thus it stands to reason that partially deleting shards to increase perceived storage capcity is not a viable economic strategy.
+As demonstrated, the chance of false positives on even small partial audits becomes vanishingly small. Farmers failing audits risk losing payouts from current contracts, as well as potential future contracts as a result of failed audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\% of the contract value. Thus partially deleting shards to increase perceived storage capcity is not a viable economic strategy.
 
 \newpage
 \appendix
@@ -625,9 +625,9 @@ As demonstrated, the chance of false positives on even small partial audits beco
 \end{enumerate}
 
 \newpage
-\section{Audit schemes with third party adjudication}
+\section{An audit scheme with external adjudication}
 
-Third-party verification of audit interactions enables a number of desirable features, e.g., security bonds and a verifiable public record of the end-state of previous storage contracts. However, to meet the needs of the audit system while maintaining scalability any adjudicator must perform, in essence, a public verification of a privately-verifiable proof. To complicate matters, the adjudicator may not rely on information provided by farmer or renter. Below we propose a model for such an adjudicator in the form of a smart contract.
+Public verification of audit interactions enables a number of desirable features, e.g., security bonds and a verifiable public record of the end-state of previous storage contracts. However, to meet the needs of the audit system while maintaining scalability any adjudicator must perform, in essence, a public verification of a privately-verifiable proof. To complicate matters, the adjudicator may not rely on information provided by farmer or renter. Below we propose a model for such an adjudicator in the form of a smart contract.
 
 \subsection{Design Limitations}
 
@@ -655,7 +655,7 @@ The partial audit scheme described in Section 2.3.1 may be extended to allow for
   \item The Merkle root of the data (generated as described in Section B.2)
 \end{enumerate}
 
-The leaves of the Merkle tree of bytes must be transmitted to the farmer and stored with the data and the audit response tree. This modification is not possible for full audits due to practical constraints on the amount of data a smart contract can ingest and process.
+Upon initial transfer of the data, the farmer must regenerate the Merkle tree containing the data and verify the correctness of the pre-committed root. This modification is not possible for full audits due to practical constraints on the amount of data a smart contract can ingest and process.
 
 The farmer, upon receipt of an audit request it believes to be invalid or fraudulent, may request this validation by providing the signed audit challenge message. The smart contract should then require the renter to submit a valid Merkle proof that the challenge tuple is in the challenge tuple set, which the contract may verify using the pre-commited Merkle root of the tuple set.
 
@@ -663,21 +663,21 @@ If the renter provides a valid proof that the challenge tuple is present in the 
 
 \begin{enumerate}
   \item The 64 bytes at $ x_{i} $
-  \item A Merkle proof that the provided bytes are located at index $ x_{i} $
-  \item A Merkle proof of the leaf in the audit response tree at index $ i $
+  \item A Merkle proof that the provided bytes are located at index $ i $ in the data tree leaf set
+  \item A Merkle proof of the leaf in the audit response tree at index $ i $ in the audit response tree leaf set
 \end{enumerate}
 
-The smart contract now has all information necessary to verify the correctness of the audit challenge. It may prepend the salt from the challenge tuple submitted by the renter (which was proven to be part of the tuple set) to the data submitted by the farmer (which was proven to exist at the correct index), and generate a candidate pre-leaf in the audit response tree. It then compares the hash of the candidate pre-leaf to the leaf of the audit response tree at index $ i $ (the location of which was proven by the farmer). If the hash of the candidate pre-leaf is not equal to the leaf, then the renter's pre-committed trees are inconsistent, i.e., the renter has submitted an invalid tree in an attempt to defraud the farmer.
+The smart contract now has all information necessary to verify the correctness of the audit challenge. It may prepend the salt from the challenge tuple submitted by the renter (which was proven to be part of the tuple set) to the data submitted by the farmer (which was proven to exist at the correct index), and generate a candidate pre-leaf in the audit response tree. It then compares the hash of the candidate pre-leaf to the leaf of the audit response tree at index $ i $ (the validity and location of which was proven by the farmer). If the hash of the candidate pre-leaf is not equal to the leaf, then the renter's pre-committed trees are not consistent with the data, i.e., the renter has submitted at least one invalid tree in an attempt to defraud the farmer.
 
-Because it can financially compel cooperation and verify the correctness of all submitted information this smart contract can be used as a reliable adjudicator, and its conclusion may be treated as definitive. Because adjudication in this manner will be relatively expensive to the at fault party, it should provide an effective deterrent to malicious behavior. In addition, because the correctness of the smart contract's decision can be independently validate, it can serve as a reliable indicator of the outcome of a contract. This in turn may be used to inform reputation systems or other interested third parties of the behavior of the parties involved in a trustless manner.
+Because it can financially compel cooperation by seizing deposits and verify the correctness of all submitted information this smart contract can be used as a reliable adjudicator, and its conclusion may be treated as definitive. Because adjudication in this manner will be relatively expensive to the at fault party, it should provide an effective deterrent to malicious behavior. In addition, because the correctness of the smart contract's decision can be independently validate, it can serve as a reliable indicator of the outcome of a contract. This in turn may be used to inform reputation systems or other interested third parties of the behavior of the parties involved in a trustless manner.
 
 \subsection{Open Questions}
 
-This is intended as a blueprint for future development, rather than a definitive specification of an adjudicator. Many hard problems are left open.
+This is intended as a blueprint for future development, rather than a definitive specification of an adjudicator. Many hard problems remain to be solved.
 
 While this model can verify the correctness of storage, it cannot verify delivery. Delivery must occur at least once during the lifespan of a contract, and the renter may desire delivery many times. The initial transfer should result in agreement of both parties upon the root of the Merkle tree containing the data. But other transfers may not be adjudicated successfully, as the renter is motivated to retrieve the file while refusing to pay for delivery.
 
-Much more thought should be given to termination conditions, including 'at-fault' and 'no-fault' outcomes. These include graceful contract termination upon agreement of farmer and renter and termination by either party in the event of an extended period without communication.
+Much more thought should be given to termination conditions, including value distributions for 'at-fault' and 'no-fault' outcomes. These may include graceful contract termination upon agreement of farmer and renter and termination by either party in the event of an extended period without communication. Each posible state should distribute value from the respective deposits according to the degree of prejudice.
 
 
 \newpage
