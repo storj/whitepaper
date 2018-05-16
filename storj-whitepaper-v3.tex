@@ -416,7 +416,7 @@ it.
 encoded and distributed across the network. A \x{remote segment} is larger than
 the metadata required to keep track of its book keeping.
 
-\item[Stripe] \x{segment}s are further subdivided into \x{stripe}s. A \x{stripe}
+\item[Stripe] A \x{stripe} is a further subdivision of a \x{segment}. A \x{stripe}
 is a fixed amount of bytes that is used as an encryption and erasure encoding
 boundary size. Encryption and erasure encoding happen on \x{stripe}s
 individually. Encryption happens on all \x{segment}s, but erasure encoding only
