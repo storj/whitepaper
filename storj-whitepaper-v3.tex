@@ -566,7 +566,26 @@ the \x{remote segment} is proportional to the square of the size of the network.
 
 \subsection{Network state}
 
-\todo{}
+Overview
+The network state is a component of the distributed network, and has a primary role of storing the file's metadata. The types of metadata that is stored in the network state is the piece threshold amount that is required to do Reed Solomon before the repair component of the network is called; information about the node id and x-value for the Reed Solomon encoding, and segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
+
+Two components of the distributed network depends on the network state: The light client and data maintenance. The light client makes request to store or receive the file’s metadata depending if there is an upload or download action.  The data maintenance portion will request the list of files and receive a data structure that contains the file’s metadata and node id that’s storing the pieces. Below is the description of how the client and data repair utilizes the data for upload and download, and how data repair, respectively. 
+
+Upload
+
+Download
+
+Data integrity
+
+
+
+
+
+The network state is a component of the distributed network, and primarily stores the file's metadata. The types of metadata that is stored in the network state is the piece threshold amount necessary before the repair component of the network is called, information about the node id and x-value for the Reed Solomon encoding, and the segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
+
+ \x{RemotePiece} that keeps track of which \x{node_id} stores the piece and \x{piece_num}, which is the x-value for the Reed Solomon encoding, and a \x{pointer}, which stores the file's metadata. The pointer can store small segments inline in the data structure or larger segments that will be encoded and distributed across the Storj network.
+
+There are services that the network state provides in order to retreive the metadata. 
 
 \subsection{Authorization}
 
