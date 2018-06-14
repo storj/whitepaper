@@ -567,25 +567,22 @@ the \x{remote segment} is proportional to the square of the size of the network.
 \subsection{Network state}
 
 Overview
-The network state is a component of the distributed network, and has a primary role of storing the file's metadata. The types of metadata that is stored in the network state is the piece threshold amount that is required to do Reed Solomon before the repair component of the network is called; information about the node id and x-value for the Reed Solomon encoding, and segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
+The network state is a component of the distributed network, and has a primary role of storing the piece’s metadata. The types of metadata that is stored in the network state is the piece threshold amount that is required to do Reed Solomon before the repair component of the network is called; information about the node id and x-value for the Reed Solomon encoding, and the segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
 
-Two components of the distributed network depends on the network state: The light client and data maintenance. The light client makes request to store or receive the file’s metadata depending if there is an upload or download action.  The data maintenance portion will request the list of files and receive a data structure that contains the file’s metadata and node id that’s storing the pieces. Below is the description of how the client and data repair utilizes the data for upload and download, and how data repair, respectively. 
+Two components of the distributed network depends on the network state: The light client and data maintenance (also known as data repair).  The light client makes request to store or receive the piece’s metadata depending if there is an upload or download action.  The data maintenance will request the list of pieces and receive a data structure that contains the piece’s metadata, node id storing the pieces, and a repair threshold value that informs whether repair needs to occur. Below is the description of how the light client utilizes the data for upload and download, and how data repair uses the information to ensure data integrity. 
 
 Upload
+\todo{}
 
 Download
+\todo{}
 
 Data integrity
+The data repair component is essential to ensure data integrity is maintained.  It confirms nodes responsible for pieces continue to store that data the light client sent.  To do this, a subcomponent of the data repair queries the DHT cache to see which nodes are online.  The DHT cache sends over that response.  The data repair uses that response and sends  a request to the netstate to receive a data structure that contains the repair_threshold value.  The repair_threshold is the minimum amount of pieces needed before the object is repaired.   Once netstate sends over that information, the data repair calculates which pieces need to get repaired based on that information and which nodes are online.  The data repair directly downloads the pieces from the respective nodes.  Afterwards, it reuploads the pieces to highly reputable nodes that are online.  From there, the data repair needs to update netstate with a pointer that consists of the new node ids that are storing the piece.
 
 
-
-
-
-The network state is a component of the distributed network, and primarily stores the file's metadata. The types of metadata that is stored in the network state is the piece threshold amount necessary before the repair component of the network is called, information about the node id and x-value for the Reed Solomon encoding, and the segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
-
- \x{RemotePiece} that keeps track of which \x{node_id} stores the piece and \x{piece_num}, which is the x-value for the Reed Solomon encoding, and a \x{pointer}, which stores the file's metadata. The pointer can store small segments inline in the data structure or larger segments that will be encoded and distributed across the Storj network.
-
-There are services that the network state provides in order to retreive the metadata. 
+Diagram Technical Detail
+\inprogress{}
 
 \subsection{Authorization}
 
