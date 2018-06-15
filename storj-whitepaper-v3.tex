@@ -565,24 +565,30 @@ knowledge of their locations (see Section 6.3). This implies that security of
 the \x{remote segment} is proportional to the square of the size of the network.
 
 \subsection{Network state}
-
 Overview
-The network state is a component of the distributed network, and has a primary role of storing the piece’s metadata. The types of metadata that is stored in the network state is the piece threshold amount that is required to do Reed Solomon before the repair component of the network is called; information about the node id and x-value for the Reed Solomon encoding, and the segments. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
+The network state is a component of the distributed network, and has a primary role of storing the segment's metadata. The types of metadata that is stored in the network state is the threshold amount that is required to do Reed Solomon before the repair component of the network is called; information about the node id, metadata; and much more. Specifically, the network state has different data structures that keeps track of this information and provides services that can be called upon to request this data. 
 
-Two components of the distributed network depends on the network state: The light client and data maintenance (also known as data repair).  The light client makes request to store or receive the piece’s metadata depending if there is an upload or download action.  The data maintenance will request the list of pieces and receive a data structure that contains the piece’s metadata, node id storing the pieces, and a repair threshold value that informs whether repair needs to occur. Below is the description of how the light client utilizes the data for upload and download, and how data repair uses the information to ensure data integrity. 
+Two components of the distributed network depends on the network state: The light client and data repair.  The light client makes requests to store or receive pointers of segments depending if there is an upload or download action.  The data repair will request the list of pointers and receive a data structure that contains the metadata, node id storing the data, and a repair threshold value that informs whether repair needs to occur. Below is the description of how the light client utilizes the data for uploads and downloads, and how data repair uses the information to ensure data integrity. 
 
-Upload
+\subsubsection{Download General Overview}
+In order to download a file, the light client will login and send a request to the network state to get pointers that contains information of where the segments are stored, metadata, and other minor information.  The light client will extract the node id’s that are storing the portions of the file, send a request to the overlay network with that information. The overlay network will respond with an object that contains the nodes’ IP address.  Finally, the light client will send a request to farmers in order to receive pieces via the IP address.
+
+
+Technical Dive into how Download Works
 \todo{}
 
-Download
+Upload General Overview
+In order to upload a file, the light client will log in and ask the overlay network for a set of farmers that fulfill a criteria, i.e. storage availability and bandwidth to potentially store files. The overlay network will filter out farmers that meet those criteria via the reputation network and send a response back to the light client. The response will have the IP address of the reputable nodes.  The client will then directly upload the portions of the file (details below) to the good farmers. Finally, it’ll send a request to the network state so the segments, node ids, and other related informations are stored. 
+
+Technical Dive into how Upload Works
 \todo{}
 
-Data integrity
-The data repair component is essential to ensure data integrity is maintained.  It confirms nodes responsible for pieces continue to store that data the light client sent.  To do this, a subcomponent of the data repair queries the DHT cache to see which nodes are online.  The DHT cache sends over that response.  The data repair uses that response and sends  a request to the netstate to receive a data structure that contains the repair_threshold value.  The repair_threshold is the minimum amount of pieces needed before the object is repaired.   Once netstate sends over that information, the data repair calculates which pieces need to get repaired based on that information and which nodes are online.  The data repair directly downloads the pieces from the respective nodes.  Afterwards, it reuploads the pieces to highly reputable nodes that are online.  From there, the data repair needs to update netstate with a pointer that consists of the new node ids that are storing the piece.
+Repair and Maintenance
+The repair and maintenance component (also known as data repair) is essential to ensure data integrity is maintained.  It confirms nodes responsible for pieces continue to store that data the light client sent. To do this, it first makes a request to the network state to receive pointers. From there, the repair and maintenance component extracts the node ids and makes a request with that information to the DHT cache. The DHT cache sends a response of only nodes online from that node id list. The data repair component takes the information the DHT cache sent and the repair_threshold value that's stored in the pointer and calculates which pieces need to get repaired. The light client directly downloads pieces that need to get repaired from farmers and re-uploads them to new reputable farmers. To ensure the network state has up-to-date information about the data, the light client sends a request of new pointers with relevant information, such node id.
 
 
 Diagram Technical Detail
-\inprogress{}
+<WIP>
 
 \subsection{Authorization}
 
