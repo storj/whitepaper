@@ -19,7 +19,7 @@
 \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1}}
 
-\title{\textbf{Storj\\A Peer-to-Peer Cloud Storage Network}}
+\title{\textbf{Storj\\A Decentralized Cloud Storage Network Framework}}
 \author{\\
 \parbox{\linewidth}{\centering\small
 Alex Bender (bender@storj.io),
@@ -44,9 +44,7 @@ Natalie Villasana (nat@storj.io),
 Patrick Gerbes (patrick@storj.io),
 Philip Hutchins (philip@storj.io),
 Shawn Wilkinson (shawn@storj.io),
-Tome Boshevski (tome@storj.io)}\\
-\\
-\small With contributions from: Vitalik Buterin (v@buterin.com)
+Tome Boshevski (tome@storj.io)}
 }
 \date {April 26, 2018 \\ v3.0}
 
@@ -54,42 +52,52 @@ Tome Boshevski (tome@storj.io)}\\
 \maketitle
 
 \begin{abstract}
-A peer-to-peer cloud storage network implementing client-side encryption would
-allow users to transfer and share data without reliance on a third party storage
-provider. The removal of central controls would mitigate most traditional data
-failures and outages, as well as significantly increase security, privacy, and
-data control. In the past, peer-to-peer networks have generally been infeasible
-for production storage systems, as data availability is a function of
-popularity, rather than utility. We propose a solution in the form of a
-challenge-response verification system coupled with direct payments. In this
-way we can periodically check data integrity and offer rewards to peers
-maintaining data. We further propose a model for addressing access and
-performance concerns with a set of independent or federated nodes.
+Decentralized cloud storage is attractive for a number of reasons. Eliminating
+central control allows users to store and share data without reliance on a
+third-party storage provider. Decentralization mitigates many traditional data
+failures and outages while it simultaneously increases security and privacy. It
+allows market forces to innovate on cheaper ways to provide storage at a greater
+innovation rate than any single entity can afford. While there are many ways to
+build such a system, there are many specific responsibilities every system must
+address. Based on our experience with petabyte-scale storage systems, we
+introduce a general framework for considering these responsibilities and
+building such a system, along with concrete implementations for each
+responsibility of the framework.
 \end{abstract}
 
 \section{Introduction}
 
-Cloud storage has come to rely almost exclusively on large storage providers
-acting as trusted third parties to transfer and store data. This system suffers
-from the inherent weaknesses of a trust-based model. Because client-side
-encryption is nonstandard, the traditional cloud is often vulnerable to a
-variety of security threats, including man-in-the-middle attacks, malware, and
-application flaws that expose private consumer and corporate data. Moreover,
-because many storage devices rely on the same infrastructure, failures are
-correlated across files and systems.
+Many storage products have been created based on distributed storage
+techniques. Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia,
+Maidsafe, Filecoin, Crashplan, Mozy, HDFS, Storj, all share one thing in
+common: a single computer is not as powerful or as robust as a network. These
+products and others attempt to solve many different use cases and have many
+different requirements, but at a high level, they all operate on the same
+principles. They generate redundancy for data in case of failure, store this
+redundancy in multiple locations, then keep track of where the data was placed.
 
-A decentralized cloud storage network offers many advantages compared to
-datacenter-based cloud storage. Data security can be maintained using
-client-side encryption, while data integrity will be maintained via a proof of
-retrievability. The impact of infrastructure failures and security breaches will
-be greatly reduced. An open market for data storage may drive down costs for
-various storage services by enabling more parties to compete using existing
-devices. Data on the network will be resistant to censorship, tampering,
-unauthorized access, and data failures. This paper describes a concrete
-implementation of such a network, and a set of tools for interacting with that
-network.
+There are many different primary focuses one could choose when creating a
+distributed storage system. Speed, capacity, simplicity, trustlessness,
+security, cost, etc., are all desirable traits in a storage system, but
+independently of anything else, data must be maintained to prevent data loss,
+nodes in the system must be able to be communicated with, and metadata must be
+kept track of, implicitly or explicitly.
 
-\section{Design constraints}
+While the Storj design space is different from systems such as HDFS or Wuala,
+we propose a framework that will allow us to choose some reasonable tradeoffs
+and then iterate on improvements to components of the system without changing
+the overall system.
+
+Besides this introduction, this paper is divided into 5 main sections.
+Section 2 covers the framework at a high level. Section 3 talks about the design
+space Storj operates in and covers some specific design constraints. Section 4
+proposes a concrete implementation of the framework. Section 5 covers specific
+details about how we will ship section 4 to users. Section 6 covers future
+areas of research.
+
+\section{Framework}
+
+\section{Storj design constraints}
 
 Before designing a system, it's important to understand the requirements of
 said system, so we'll begin with a discussion of Storj's design constraints.
@@ -201,7 +209,7 @@ environments as possible, bandwidth usage must be aggressively minimized.
 Please see Appendix \todo{} for a discussion on how available bandwidth,
 combined with required repair traffic, limits usable space.
 
-\section{Design}
+\section{Concrete implementation}
 
 Storj is a protocol that creates a distributed network for the reliable storage
 of data and facilitates payment for successful data storage between peers. The
@@ -810,7 +818,7 @@ for future payment strategies. Implementation details of other payment
 strategies are left as an exercise for interested parties.
 }
 
-\section{Services}
+\section{Product details}
 
 \todo{
 As should be apparent, the data owner has to shoulder significant burdens to
@@ -1270,6 +1278,9 @@ improving negotiation efficiency is critical to the long-term efficiency of the
 market.
 }
 
+\newpage
+\appendix
+
 \section{Attacks}
 
 As with any distributed system, a variety of attack vectors exist. Many of these
@@ -1598,9 +1609,6 @@ current contracts, as well as potential future contracts as a result of failed
 audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
 of the contract value. Thus it stands to reason that partially deleting shards
 to increase perceived storage capcity is not a viable economic strategy.
-
-\newpage
-\appendix
 
 \section{Reed-Solomon}
 
