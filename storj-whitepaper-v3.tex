@@ -418,7 +418,7 @@ multiple \x{segment}s provides a number of security and scalability advantages.
 
 \item[Inline Segment] An \x{inline segment} is a \x{segment} that is small
 enough it makes sense to store it "inline" with the metadata that keeps track of
-it.
+it, such as a \x{pointer}.
 
 \item[Remote Segment] A \x{remote segment} is a larger \x{segment} that will be
 encoded and distributed across the network. A \x{remote segment} is larger than
@@ -574,27 +574,65 @@ the \x{remote segment} is proportional to the square of the size of the network.
 
 \subsection{Network state}
 Overview
-The network state is a component of the distributed network, and has a primary role of storing information related to the segment. The network state keeps track of where portions of segments are stored, threshold value before data repair is necessary, metadata, and much more.Specifically, the network state has different data structures that store this information and provides services that can be called upon to request relevant information. 
+The network state is a component of the distributed network, and has a primary
+role of storing information related to the segment. The network state keeps
+track of \x{pointer}s, which the IDs of \x{piece storage nodes} holding \x{remote
+segment}s, indication if the segment is \x{inline} and other descriptors. The network
+state service houses a \x{pointer} database that can be called by other services
+to put, get, list, and delete \x{pointers}.
 
-Two components of the distributed network depends on the network state: The light client and repair and maintenance (also known as data repair).  The light client makes requests to the network state to store or receive pointers of segments depending if there is an upload or download action. Similarily, the data repair will request a list of pointers and receive a data structure that contains the metadata, node id storing the data, and a repair threshold value that informs whether repair needs to occur. Below are descriptions of how the light client and data repair interact with the network state for uploads, downloads, and data repair, respectively.
- 
+Two components of the distributed network depends on the network state: the light
+client and repair and maintenance (also known as data repair). The light client
+makes requests to the network state to store or receive \x{pointer}s to \x{segment}s
+depending on if there is an upload or download action. Similarly, the data repair
+will request and receive a list of \x{pointer}s. Each \x{pointer} contains the metadata
+mentioned above including the following values related to Reed Solomon encoding: the
+minimum number of \x{piece}s required for a \x{segment}'s reconstruction, the total
+amount of \x{pieces} generated through erasure encoding, the repair threshold, or
+number of pieces needed to lose before triggering repair, and the success threshold,
+or amount of pieces needed to be stored in order to be counted as a success. Below
+are descriptions of how the light client and data repair interact with the network
+state for uploads, downloads, and data repair, respectively.
+
 
 \subsubsection{Download General Overview}
-In order to download a file, the light client will login and send a request to the network state to get pointers that contains information of where the segments are stored, metadata, and other minor information.  The light client extracts the node ids that are storing the data and send a request to the overlay network with that information. The overlay network responds with an object that contains the nodes’ IP address.  Finally, the light client sends a request to farmers in order to receive pieces via the IP addresses.
+In order to download a file, the light client will login and send a request to the
+network state to get pointers to the stored segments, and other metadata. The light
+client extracts the node IDs that are storing the data and send a request to the overlay
+network with those IDs. The overlay network responds with an object containing the nodes’
+IP addresses. Finally, the light client sends a request to farmers in order to receive
+pieces using those IP addresses.
 
 
 Technical Dive into how Download Works
 \todo{}
 
 Upload General Overview
-In order to upload a file, the light client will log in and ask the overlay network for a set of farmers that fulfill a criteria, i.e. storage availability and bandwidth to potentially store files. The overlay network will have a list of nodes that meet those criteria and use the reputation network to filter out reputable farmers. The overlay network then sends a refined list of farmers to the light client, which is then used to directly upload data. Finally, the light client sends a request to the network state so the segments metadata, node ids storing the data, and other related informations are stored. 
+In order to upload a file, the light client will log in and ask the overlay network
+for a set of farmers that fulfill a criteria, i.e. storage availability and bandwidth
+to potentially store files. The overlay network will have a list of nodes that meet
+those criteria and use the reputation network to filter out reputable farmers. The
+overlay network then sends a refined list of farmers to the light client, which is
+then used to directly upload data. Finally, the light client sends a request to the
+network state in order to store the IDs of the piece storage nodes holding the segments
+and other related metadata in pointers.
 
 
 Technical Dive into how Upload Works
 \todo{}
 
 Repair and Maintenance
-The repair and maintenance component (also known as data repair) is essential to ensure data integrity is maintained.  It confirms nodes responsible for pieces continue to store that data the light client sent. To do this, it first makes a request to the network state to receive pointers. From there, the repair and maintenance component extracts the node ids and makes a request with that information to the DHT cache. The DHT cache sends a response of only nodes online from that node id list. The data repair component takes the information the DHT cache sent and the repair_threshold value that's stored in the pointer and calculates which pieces need to get repaired. The light client directly downloads pieces that need to get repaired from farmers and re-uploads them to new reputable farmers. To ensure the network state has up-to-date information about the data, the light client sends a request of new pointers with relevant information, such as the node id.
+The repair and maintenance component (also known as data repair) is essential to ensure
+data integrity is maintained. It confirms that nodes responsible for pieces continue to
+store the data that the light client sent. To do this, it first makes a request to the
+network state to receive pointers. From there, the repair and maintenance component
+extracts the node IDs from the response and makes a request with that information to the
+DHT cache. The DHT cache sends a response containing only the online nodes from the original
+node ID list. The data repair component takes the response from the DHT cache and the
+repair threshold value from the pointer, then calculates which pieces need to get repaired. The
+light client directly downloads pieces that need to get repaired from farmers and re-uploads
+them to new reputable farmers. To ensure the network state has up-to-date information about
+the data, the light client then sends a put request of new pointers with the updated node IDs.
 
 
 Diagram Technical Detail
