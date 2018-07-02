@@ -20,6 +20,7 @@
 \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1}}
 
+
 \title{\textbf{Storj\\A Decentralized Cloud Storage Network Framework}}
 \author{\\
 \parbox{\linewidth}{\centering\small
@@ -125,17 +126,16 @@ but independently of anything else,
 While the Storj design space is different from systems such as HDFS or Wuala,
 we propose a framework that will allow us to choose some reasonable tradeoffs
 and then iterate on improvements to components of the system without changing
-the overall system.
+the overall system. We accomplish this by breaking the design up into a collection of relatively independent concerns, and then bring them together to form the final protocol.
 
-Besides this introduction, this paper is divided into 4 main sections.
-Section 2 talks about the design space Storj operates in and covers some
-specific design constraints.
-Section 3 covers our framework and proposes a simple concrete implementation of
+The rest of the paper is divided into 4 sections.
+In Section \ref{sec:design_constraints} we discuss the design space Storj operates in and we elaborate on some specific design constraints.
+Section \ref{sec:framework} covers our framework and proposes a simple concrete implementation of
 each framework component.
-Section 4 covers specific details about how we will ship section 3 to users.
-Section 5 covers future areas of research.
+Section \ref{sec:product_details} covers specific details about how we will ship section \ref{sec:framework} to users.
+Section \ref{sec:future_work} covers future areas of research.
 
-\section{Storj design constraints and considerations}
+\section{Storj design constraints and considerations}\label{sec:design_constraints}
 
 Before designing a system, it's important to understand the requirements of
 said system, so we'll begin with a discussion of Storj's design constraints.
@@ -152,29 +152,26 @@ currently on a centralized provider who are interested in the benefits of
 decentralized cloud storage but have low tolerance for switching costs.
 
 For Storj to compete successfully in the wider cloud storage industry and bring
-decentralized cloud storage to the mainstream, thus enabling more people
-greater security and less centralized control, applications built against S3
+decentralized cloud storage to the mainstream -- thus enabling more people
+greater security and less centralized control -- applications built against S3
 should be able to be made to work with Storj with minimal friction and changes.
 This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an
-untrusted environment, where storage nodes are not necessarily
-individually trustworthy. Storj operates over the public internet, and allows
+untrusted environment, where individual storage nodes are not necessarily assumed
+to be trustworthy. Storj operates over the public internet, and allows
 anyone to sign up to become a storage node.
 
-We adopt the Byzantine, Altruistic, Rational\cite{bar} model to discuss
+We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
-  {\em Byzantine} nodes can depart arbitrarily from a proposed protocol
-    whether it benefits them or not.
-  {\em Altruistic} nodes follow a proposed protocol exactly whether it
-    benefits them or not.
-  {\em Rational} nodes may depart from a proposed protocol where it benefits
-    them to do so.
+  {\em Byzantine} nodes can depart arbitrarily from a proposed protocol whether it benefits them or not.
+  {\em Altruistic} nodes participate in a proposed protocol even if the rational choice is to deviate.
+  {\em Rational} nodes participate exactly when it is in their net benefit to do so, and may depart for the same reason.
 
 Some distributed storage systems operate in an environment where all nodes are
-altruistic. Storj operates in an environment where a majority of storage
+altruistic {\color{red}add citation?}. Storj operates in an environment where a majority of storage
 nodes are rational and a minority are byzantine. Any potential
 design must account for this distinction.
 
@@ -182,88 +179,52 @@ design must account for this distinction.
 
 For any storage system, but especially a distributed storage system, component
 failure is a guarantee. All hard drives fail
-after enough wear\cite{backblaze-hd-2018-q1}, and the servers providing
+after enough wear \cite{backblaze-hd-2018-q1}, and the servers providing
 the network access to these hard drives will eventually fail, too. Network
 links die, power is lost, and storage mediums become unreliable. For data
 to outlast individual component failure, data must be stored with enough
 redundancy to recover from failure. Perhaps more importantly, no data should be
-assumed to be stationary and all data must eventually be moved.
+assumed to be stationary and all data must eventually be moved. In such an environment, redundancy, data maintanance, repair, and replacement of lost redundancy are facts of life, and the system must account for these issues.
 
-In such an environment, redundancy, data maintanance, repair, and replacement
-of lost redundancy are facts of life, and the system must account for these
-issues.
-
-Decentralized systems are additionally susceptible to high churn rates,
-where potential participants join the network and then leave for various
-reasons well before their hardware has actually failed. Despite the issues with
-failure, in decentralized systems, Maymounkov et al. found that
-the probability of a node staying a member of the network for an additional
-hour only {\em increases} with uptime.\cite{kad} In other words, the
-longer a node is a participant in the network, the more likely it is to
-continue to participate.
-
-As a result, a highly durable storage system must prefer stable nodes and
-endevour to keep the churn rate as low as possible. Too high of a churn rate
-and the system will simply be moving data around constantly, using up all
-available bandwidth. See Appendix \todo{} for a discussion about how repair
-bandwidth varies as a function of node churn and uptime.
+Decentralized systems are additionally susceptible to high churn rates, where potential participants join the network and then leave for various reasons, well before their hardware has actually failed. A network with a high churn rate will use a large amount of bandwidth just to ensure durability of the data, and such a network will fail to scale. As a result, a scalable, highly durable storage system must prefer stable nodes and endeavor to keep the churn rate as low as possible. Despite the issues with hardware failure and node churn, Maymounkov et al. found that in decentralized systems, the probability of a node staying on for an additional hour as a member of the network is an increasing function of uptime \cite{kad}. In other words, the longer a node is a participant in the network, the more likely it is to continue participating. See Appendix \todo{} for a discussion about how repair bandwidth varies as a function of node churn and uptime.
 
 \subsection{Latency}
 
 Decentralized, distributed storage has massive opportunities for parallelism
 with transfer rates, processing, and number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
-network links are slow.
-
-Even though parallelism can improve {\em throughput} performance, parallelism
+network links are slow. However, parallelism
 cannot by itself improve {\em latency}. If an individual network link has fixed
-latency and is a required part of an operation, the overall operation will
-have at least the latency of that individual link.
+latency and is a required part of an operation, the latency of the overall operation will
+be bound from below by the latency of the required network link. Therefore, a distributed system intended for high performance applications must aggressively optimize for low latency, both at the individual process scale and at the overall architecture scale.
 
-A distributed system interested in high performance must aggressively and
-ruthlessly optimize for low latency, both at the individual process scale and
-at the overall architecture scale.
-
-Besides attempting to reduce latency in the small scale directly in as many
-components as possible, one overall architecture strategy emphasized in this
-paper is to optimize latency by focusing on eliminating the need to wait for
-long tails.\cite{tail-at-scale} In other words, no system request should require
-waiting on the slowest peers out of a set. Every request should be able to be
-satisfied by the fastest nodes out of the set participating, without waiting
-for a slow subset.
-
-Focusing on operations where the result is only dependent on the fastest nodes
+We emphasize an architectural strategy aimed at achieving low latency by focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. The goal is a protocol that allows for every request to be satisfiable by the fastest nodes participating in any given transaction, without waiting for a slow subset. Focusing on operations where the result is only dependent on the fastest nodes
 turns what could be a potential liability (highly variable performance from
 individual actors) into a great source of strength for a distributed storage
 network.
 
 \subsection{Bandwidth}
 
-Even though bandwidth availability globally is increasing year over year, access
-to high bandwidth internet connections is unevenly distributed, and while some
-countries have good access to symmetric, high-speed, unlimited bandwidth, other
-countries have significant widespread problems.
-
+Global bandwidth availability is increasing year over year, and access
+to high-bandwidth internet connections is unevenly distributed. While users in some
+countries can easily access symmetric, high-speed, unlimited bandwidth, users in other
+countries may have significant difficulty in obtaining access to the same. 
 In the United States, many residential internet service providers provide
-internet with two specific challenges. The first is that the internet connection
-is often asymmetric, where customers buy internet based on the advertised
-download speed and the upload speed is potentially an order of magnitude or
-two slower. The second is that the bandwidth is sometimes "capped" at a fixed
-amount of traffic per month. An internet connection that gets 10 megabytes per
-second of throughput with a cap of one terabyte per month is actually only able
-to use 385 kilobytes on a consistent basis all month without going over the
-bandwidth cap. Bandwidth caps impose a significant limit to the amount of
-available bandwidth throughout the month.
+internet in a way that presents two specific challenges for designers of a decentralized network protocol. 
+The first challenge is that the internet connection
+is often asymmetric, where customers subscribe to internet service based on the advertised
+download speed, and the upload speed is potentially an order of magnitude or
+two slower. The second challenge is that bandwidth is sometimes "capped" at a fixed
+amount of traffic per month. Such caps impose significant limitations on the bandwidth available at any given moment. For example, an internet connection with a throughput of 10 MBPS with a cap of one terabyte per month may not average more than 380 KBPS (in a month) without going over the monthly
+bandwidth cap.
 
-With guaranteed device failure and churn, the system will have a correspondingly
-guaranteed amount of repair traffic. It's therefore important to make sure there
+With device failure and churn guaranteed, any decentralized system will have a corresponding amount of repair traffic. It's therefore important to make sure there
 is enough headroom for the bandwidth required by data maintenance, over and
-above the bandwidth required for data storage and retrieval.
-
-To design a storage system that is careless with bandwidth usage would be to
-abdicate that system to just the hands of the storage providers with access to
-unlimited, high-speed bandwidth, thus recentralizing the system to some degree.
-To keep the storage system as decentralized as possible and to work in as many
+above the bandwidth required for data storage and retrieval. 
+Designing a storage system that is careless with bandwidth usage would be to
+relegate that system below storage providers with access to
+unlimited high-speed bandwidth, recentralizing the system to some degree.
+To keep the storage system as decentralized as possible and for it to work in as many
 environments as possible, bandwidth usage must be aggressively minimized.
 
 Please see Appendix \todo{} for a discussion on how available bandwidth,
@@ -281,56 +242,48 @@ database is the preferred route. On the other hand, when storing lots of large
 files (where "large" files means a few megabytes or more), an object store or
 filesystem are ideal.
 
-The initial product offering by Storj Labs is not designed to primarily function
-as a database. While future improvements may enable database-like use cases,
-the predominant use case described by this paper is object storage, and thus,
-larger files. We'll be making tradeoffs and design decisions with the assumption
-that the vast majority of objects stored will be a couple of megabytes or more.
-
-This isn't necessarily a limiting decision--many use cases that desire lots
-of files smaller than a megabyte can admit a packing strategy, where many small
-files are aggregated and stored together as one large file. Because of our
-support for streaming, small files can be retrieved without requiring full
+The initial product offering by Storj Labs is designed to function primarily
+as an object store for larger files. While future improvements may enable database-like use cases,
+the predominant use case described by this paper is object storage. 
+Protocol design decisions are made with the assumption
+that the vast majority of objects stored will be a couple of megabytes or more. It is worth pointing out that this will not negatively impact use cases that require lots
+of files smaller than a megabyte, since such cases can admit a packing strategy, where many small
+files are aggregated and stored together as one large file. As the protocol has
+streaming support, small files can be retrieved without requiring full
 retrieval of any aggregated object they were packed into.
 
-\section{Framework and concrete implementation}
+\section{Framework and concrete implementation}\label{sec:framework}
 
-At a high level, there are three major operations in the system: storing,
-retrieving, and maintaining data.
+At a high level, there are three major operations in the system: storing data,
+retrieving data, and maintaining data.
 
 \begin{description}
 
-\item[Storing]
+\item[Storing data]
 When data is stored with the network, the client encrypts it, breaks it up into
 multiple little pieces, distributes the pieces to peers in the network, and
 generates and stores some metadata about where to find the data again.
 
-\item[Retrieving]
+\item[Retrieving data]
 When data is retrieved from the network, the metadata about where to find the
 pieces is recovered first, then the pieces are retrieved and the original data
-is reconstructed.
+is reconstructed on the client's local machine.
 
-\item[Maintaining]
-Data is maintained in the network by replacing missing pieces when the amount
-of redundancy drops below a certain threshold. The data is reconstructed and
-then the missing pieces are regenerated and replaced.
+\item[Maintaining data]
+Data is maintained in the network with nodes replacing missing pieces when the amount
+of redundancy drops below a certain threshold. The data is reconstructed and the missing pieces are regenerated and replaced.
 
 \end{description}
 
 To make this system feasible while satisfying our design constraints, we will
-need to solve a number of complex challenges. Inspired by Raft\cite{raft}, we
-will break the design up into a collection of relatively independent concerns
-and then bring them together.
+need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
+break the design up into a collection of relatively independent concerns
+and then combine them to form the desired protocol. 
+One important benefit of doing so is this makes it much easier to
+update individual components without rearchitecting the rest of the
+network. The individual components are:
 
-Importantly, one large benefit of breaking up
-the system into this collection of concerns is it will be much easier to
-vastly improve individual components without rearchitecting the rest of the
-network. In the Future Work section \todo{}, we'll discuss a number of
-improvements each component might adopt in the near future, but for now, our
-goal is concrete proposals with clear implementation strategies for each
-required component.
-
-\begin{itemize}
+\begin{enumerate}
 \item Storage nodes
 \item Peer-to-peer communication
 \item Overlay network
@@ -342,7 +295,7 @@ required component.
 \item Data repair
 \item Reputation
 \item Payments
-\end{itemize}
+\end{enumerate}
 
 \subsection{Storage nodes}
 
@@ -1136,7 +1089,7 @@ other payment types could be implemented, including BTC, Ether, ACH transfer, or
 physical transfer of live goats.
 }
 
-\section{Product details}
+\section{Product details}\label{sec:product_details}
 
 \todo{
 The client provides the actual storage API. It should be run co-located with
@@ -1258,7 +1211,7 @@ service.
 
 \todo{}
 
-\section{Future Areas of Research}
+\section{Future Areas of Research}\label{sec:future_work}
 
 \todo{
 Storj is a work in progress, and many features are planned for future versions.
