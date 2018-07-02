@@ -126,13 +126,16 @@ but independently of anything else,
 While the Storj design space is different from systems such as HDFS or Wuala,
 we propose a framework that will allow us to choose some reasonable tradeoffs
 and then iterate on improvements to components of the system without changing
-the overall system. We accomplish this by breaking the design up into a collection of relatively independent concerns, and then bring them together to form the final protocol.
+the overall system. We accomplish this by breaking the design up into a collection of relatively independent 
+concerns, and then bring them together to form the final protocol.
 
 The rest of the paper is divided into 4 sections.
-In Section \ref{sec:design_constraints} we discuss the design space Storj operates in and we elaborate on some specific design constraints.
+In Section \ref{sec:design_constraints} we discuss the design space Storj operates in and we elaborate on 
+some specific design constraints.
 Section \ref{sec:framework} covers our framework and proposes a simple concrete implementation of
 each framework component.
-Section \ref{sec:product_details} covers specific details about how we will ship section \ref{sec:framework} to users.
+Section \ref{sec:product_details} covers specific details about how we will ship section \ref{sec:framework} to 
+users.
 Section \ref{sec:future_work} covers future areas of research.
 
 \section{Storj design constraints and considerations}\label{sec:design_constraints}
@@ -168,7 +171,8 @@ We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
   {\em Byzantine} nodes can depart arbitrarily from a proposed protocol whether it benefits them or not.
   {\em Altruistic} nodes participate in a proposed protocol even if the rational choice is to deviate.
-  {\em Rational} nodes participate exactly when it is in their net benefit to do so, and may depart for the same reason.
+  {\em Rational} nodes participate exactly when it is in their net benefit to do so, and may depart for the same 
+reason.
 
 Some distributed storage systems operate in an environment where all nodes are
 altruistic {\color{red}add citation?}. Storj operates in an environment where a majority of storage
@@ -184,9 +188,19 @@ the network access to these hard drives will eventually fail, too. Network
 links die, power is lost, and storage mediums become unreliable. For data
 to outlast individual component failure, data must be stored with enough
 redundancy to recover from failure. Perhaps more importantly, no data should be
-assumed to be stationary and all data must eventually be moved. In such an environment, redundancy, data maintanance, repair, and replacement of lost redundancy are facts of life, and the system must account for these issues.
+assumed to be stationary and all data must eventually be moved. In such an environment, redundancy, data 
+maintanance, repair, and replacement of lost redundancy are facts of life, and the system must account for 
+these issues.
 
-Decentralized systems are additionally susceptible to high churn rates, where potential participants join the network and then leave for various reasons, well before their hardware has actually failed. A network with a high churn rate will use a large amount of bandwidth just to ensure durability of the data, and such a network will fail to scale. As a result, a scalable, highly durable storage system must prefer stable nodes and endeavor to keep the churn rate as low as possible. Despite the issues with hardware failure and node churn, Maymounkov et al. found that in decentralized systems, the probability of a node staying on for an additional hour as a member of the network is an increasing function of uptime \cite{kad}. In other words, the longer a node is a participant in the network, the more likely it is to continue participating. See Appendix \todo{} for a discussion about how repair bandwidth varies as a function of node churn and uptime.
+Decentralized systems are additionally susceptible to high churn rates, where potential participants join the 
+network and then leave for various reasons, well before their hardware has actually failed. A network with a 
+high churn rate will use a large amount of bandwidth just to ensure durability of the data, and such a network 
+will fail to scale. As a result, a scalable, highly durable storage system must prefer stable nodes and endeavor 
+to keep the churn rate as low as possible. Despite the issues with hardware failure and node churn, 
+Maymounkov et al. found that in decentralized systems, the probability of a node staying on for an additional 
+hour as a member of the network is an increasing function of uptime \cite{kad}. In other words, the longer a 
+node is a participant in the network, the more likely it is to continue participating. See Appendix \todo{} for a 
+discussion about how repair bandwidth varies as a function of node churn and uptime.
 
 \subsection{Latency}
 
@@ -196,9 +210,14 @@ itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism
 cannot by itself improve {\em latency}. If an individual network link has fixed
 latency and is a required part of an operation, the latency of the overall operation will
-be bound from below by the latency of the required network link. Therefore, a distributed system intended for high performance applications must aggressively optimize for low latency, both at the individual process scale and at the overall architecture scale.
+be bound from below by the latency of the required network link. Therefore, a distributed system intended for 
+high performance applications must aggressively optimize for low latency, both at the individual process scale 
+and at the overall architecture scale.
 
-We emphasize an architectural strategy aimed at achieving low latency by focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. The goal is a protocol that allows for every request to be satisfiable by the fastest nodes participating in any given transaction, without waiting for a slow subset. Focusing on operations where the result is only dependent on the fastest nodes
+We emphasize an architectural strategy aimed at achieving low latency by focusing on eliminating the need to 
+wait for long tails \cite{tail-at-scale}. The goal is a protocol that allows for every request to be satisfiable by the 
+fastest nodes participating in any given transaction, without waiting for a slow subset. Focusing on operations 
+where the result is only dependent on the fastest nodes
 turns what could be a potential liability (highly variable performance from
 individual actors) into a great source of strength for a distributed storage
 network.
@@ -215,10 +234,13 @@ The first challenge is that the internet connection
 is often asymmetric, where customers subscribe to internet service based on the advertised
 download speed, and the upload speed is potentially an order of magnitude or
 two slower. The second challenge is that bandwidth is sometimes "capped" at a fixed
-amount of traffic per month. Such caps impose significant limitations on the bandwidth available at any given moment. For example, an internet connection with a throughput of 10 MBPS with a cap of one terabyte per month may not average more than 380 KBPS (in a month) without going over the monthly
+amount of traffic per month. Such caps impose significant limitations on the bandwidth available at any given 
+moment. For example, an internet connection with a throughput of 10 MBPS with a cap of one terabyte per 
+month may not average more than 380 KBPS (in a month) without going over the monthly
 bandwidth cap.
 
-With device failure and churn guaranteed, any decentralized system will have a corresponding amount of repair traffic. It's therefore important to make sure there
+With device failure and churn guaranteed, any decentralized system will have a corresponding amount of 
+repair traffic. It's therefore important to make sure there
 is enough headroom for the bandwidth required by data maintenance, over and
 above the bandwidth required for data storage and retrieval. 
 Designing a storage system that is careless with bandwidth usage would be to
@@ -246,7 +268,8 @@ The initial product offering by Storj Labs is designed to function primarily
 as an object store for larger files. While future improvements may enable database-like use cases,
 the predominant use case described by this paper is object storage. 
 Protocol design decisions are made with the assumption
-that the vast majority of objects stored will be a couple of megabytes or more. It is worth pointing out that this will not negatively impact use cases that require lots
+that the vast majority of objects stored will be a couple of megabytes or more. It is worth pointing out that this 
+will not negatively impact use cases that require lots
 of files smaller than a megabyte, since such cases can admit a packing strategy, where many small
 files are aggregated and stored together as one large file. As the protocol has
 streaming support, small files can be retrieved without requiring full
@@ -271,7 +294,8 @@ is reconstructed on the client's local machine.
 
 \item[Maintaining data]
 Data is maintained in the network with nodes replacing missing pieces when the amount
-of redundancy drops below a certain threshold. The data is reconstructed and the missing pieces are regenerated and replaced.
+of redundancy drops below a certain threshold. The data is reconstructed and the missing pieces are 
+regenerated and replaced.
 
 \end{description}
 
@@ -299,12 +323,7 @@ network. The individual components are:
 
 \subsection{Storage nodes}
 
-The most basic building block is the storage node. The storage node stores and returns data provided to it. Nodes should provide reliable
-storage space, network bandwidth, and appropriate responsiveness. In return, nodes are rewarded for their participation.
-
-Storage nodes will be selected based on a number of different criteria.
-Ping time, latency, throughput, disk space, geographic location, legal
-restrictions, etc., are all important factors that may need to be considered.
+The most basic building block is the storage node. The storage node stores and returns data provided to it. Nodes should provide reliable storage space, network bandwidth, and appropriate responsiveness. In return, nodes are rewarded for their participation. Storage nodes will be selected based on a number of different criteria. Ping time, latency, throughput, disk space, geographic location, legal restrictions, etc., are all important factors that may need to be considered.
 This means that node selection almost certainly must be an explicit process.
 
 \subsubsection{Concrete implementation}
@@ -330,14 +349,12 @@ different {\em payer ID} refers to a different {\em piece}.
 
 Storage nodes should allow administrators to configure maximum allowed disk
 space usage and maximum allowed bandwidth usage over the last rolling 30 days.
-Storage nodes should keep track of how much is remaining of both.
-
-Storage nodes should reject operations that do not have a valid signature from
+Storage nodes should keep track of how much is remaining of both. Storage nodes should reject operations that do not have a valid signature from
 the appropriate payer.
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network will want to communicate in some form. The framework
+All peers on the network will need to communicate. The framework
 requires a reliable and ubiquitous protocol that all peers speak that:
 
 \begin{itemize}
@@ -351,26 +368,26 @@ requires a reliable and ubiquitous protocol that all peers speak that:
 
 \subsubsection{Concrete implementation}
 
-Off the bat, we'll be using gRPC\cite{grpc} on top of TLS on top of
-$\mu$TP\cite{utp} with added STUN functionality. Over time, we'll be
+Initially, we'll be using gRPC \cite{grpc} on top of TLS on top of
+$\mu$TP \cite{utp} with added STUN functionality. Over time, we'll be
 replacing TLS to reduce round trips due to connection handshakes in situations
 where the data is already encrypted and forward secrecy isn't necessary.
 \todo{} See the Future Work section for more details.
 
-As in S/Kademlia\cite{skad}, the {\em node ID} will be the hash of a
-public key.Also as suggested by S/Kademlia, the node ID will serve as a proof
-of work for joining the network. Unlike Bitcoin proof of work\cite{bitcoin},
+As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a
+public key and will serve as a proof of work for joining the network. 
+Unlike Bitcoin proof of work \cite{bitcoin},
 the work will be dependent on how many {\em trailing} zero bits one can find in
 the hash output. This means that the node ID will still be usable in a balanced
-Kademlia\cite{kad} tree.
+Kademlia \cite{kad} tree.
 
 The node's master public/private key will only be used to operate a miniature
 certificate authority. The node's private key can thus remain in cold storage
 if needed. The node will sign keys and certificates to be used for peer-to-peer
 communication. When using TLS, every peer can ascertain the ID of the node it
 is speaking with by validating the certificate chain and hashing the certificate
-authority's key. The peer can then figure out roughly how much work went into
-constructing that node ID by considering how many 0 bits the ID ends with.
+authority's key. The peer can estimate how much work went into
+constructing that node ID by considering the number of 0 bits at the end of the ID.
 
 For the few cases where a node cannot achieve a successful hole punch through a
 NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
@@ -380,28 +397,14 @@ intervention and port forwarding will be required.
 
 If, given a peer's network address, any other peer can connect to it, the
 framework requires a system to look up peer network addresses by node ID in
-the first place.
-
-An {\em overlay network} can be built on top of our peer-to-peer communication
+the first place. An {\em overlay network} can be built on top of our peer-to-peer communication
 component that provides functionality similar to DNS, where a node's ID can be
 resolved to an ephemeral network address for communication.
 
 \subsubsection{Concrete implementation}
 
-The Kademlia\cite{kad} DHT can provide this functionality. The storage
-nodes will be extended to participate in a Kademlia network.
-We won't be storing values in Kademlia.
-Instead, we'll only be using the portion of Kademlia that supports node lookup.
-By only using the node lookup subset of Kademlia, we eliminate some hairy
-issues with Kademlia around value republishing, limits to network growth rate,
-and so on.
-
-Using a DHT will make it difficult to achieve response times measured in
-milliseconds when multiple DHT lookups must happen for every operation, however,
-so to achieve our performance goals, more work is necessary.
-
-Fortunately, caching address information for an entire network of 80k nodes can
-be done with 3MB of memory, so the DHT can be sped up with some simple, optional
+The Kademlia DHT serves as a key-value store with a built-in node lookup protocol. We utilize this protocol to achieve DNS-like functionality for node lookup, while ignoring the storage aspects of the Kademlia protocol due to some issues around value republishing, limits to network growth rate,
+and so on. However, using a DHT will make it difficult to achieve millisecond-level response times when multiple DHT lookups must happen for every operation, so more work is necessary to achieve our performance goals. Fortunately, caching address information for an entire network of 80k nodes (for example) can be done with 3MB of memory, so the DHT can be sped up with some simple, optional
 caching.
 
 Because a cache of the DHT can be untrusted (and peer-to-peer
@@ -409,64 +412,37 @@ communication is authenticated to avoid man-in-the-middle-attacks anyway),
 some well-known community-run DHT caches can be provided that simply attempt to
 talk to every storage node every so often, evicting nodes from their cache that
 have not been seen recently. Since nodes are expected to be long lived with
-good uptime, nodes should on average have stable addresses that don't change
-often, and so this cache, even when slightly stale, will add a massive
-performance boost.
-
-The network has to be resilient to node churn anyway, so a couple of nodes
-having stale addresses will not add too much additional difficulty.
-
-We will avoid a number of attacks by using the S/Kademlia\cite{skad}
-extensions.
+good uptime, they are expected to have stable addresses that don't change
+often. Thus, such a cache will add a massive performance boost, even when slightly stale. In addition, the protocol will be resilient against an expected degree of node churn, so having a small number of stale addresses in a DHT cache will not alter the expected performance of the network. Furthermore, we avoid a number of known attacks by using the S/Kademlia extensions.
 
 \subsection{Redundancy}
 
 At any moment, any storage node could go offline permanently. Our redundancy
-strategy must store data in such a way that it is spread across storage nodes
-so that stochastically, the data is available with high probability, even though
-any given node may be offline.
+strategy must store data in a way that provides access to the data with high probability, even though any given number of individual nodes may be offline. To achieve a certain level of {\em durability} (the probability that data will remain available in the face of failures), many products in this space use simple replication. Unfortunately, this ties durability to the network {\em expansion factor}, which is the storage overhead for reliably storing data.
 
-Naively, many products in this space simply use replication as their redundancy
-strategy. To increase {\em durability} (the probability that data will remain
-available in the face of failures), more copies must be stored in the network.
-Unfortunately, this ties durability to the network {\em expansion factor}, which
-is the storage overhead for reliably storing data.
-
-As an example, let's say to get our desired durability, some specific
-replication strategy requires eight copies. This means our expansion factor
-would be 8, or 800\%.
-As we discussed in our design constraints, high bandwidth usage is unacceptable,
-and delivering and maintaining 8 full copies of a file uses lots of bandwidth.
-
-Instead, {\em erasure codes} are a more general and more flexible scheme for
-creating redundancy. Importantly, erasure codes allow changes in durability
-without changes in expansion factor!
+As an example, suppose a certain desired level of durability requires a replication strategy that makes eight copies of the data. This yields an expansion factor of 8x, or 800\%. This data then needs to be stored on the network, using bandwidth in the process. Thus, more replication results in more bandwidth usage for a fixed amount of data. As discussed in the protocol design constraints, high bandwidth usage prevents scaling, so this is an undesireable strategy for ensuring a high degree of file durability. Instead, {\em erasure codes} are a more general and more flexible scheme for
+manipulating data durability without tying it to bandwidth usage. Importantly, erasure codes allow changes in durability without changes in expansion factor!
 
 An erasure code is often described by two numbers, $k$ and $n$. If a block of
 data is encoded with a $(k,n)$ erasure code, there are $n$ total generated
 {\em erasure shares}, where only any $k$ of them are required to recover the
 original block of data. If a block of data is $s$ bytes, each of the $n$
 erasure shares is roughly $s/k$ bytes. Besides the case when $k=1$
-(replication), all erasure shares are unique.
-
-Interestingly, the durability of a $(k=20,n=40)$ erasure code is better than
-a $(k=10,n=20)$ erasure code, even though the expansion factor (2x) is the same
+(replication), all erasure shares are unique. Interestingly, the durability of a $(k=20,n=40)$ erasure code is better than a $(k=10,n=20)$ erasure code, even though the expansion factor (2x) is the same
 for both! Intuitively, this is because the risk is spread across more nodes in
-the $(k=20,n=40)$ case.
+the $(k=20,n=40)$ case. These considerations make erasure codes an important part of our general
+framework.
 
 With the simplifying assumption that every node has an equal probability of
-failure ($P(F)$), you can gain a bit more intuition by considering the following
-equation for file durability (the probability a file is not lost, $P(D)$) in an
-erasure scheme:
+failure $p$, one can gain more intuition by modeling file durability as the CDF of the binomial distribution, as seen in Equation \eqref{eq:binom_cdf}. In this case, $P(D)$ represents the probability that at most $n-k$ erasure shares are lost for a given file, so that $n-(n-k)=k$ erasure shares of the file remain; i.e. the file can still be rebuilt.
 
-$$
-P(D) = \sum_{i=0}^{n-k} \binom{n}{i} P(F)^i (1-P(F))^{n-i}
-$$
+\begin{equation}
+P(D) = \sum_{i=0}^{n-k} \binom{n}{i} p^i (1-p)^{n-i}\label{eq:binom_cdf}
+\end{equation}
 
-Given $P(F)=10\%$, here is how $P(D)$ looks for various choices of $k$ and $n$:
-
-\begin{center}
-\begin{tabular}{l l l l}
+\begin{table}[b]
+	\centering
+\begin{tabular}{c c c l}
 $k$ & $n$ & Exp. factor & P(D) \\
 \hline
 2 & 4 & 2 & 99.629999999999996341\%\\
@@ -475,11 +451,14 @@ $k$ & $n$ & Exp. factor & P(D) \\
 16 & 32 & 2 & 99.999999871786737771\%\\
 32 & 64 & 2 & 99.999999999999988898\%\\
 \end{tabular}
+\caption{$P(D)$ for various choices of $k$ and $n$}
+\end{table}
 
-\begin{figure}[hbt]
+\begin{figure}
+	\centering
 \includegraphics[width=\linewidth]{durability/durability}
 \end{figure}
-\end{center}
+
 
 By being able to tweak the durability somewhat independently of the expansion
 factor, very high durabilities can be achieved with surprisingly low expansion
@@ -487,9 +466,6 @@ factors. Because of how limited bandwidth is as a resource, eliminating
 replication as a strategy entirely and using erasure codes only for redundancy
 causes a drastic decrease in bandwidth footprint and a drastic increase in the
 funds available per byte on storage nodes.
-
-These considerations make erasure codes an important part of our general
-framework.
 
 \subsubsection{Streaming}
 
