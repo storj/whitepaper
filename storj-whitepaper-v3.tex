@@ -434,7 +434,7 @@ the $(k=20,n=40)$ case. These considerations make erasure codes an important par
 framework.
 
 With the simplifying assumption that every node has an equal probability of
-failure $p$, one can gain more intuition by modeling file durability as the CDF of the binomial distribution, as seen in Equation \eqref{eq:binom_cdf}. In this case, $P(D)$ represents the probability that at most $n-k$ erasure shares are lost for a given file, so that $n-(n-k)=k$ erasure shares of the file remain; i.e. the file can still be rebuilt.
+failure $p$, one can gain more intuition by modeling file durability as the CDF of the binomial distribution, as seen in Equation \eqref{eq:binom_cdf}. In this case, $P(D)$ represents the probability that at most $n-k$ erasure shares are lost for a given file, so that $n-(n-k)=k$ erasure shares of the file remain; i.e. the file can still be rebuilt. The CDF of the binomial distribution is given by:
 
 \begin{equation}
 P(D) = \sum_{i=0}^{n-k} \binom{n}{i} p^i (1-p)^{n-i}\label{eq:binom_cdf}
