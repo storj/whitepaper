@@ -912,7 +912,8 @@ may be implemented to handle this process. }
 
 \subsection{Structured file storage}
 
-\subsection{Network state} Overview The network state is a component of the
+\subsection{Network state overview} The network state is a 
+component of the
 distributed network, and has a primary role of storing information related to
 the segment. The network state keeps track of \x{pointer}s, which contain the
 IDs of \x{piece storage nodes} holding \x{remote segment}s, indication if the
@@ -920,25 +921,25 @@ segment is \x{inline} and other descriptors. The network state service houses a
 \x{pointer} database that can be called by other services to put, get, list, and
 delete \x{pointers}.
 
-Two components of the distributed network depends on the network state: the
-light client and repair and maintenance (also known as data repair). The light
+Two components of the distributed network depend on the network state: the
+light client, and repair and maintenance (also known as data repair). The light
 client makes requests to the network state to store or receive \x{pointer}s to
-\x{segment}s depending on if there is an upload or download action. Similarly,
-the data repair will request and receive a list of \x{pointer}s. Each
-\x{pointer} contains the metadata mentioned above including the following values
-related to Reed Solomon encoding: the minimum number of \x{piece}s required for
-a \x{segment}'s reconstruction, the total amount of \x{pieces} generated through
-erasure encoding, the repair threshold, or number of pieces needed to lose
-before triggering repair, and the success threshold, or amount of pieces needed
-to be stored in order to be counted as a success. Below are descriptions of how
-the light client and data repair interact with the network state for uploads,
-downloads, and data repair, respectively.
+\x{segment}s depending on whether there is an upload or download action. 
+Similarly, the data repair will request and receive a list of \x{pointer}s. Each
+\x{pointer} contains the metadata mentioned above, including the following 
+values related to Reed Solomon encoding: the minimum number of \x{piece}s 
+required for a \x{segment}'s reconstruction, the total amount of \x{pieces} 
+generated through erasure encoding, the repair threshold (or number of pieces 
+needed to lose before triggering repair), and the success threshold (or amount 
+of pieces needed to be stored in order to be counted as a success). Below are 
+descriptions of how the light client and data repair interact with the network 
+state for uploads, downloads, and data repair, respectively.
 
 
-\subsubsection{Download General Overview} In order to download a file, the light
+\subsubsection{Download overview} In order to download a file, the light
 client will login and send a request to the network state to get pointers to the
-stored segments, and other metadata. The light client extracts the node IDs that
-are storing the data and send a request to the overlay network with those IDs.
+stored segments and other metadata. The light client extracts the node IDs that
+are storing the data and sends a request to the overlay network with those IDs.
 The overlay network responds with an object containing the nodes’ IP addresses.
 Finally, the light client sends a request to farmers in order to receive pieces
 using those IP addresses.
@@ -946,7 +947,8 @@ using those IP addresses.
 
 Technical Dive into how Download Works \todo{}
 
-Upload General Overview In order to upload a file, the light client will log in
+\subsubsection{Upload overview} 
+In order to upload a file, the light client will log in
 and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
 storage availability and bandwidth to potentially store files. The overlay
 network will have a list of nodes that meet those criteria and use the
@@ -959,7 +961,8 @@ and other related metadata in pointers.
 
 Technical Dive into how Upload Works \todo{}
 
-Repair and Maintenance The repair and maintenance component (also known as data
+\subsubsection{Repair and maintenance} 
+The repair and maintenance component (also known as data
 repair) is essential to ensure data integrity is maintained. It confirms that
 nodes responsible for pieces continue to store the data that the light client
 sent. To do this, it first makes a request to the network state to receive
@@ -980,7 +983,7 @@ Diagram Technical Detail <WIP>
 
 \todo{}
 
-\subsection{Farmer Reputation}
+\subsection{Farmer reputation}
 
 \todo{}
 
@@ -988,11 +991,11 @@ Diagram Technical Detail <WIP>
 
 \todo{}
 
-\subsection{Payer Reputation}
+\subsection{Payer reputation}
 
 \todo{}
 
-\subsection{Repair and Maintenance}
+\subsection{Repair and maintenance}
 
 \todo{discussion about audits using erasure codes instead of challenge merkle
 trees} \todo{discussion about spot checks}
@@ -1072,7 +1075,7 @@ minimize the trust it places in either Bridge server. In the long run, any
 function of the data owner can be split across two or more parties by delegating
 trust. }
 
-\subsection{Client Library}
+\subsection{Client library}
 
 
 \subsection{Bridge as a Network Information Repository}
