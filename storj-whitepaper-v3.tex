@@ -2,6 +2,7 @@
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
 \usepackage{graphicx} \usepackage[english]{babel} \usepackage{listings}
+\usepackage{cite}
 \usepackage[labelfont=it,
 textfont={it},singlelinecheck=on,justification=centering]{caption}
 \usepackage{amsmath} \usepackage{float} \usepackage{xcolor}
@@ -675,7 +676,7 @@ a few years this system stores 1 total exabyte of data, where the average object
 size is 50MB and our erasure code is such that $n=40$. Each object will use just
 one segment, and thus have one pointer each. The pointer will contain
 information about the segment encoding, including what $n$ nodes the segment
-pieces are stored on. 1 exabyte of 50MB objects is still 20 billion objects. If
+pieces are stored on. 1 exabyte of 50MB objects is 20 billion objects. If
 each pointer is roughly 40*64+192 bytes (info for each node plus the path and
 some general overhead), there are over 55 terabytes of metadata to keep track of
 (which is still 18,181 times less data to keep track of than an exabyte).
@@ -685,48 +686,50 @@ again 18,181 times less data. It's worth pointing out that these numbers vary
 heavily with average object size (the larger the object size, the less the
 metadata overhead).
 
-Otherwise, aside from scale requirements, the desired API is straightforward and
-simple: Put (store a pointer given a path), Get (retrieve a pointer given a
-path), List (paginated, ordered listing of existing paths), and Delete (remove a
-path).
-
-One of our framework's primary focuses is making sure this component, metadata
-storage, is interchangeable per user. Specifically, we expect to ship with
+One of our framework's primary focuses is making sure this component -- metadata
+storage -- is interchangeable per user. Specifically, we expect to ship with
 multiple implementations of metadata storage that we will allow users to choose
 between. Other systems have spent an enormous amount of time attempting to solve
 this problem. We've concluded that multiple {\em good enough} solutions already
 exist, and propose using them.
 
+Aside from scale requirements, the desired API is straightforward and
+simple: Put (store a pointer given a path), Get (retrieve a pointer given a
+path), List (paginated, ordered listing of existing paths), and Delete (remove a
+path).
+
+
+
 \subsubsection{Aside about distributed consensus}
 
-Getting a group of computers to agree on a set of values, and thus constructing
-a horizontally-scalable database that works in the face of even just crash
-failures (failures where a server simply shuts down), has been a long and
-challenging area of research. Fortunately, it has ultimately led to some really
-exciting technology.
+A long and challenging area of research has been directed toward getting a 
+group of computers to agree on a set of values, with the goal of constructing a 
+horizontally-scalable database that works in the face of expected failures 
+(crash failures, for example: failures where a server simply shuts down). 
+Fortunately, this research has led to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
 can be lost. How this impacts decision making is succinctly described by the
-"Two Generals' Problem"\cite{two-generals} (earlier described as a problem
-between groups of gangsters\cite{two-gangsters}), in which two armies try to
+"Two Generals' Problem" \cite{two-generals} (earlier described as a problem
+between groups of gangsters \cite{two-gangsters}), in which two armies try to
 communicate in the face of potentially lost messages. Both armies have already
 agreed to attack a shared enemy, but have yet to decide on a time. Both armies
 must attack at the same time or else failure is assured. Both armies can send
 messengers, but the messengers are often captured by the enemy. Both armies must
 know what time to attack and that the other army has also agreed to this time.
 
-Ultimately a solution to the two generals' problem with a finite number of
-messages has been proven to be impossible, so engineering approaches have by
-necessity had to brace uncertainty. Many distributed systems make trade-offs to
+Ultimately, a solution to the two generals' problem with a finite number of
+messages has been proven to be impossible, so engineering approaches have had 
+to brace uncertainty by necessity. Many distributed systems make trade-offs to
 deal with this uncertainty. Some systems embrace {\em consistency}, which means
-that the system will choose downtime instead of inconsistent answers. Other
+that the system will choose downtime over inconsistent answers. Other
 systems embrace {\em availability}, which means that the system chooses
-potentially inconsistent answers instead of downtime. The widely-cited CAP
-theorem\cite{cap} states that every system must choose only two of consistency,
+potentially inconsistent answers over downtime. The widely-cited CAP
+theorem \cite{cap} states that every system must choose only two of consistency,
 availability, and partition tolerance. Due to the inevitability of network
 failures, partition tolerance is non-negotiable, and when a partition happens,
-every system must choose to sacrifice either consistency or availability. Note
-that many systems (sometimes by accident) sacrifice both.
+every system must choose to sacrifice either consistency or availability. Many 
+systems sacrifice both (sometimes by accident).
 
 In the CAP theorem, consistency means that every read receives the most recent
 write or an error, so an inconsistent answer means the system returned something
@@ -737,52 +740,51 @@ PRAM consistency, eventual consistency, read-after-write consistency, etc., are
 all models for discussing how a history of events appears to various
 participants in a distributed system.\footnote{If differing consistency models
 are new to you, it may be worth reading about them in Kyle Kingbury's excellent
-tutorial\cite{aphyr-consistency}. If you're wondering why computers can't just
+tutorial \cite{aphyr-consistency}. If you're wondering why computers can't just
 use the current time to order events, keep in mind it is exceedingly difficult
-to get computers to even agree on that\cite{no-now}.}
+to get computers to even agree on that \cite{no-now}.}
 
-Amazon S3 in general provides {\em read-after-write consistency}, though in some
-cases will provide {\em eventual consistency} instead\cite{s3-consistency}.
+Amazon S3 generally provides {\em read-after-write consistency}, though in some
+cases will provide {\em eventual consistency} instead \cite{s3-consistency}.
 Arguably, there may be some flexibility here for the selection of alternate
 consistency models that suit us better while still broadly providing S3
 compatibility. Many distributed databases provide eventual consistency by
-default, such as Dynamo\cite{dynamo} and Cassandra\cite{cassandra}.
+default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 
 Linearizability in a distributed system is often much more desirable, as it is
 useful as a building block for many higher level data structures and operations
 such as distributed locks and other coordination techniques. Initially, early
 efforts centered around two-phase commit, then three-phase commit, which both
 suffered due to issues similar to the two generals' problem. Things were looking
-bad in 1985 when the FLP-impossibility paper\cite{flp} proved that no algorithm
+bad in 1985 when the FLP-impossibility paper \cite{flp} proved that no algorithm
 could reach linearizable consensus in bounded time. Then in 1988, Barbara Liskov
-and Brian Oki published the Viewstamped Replication algorithm\cite{vr} which was
-the first linearizable distributed consensus algorithm. Unaware of the VR
+and Brian Oki published the Viewstamped Replication algorithm \cite{vr} which 
+was the first linearizable distributed consensus algorithm. Unaware of the VR
 publication, Leslie Lamport set out to prove linearizable distributed consensus
-was impossible\cite{paxos-note}, but instead in 1989 proved it was possible by
-publishing his own Paxos algorithm\cite{paxos}, which for some reason became
-significantly more popular. Ultimately both algorithms share a significant
-degree of commonality.
+was impossible \cite{paxos-note}, but instead in 1989 proved it was possible by
+publishing his own Paxos algorithm \cite{paxos}, which for some reason became
+significantly more popular. Ultimately both algorithms have a large amount in 
+common.
 
-Despite Lamport's claims that Paxos is actually simple in his paper Paxos Made
-Simple\cite{paxos-simple}, many papers have been published since then
+Despite Lamport's claims that Paxos is actually simple \cite{paxos-simple}, 
+many papers have been published since then
 challenging that assertion. Google's description of their attempts to implement
-Paxos landed in Paxos Made Live\cite{paxos-live}, Paxos Made Moderately
-Complex\cite{paxos-complex} is an attempt to try and fill in all the details of
-the protocol, and the entire basis of the Raft algorithm is rooted in trying to
-wrangle and simplify the complexity of Paxos\cite{raft}. Ultimately, to
-summarize the situation briefly, after an upsetting few decades, reliable
-implementations of Paxos, Raft, Viewstamped Replication\cite{vrr}, Chain
-Replication\cite{chain-rep}, and Zab\cite{zab} now exist, with ongoing work to
-improve the situation further\cite{epaxos}\cite{paxos-flexible}.
+Paxos landed in Paxos Made Live \cite{paxos-live}, and Paxos Made Moderately
+Complex \cite{paxos-complex} is an attempt to try and fill in all the details of
+the protocol. The entire basis of the Raft algorithm is rooted in trying to
+wrangle and simplify the complexity of Paxos \cite{raft}. Ultimately, after an 
+upsetting few decades, reliable implementations of Paxos, Raft, Viewstamped 
+Replication \cite{vrr}, Chain Replication \cite{chain-rep}, and Zab \cite{zab} 
+now exist, with ongoing work to improve the situation 
+further \cite{epaxos,paxos-flexible}. Arguably, part of Google's early success 
+was in spending the time to build their internal Paxos-as-a-service distributed 
+lock system, Chubby \cite{chubby}. Most of Google's most famous internal data 
+storage tools such as Bigtable \cite{bigtable} depend on Chubby for 
+correctness. Spanner \cite{spanner} -- perhaps one of the most incredible 
+distributed databases in the world -- is mainly just two-phase commit on top of 
+multiple Paxos groups.
 
-Arguably, part of Google's early success was in spending the time to build their
-internal Paxos-as-a-service distributed lock system, Chubby\cite{chubby}. Most
-of Google's most famous internal data storage tools such as
-Bigtable\cite{bigtable} depend on Chubby for correctness. Spanner\cite{spanner},
-perhaps one of the most incredible distributed databases in the world, is mainly
-just two-phase commit on top of multiple Paxos groups.
-
-Reliable distributed consensus algorithms have been game changing for many
+Reliable distributed consensus algorithms have been game-changing for many
 applications needing fault-tolerant storage.
 
 \subsubsection{Aside about Byzantine distributed consensus}
@@ -793,21 +795,28 @@ altruistic}. Unfortunately, all of the previous algorithms we discussed assume a
 collection of altruistic nodes.
 
 There have been a number of attempts to solve the Byzantine fault tolerant
-distributed consensus problem (PBFT\cite{pbft} (Barbara Liskov again with the
-first solution out of the gate), Q/U\cite{qu}, FaB\cite{fab} (but see
-\cite{fab-revisited}), Bitcoin\cite{bitcoin}, Zyzzyva\cite{zyzzyva} (but also
-see \cite{fab-revisited}), RBFT\cite{rbft}, Tangaroa\cite{tangaroa},
-Tendermint\cite{tendermint}, Aliph\cite{aliph}, Hashgraph\cite{hashgraph},
-HoneybadgerBFT\cite{honeybadger}, Algorand\cite{algorand}, Casper\cite{casper},
-Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
-others\cite{mickens-bft}).
+distributed consensus problem 
+\cite{bitcoin,pbft,qu,fab,fab-revisited,zyzzyva,rbft,
+tangaroa,tendermint,aliph,hashgraph,honeybadger,algorand,casper,
+tangle,avalanche,parsec,mickens-bft}. Each of these algorithms make some 
+additional tradeoffs the non-Byzantine distributed consensus algorithms don't 
+require to deal with the potential for uncooperative nodes. For example, 
+PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin 
+\cite{bitcoin} intentionally limits the transaction rate with changing 
+proof-of-work difficulty, in addition to requiring all participants to keep a 
+full copy of all change histories (like other blockchain-based 
+solutions).
 
-Each of these algorithms make some additional tradeoffs the non-Byzantine
-distributed consensus algorithms don't need to make to deal with the potential
-for uncooperative nodes. For example, PBFT causes a significant amount of
-network overhead. Bitcoin intentially limits the transaction rate with changing
-proof-of-work difficulty, in addition to, like other blockchain-based solutions,
-requiring all participants to keep a full copy of all change histories.
+
+%(PBFT \cite{pbft} (Barbara Liskov again with the
+%first solution out of the gate), Q/U \cite{qu}, FaB \cite{fab} (but see
+%\cite{fab-revisited}), Bitcoin \cite{bitcoin}, Zyzzyva \cite{zyzzyva} (but also
+%see \cite{fab-revisited}), RBFT \cite{rbft}, Tangaroa \cite{tangaroa},
+%Tendermint \cite{tendermint}, Aliph \cite{aliph}, Hashgraph \cite{hashgraph},
+%HoneybadgerBFT\cite{honeybadger}, Algorand\cite{algorand}, Casper\cite{casper},
+%Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
+%others\cite{mickens-bft}).
+
 
 \todo{talk about merkle-dag, git-inspired approaches to metadata, potentially
 built on kademlia, potentially reworking this entire section because ugh}
@@ -815,12 +824,12 @@ built on kademlia, potentially reworking this entire section because ugh}
 \subsubsection{Concrete implementation}
 
 Given the situation described in the asides about distributed consensus, we have
-decided that--for our initial release--good enough solutions already exist, so
-we will punt the problem of solving Byzantine distributed consensus for our use
+decided that good-enough solutions already exist, so we will revisit the 
+problem of solving Byzantine distributed consensus for our use
 case to a later release. We believe that a great distributed algorithm here is
-possible, all of the necessary building blocks are likely described above, and
-expect to invest heavily in research to find it after we have a thriving user
-base with our solution based on good enough approaches.
+possible, all of the necessary building blocks are likely described above, and 
+we expect to invest heavily in research to find it after we have a thriving user
+base with our solution based on good-enough approaches.
 
 The most trivial implementation for the metadata storage functionality we
 require would be to simply have each user use their preferred trusted database
@@ -832,19 +841,22 @@ to store probably can manage reliable backups of a single relational database
 storing only metadata.
 
 There are a few downsides with this punt-to-the-user approach, however, such as:
-\begin{itemize} \item {\bf Availability} - the availability of the user's data
+\begin{itemize} 
+\item {\bf Availability} - the availability of the user's data
 is tied entirely to the availability of their metadata server. The counterpoint
 here is that the availability can be made arbitrarily good with existing trusted
 distributed solutions such as Cassandra, Spanner, or CockroachDB. Further, any
 individual metadata service downtime does not affect the entire network. In
-fact, the network as a whole can still never go down. \item {\bf Durability} -
+fact, the network as a whole can still never go down. 
+\item {\bf Durability} -
 if the metadata server suffers a catastrophic failure without backups, all of
 the user's data is gone. This is already true with encryption keys, but a
 punt-to-the-user solution increases the risk area from just encryption keys
 considerably. Fortunately, the metadata itself can be periodically backed up
 into the Storj system, such that only needing to keep track of metadata-metadata
 further decreases the amount of critical information that must be stored
-elsewhere. \item {\bf Trust} - the user has to trust the metadata server.
+elsewhere. 
+\item {\bf Trust} - the user has to trust the metadata server.
 \end{itemize}
 
 On the other hand, there are a few upsides: \begin{itemize} \item {\bf Use
