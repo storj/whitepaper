@@ -302,13 +302,13 @@ payer.
 All peers on the network will need to communicate. The framework requires a
 reliable and ubiquitous protocol that all peers speak that:
 
-\begin{itemize} 
+\begin{itemize}
 \item provides peer reachability, even in the face of firewalls
-and NATs. This may require techniques like STUN, relays, etc. 
-\item provides authentication, where each participant knows 
-exactly the identity of the peer with whom they are speaking. 
+and NATs. This may require techniques like STUN, relays, etc.
+\item provides authentication, where each participant knows
+exactly the identity of the peer with whom they are speaking.
 \item provides privacy, where only the two peers
-know what transfers between them. 
+know what transfers between them.
 \end{itemize}
 
 \subsubsection{Concrete implementation}
@@ -411,24 +411,24 @@ i.e. the file can still be rebuilt. The CDF of the binomial distribution is
 given by:
 
 \begin{equation} P(D) = \sum_{i=0}^{n-k} \binom{n}{i} p^i
-(1-p)^{n-i}\label{eq:binom_cdf} 
+(1-p)^{n-i}\label{eq:binom_cdf}
 \end{equation}
 
-\begin{table}[b] 
-\centering 
-\begin{tabular}{c c c l} 
-$k$ & $n$ & Exp. factor & P(D) \\ 
-\hline 2 & 4 & 2 & 99.629999999999996341\%\\ 
-4 & 8 & 2 & 99.956834999999999436\%\\ 
-8 & 16 & 2 & 99.999407567699549748\%\\ 
-16 & 32 & 2 & 99.999999871786737771\%\\ 
-32 & 64 & 2 & 99.999999999999988898\%\\ 
+\begin{table}[b]
+\centering
+\begin{tabular}{c c c l}
+$k$ & $n$ & Exp. factor & P(D) \\
+\hline 2 & 4 & 2 & 99.629999999999996341\%\\
+4 & 8 & 2 & 99.956834999999999436\%\\
+8 & 16 & 2 & 99.999407567699549748\%\\
+16 & 32 & 2 & 99.999999871786737771\%\\
+32 & 64 & 2 & 99.999999999999988898\%\\
 \end{tabular}
-\caption{$P(D)$ for various choices of $k$ and $n$} 
+\caption{$P(D)$ for various choices of $k$ and $n$}
 \end{table}
 
 \begin{figure} \centering
-\includegraphics[width=\linewidth]{durability/durability.eps} 
+\includegraphics[width=\linewidth]{durability/durability.eps}
 \end{figure}
 
 
@@ -481,7 +481,7 @@ concrete implementation has significant detail.
 
 \subsubsection{Concrete implementation}
 
-\begin{description} 
+\begin{description}
 \item[Bucket] A \x{bucket} is an unbounded but named
 collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
 \x{file}, and every \x{file} has a unique \x{path}.
@@ -559,11 +559,11 @@ segment} data directly if applicable.
 Many applications benefit from being able to keep metadata alongside files. For
 example, NTFS supports "alternate data streams" for each file, HFS supports
 resource forks, EXT4 supports "extended attributes," and more importantly for
-our purposes, AWS S3 supports "object metadata" \cite{s3-object-meta}. Being 
+our purposes, AWS S3 supports "object metadata" \cite{s3-object-meta}. Being
 able to support arbitrarily named sets of keys/values dramatically improves
-compatibility with other storage platforms. Every \x{file} will have at least 
-one 
-\x{stream} (the default \x{stream}) and many files may never have another 
+compatibility with other storage platforms. Every \x{file} will have at least
+one
+\x{stream} (the default \x{stream}) and many files may never have another
 \x{stream}.
 
 \subsubsection{Streams as Segments}
@@ -577,7 +577,7 @@ segment} and the data will be stored directly inline with the metadata.
 
 For larger \x{stream}s past a certain size, the data will be broken into
 multiple large \x{remote segment}s. Segmenting in this manner has a number of
-advantages to security, privacy, performance, and availability. 
+advantages to security, privacy, performance, and availability.
 
 Maximum \x{segment} size is a configurable parameter. To preserve privacy, it is
 recommended that \x{segment} sizes be standardized as a byte multiple, such as 8
@@ -603,10 +603,10 @@ A \x{stripe} is no more than a couple of kilobytes, and encrypting and encoding
 a single \x{stripe} at a time allows us to read portions of a large \x{segment}
 without retrieving the entire \x{segment}, allows us to stream data into the
 network without staging it beforehand, and enables a number of other useful
-features. \x{Stripe}s should be encrypted client-side before being erasure 
-encoded. The reference implementation uses AES256-GCM by default, 
-but XSalsa20+Poly1305 is also provided. This protects the content of the 
-data from the \x{farmer} housing the data. The data owner retains complete 
+features. \x{Stripe}s should be encrypted client-side before being erasure
+encoded. The reference implementation uses AES256-GCM by default,
+but XSalsa20+Poly1305 is also provided. This protects the content of the
+data from the \x{farmer} housing the data. The data owner retains complete
 control over the encryption key, and thus over access to the data.
 
 It's important to use authenticated encryption to defend against data corruption
@@ -628,8 +628,8 @@ are generated, where the network has an expansion factor of $\frac{n}{k}$.
 For example, let's say a \x{stripe} is broken into 40 \x{erasure share}s
 ($n=40$), where any 20 ($k=20$) are needed to reconstruct the \x{stripe}. Each
 of the 40 \x{erasure share}s will be $\frac{1}{20}$th the size of the original
-\x{stripe}. All $n$ \x{erasure share}s have a well defined index associated 
-with them. The $i$th share will always be the same, given the same input 
+\x{stripe}. All $n$ \x{erasure share}s have a well defined index associated
+with them. The $i$th share will always be the same, given the same input
 parameters.
 
 Because peers generally rely on separate hardware and infrastructure, data
@@ -648,8 +648,8 @@ immense relative to their size. Instead of keeping track of all of the shares
 separately, we pack all of the \x{erasure share}s together into a few
 \x{piece}s. In a $(k, n)$ scheme, there are $n$ \x{piece}s, where each
 \x{piece} $i$ is the ordered concatenation of all of the \x{erasure share}s with
-index $i$. As a result, where each \x{erasure share} is $\frac{1}{k}$th of a 
-\x{stripe}, each \x{piece} is $\frac{1}{k}$th of a \x{segment}, and only $k$ 
+index $i$. As a result, where each \x{erasure share} is $\frac{1}{k}$th of a
+\x{stripe}, each \x{piece} is $\frac{1}{k}$th of a \x{segment}, and only $k$
 \x{piece}s are needed to recover the full \x{segment}.
 
 \subsubsection{Pointers}
@@ -702,10 +702,10 @@ path).
 
 \subsubsection{Aside about distributed consensus}
 
-A long and challenging area of research has been directed toward getting a 
-group of computers to agree on a set of values, with the goal of constructing a 
-horizontally-scalable database that works in the face of expected failures 
-(crash failures, for example: failures where a server simply shuts down). 
+A long and challenging area of research has been directed toward getting a
+group of computers to agree on a set of values, with the goal of constructing a
+horizontally-scalable database that works in the face of expected failures
+(crash failures, for example: failures where a server simply shuts down).
 Fortunately, this research has led to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
@@ -719,7 +719,7 @@ messengers, but the messengers are often captured by the enemy. Both armies must
 know what time to attack and that the other army has also agreed to this time.
 
 Ultimately, a solution to the two generals' problem with a finite number of
-messages has been proven to be impossible, so engineering approaches have had 
+messages has been proven to be impossible, so engineering approaches have had
 to brace uncertainty by necessity. Many distributed systems make trade-offs to
 deal with this uncertainty. Some systems embrace {\em consistency}, which means
 that the system will choose downtime over inconsistent answers. Other
@@ -728,7 +728,7 @@ potentially inconsistent answers over downtime. The widely-cited CAP
 theorem \cite{cap} states that every system must choose only two of consistency,
 availability, and partition tolerance. Due to the inevitability of network
 failures, partition tolerance is non-negotiable, and when a partition happens,
-every system must choose to sacrifice either consistency or availability. Many 
+every system must choose to sacrifice either consistency or availability. Many
 systems sacrifice both (sometimes by accident).
 
 In the CAP theorem, consistency means that every read receives the most recent
@@ -758,30 +758,30 @@ efforts centered around two-phase commit, then three-phase commit, which both
 suffered due to issues similar to the two generals' problem. Things were looking
 bad in 1985 when the FLP-impossibility paper \cite{flp} proved that no algorithm
 could reach linearizable consensus in bounded time. Then in 1988, Barbara Liskov
-and Brian Oki published the Viewstamped Replication algorithm \cite{vr} which 
+and Brian Oki published the Viewstamped Replication algorithm \cite{vr} which
 was the first linearizable distributed consensus algorithm. Unaware of the VR
 publication, Leslie Lamport set out to prove linearizable distributed consensus
 was impossible \cite{paxos-note}, but instead in 1989 proved it was possible by
 publishing his own Paxos algorithm \cite{paxos}, which for some reason became
-significantly more popular. Ultimately both algorithms have a large amount in 
+significantly more popular. Ultimately both algorithms have a large amount in
 common.
 
-Despite Lamport's claims that Paxos is actually simple \cite{paxos-simple}, 
+Despite Lamport's claims that Paxos is actually simple \cite{paxos-simple},
 many papers have been published since then
 challenging that assertion. Google's description of their attempts to implement
 Paxos landed in Paxos Made Live \cite{paxos-live}, and Paxos Made Moderately
 Complex \cite{paxos-complex} is an attempt to try and fill in all the details of
 the protocol. The entire basis of the Raft algorithm is rooted in trying to
-wrangle and simplify the complexity of Paxos \cite{raft}. Ultimately, after an 
-upsetting few decades, reliable implementations of Paxos, Raft, Viewstamped 
-Replication \cite{vrr}, Chain Replication \cite{chain-rep}, and Zab \cite{zab} 
-now exist, with ongoing work to improve the situation 
-further \cite{epaxos,paxos-flexible}. Arguably, part of Google's early success 
-was in spending the time to build their internal Paxos-as-a-service distributed 
-lock system, Chubby \cite{chubby}. Most of Google's most famous internal data 
-storage tools such as Bigtable \cite{bigtable} depend on Chubby for 
-correctness. Spanner \cite{spanner} -- perhaps one of the most incredible 
-distributed databases in the world -- is mainly just two-phase commit on top of 
+wrangle and simplify the complexity of Paxos \cite{raft}. Ultimately, after an
+upsetting few decades, reliable implementations of Paxos, Raft, Viewstamped
+Replication \cite{vrr}, Chain Replication \cite{chain-rep}, and Zab \cite{zab}
+now exist, with ongoing work to improve the situation
+further \cite{epaxos,paxos-flexible}. Arguably, part of Google's early success
+was in spending the time to build their internal Paxos-as-a-service distributed
+lock system, Chubby \cite{chubby}. Most of Google's most famous internal data
+storage tools such as Bigtable \cite{bigtable} depend on Chubby for
+correctness. Spanner \cite{spanner} -- perhaps one of the most incredible
+distributed databases in the world -- is mainly just two-phase commit on top of
 multiple Paxos groups.
 
 Reliable distributed consensus algorithms have been game-changing for many
@@ -795,16 +795,16 @@ altruistic}. Unfortunately, all of the previous algorithms we discussed assume a
 collection of altruistic nodes.
 
 There have been a number of attempts to solve the Byzantine fault tolerant
-distributed consensus problem 
+distributed consensus problem
 \cite{bitcoin,pbft,qu,fab,fab-revisited,zyzzyva,rbft,
 tangaroa,tendermint,aliph,hashgraph,honeybadger,algorand,casper,
-tangle,avalanche,parsec,mickens-bft}. Each of these algorithms make some 
-additional tradeoffs the non-Byzantine distributed consensus algorithms don't 
-require to deal with the potential for uncooperative nodes. For example, 
-PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin 
-\cite{bitcoin} intentionally limits the transaction rate with changing 
-proof-of-work difficulty, in addition to requiring all participants to keep a 
-full copy of all change histories (like other blockchain-based 
+tangle,avalanche,parsec,mickens-bft}. Each of these algorithms make some
+additional tradeoffs the non-Byzantine distributed consensus algorithms don't
+require to deal with the potential for uncooperative nodes. For example,
+PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin
+\cite{bitcoin} intentionally limits the transaction rate with changing
+proof-of-work difficulty, in addition to requiring all participants to keep a
+full copy of all change histories (like other blockchain-based
 solutions).
 
 
@@ -824,10 +824,10 @@ built on kademlia, potentially reworking this entire section because ugh}
 \subsubsection{Concrete implementation}
 
 Given the situation described in the asides about distributed consensus, we have
-decided that good-enough solutions already exist, so we will revisit the 
+decided that good-enough solutions already exist, so we will revisit the
 problem of solving Byzantine distributed consensus for our use
 case to a later release. We believe that a great distributed algorithm here is
-possible, all of the necessary building blocks are likely described above, and 
+possible, all of the necessary building blocks are likely described above, and
 we expect to invest heavily in research to find it after we have a thriving user
 base with our solution based on good-enough approaches.
 
@@ -841,13 +841,13 @@ to store probably can manage reliable backups of a single relational database
 storing only metadata.
 
 There are a few downsides with this punt-to-the-user approach, however, such as:
-\begin{itemize} 
+\begin{itemize}
 \item {\bf Availability} - the availability of the user's data
 is tied entirely to the availability of their metadata server. The counterpoint
 here is that the availability can be made arbitrarily good with existing trusted
 distributed solutions such as Cassandra, Spanner, or CockroachDB. Further, any
 individual metadata service downtime does not affect the entire network. In
-fact, the network as a whole can still never go down. 
+fact, the network as a whole can still never go down.
 \item {\bf Durability} -
 if the metadata server suffers a catastrophic failure without backups, all of
 the user's data is gone. This is already true with encryption keys, but a
@@ -855,7 +855,7 @@ punt-to-the-user solution increases the risk area from just encryption keys
 considerably. Fortunately, the metadata itself can be periodically backed up
 into the Storj system, such that only needing to keep track of metadata-metadata
 further decreases the amount of critical information that must be stored
-elsewhere. 
+elsewhere.
 \item {\bf Trust} - the user has to trust the metadata server.
 \end{itemize}
 
@@ -912,7 +912,7 @@ may be implemented to handle this process. }
 
 \subsection{Structured file storage}
 
-\subsection{Network state overview} The network state is a 
+\subsection{Network state overview} The network state is a
 component of the
 distributed network, and has a primary role of storing information related to
 the segment. The network state keeps track of \x{pointer}s, which contain the
@@ -924,15 +924,15 @@ delete \x{pointers}.
 Two components of the distributed network depend on the network state: the
 light client, and repair and maintenance (also known as data repair). The light
 client makes requests to the network state to store or receive \x{pointer}s to
-\x{segment}s depending on whether there is an upload or download action. 
+\x{segment}s depending on whether there is an upload or download action.
 Similarly, the data repair will request and receive a list of \x{pointer}s. Each
-\x{pointer} contains the metadata mentioned above, including the following 
-values related to Reed Solomon encoding: the minimum number of \x{piece}s 
-required for a \x{segment}'s reconstruction, the total amount of \x{pieces} 
-generated through erasure encoding, the repair threshold (or number of pieces 
-needed to lose before triggering repair), and the success threshold (or amount 
-of pieces needed to be stored in order to be counted as a success). Below are 
-descriptions of how the light client and data repair interact with the network 
+\x{pointer} contains the metadata mentioned above, including the following
+values related to Reed Solomon encoding: the minimum number of \x{piece}s
+required for a \x{segment}'s reconstruction, the total amount of \x{pieces}
+generated through erasure encoding, the repair threshold (or number of pieces
+needed to lose before triggering repair), and the success threshold (or amount
+of pieces needed to be stored in order to be counted as a success). Below are
+descriptions of how the light client and data repair interact with the network
 state for uploads, downloads, and data repair, respectively.
 
 
@@ -947,7 +947,7 @@ using those IP addresses.
 
 Technical Dive into how Download Works \todo{}
 
-\subsubsection{Upload overview} 
+\subsubsection{Upload overview}
 In order to upload a file, the light client will log in
 and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
 storage availability and bandwidth to potentially store files. The overlay
@@ -961,7 +961,7 @@ and other related metadata in pointers.
 
 Technical Dive into how Upload Works \todo{}
 
-\subsubsection{Repair and maintenance} 
+\subsubsection{Repair and maintenance}
 The repair and maintenance component (also known as data
 repair) is essential to ensure data integrity is maintained. It confirms that
 nodes responsible for pieces continue to store the data that the light client
