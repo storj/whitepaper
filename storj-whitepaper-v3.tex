@@ -258,10 +258,21 @@ then combine them to form the desired protocol. One important benefit of doing
 so is this makes it much easier to update individual components without
 rearchitecting the rest of the network. The individual components are:
 
-\begin{enumerate} \item Storage nodes \item Peer-to-peer communication \item
-Overlay network \item Redundancy \item Structured file storage \item Metadata
-\item Encryption \item Authorization \item Data repair \item Reputation \item
-Payments \end{enumerate}
+\begin{enumerate}
+\item Storage nodes
+\item Peer-to-peer communication
+\item Overlay network
+\item Redundancy
+\item Structured file storage
+\item Metadata
+\item Encryption
+\item Authorization
+\item Audits
+\item Data repair
+\item Reputation
+\item Payments
+\item Garbage collection
+\end{enumerate}
 
 \subsection{Storage nodes}
 
@@ -463,8 +474,21 @@ wait for temporarily slow or offline peers.
 
 \subsubsection{Concrete implementation}
 
-We use the Reed-Solomon erasure code. See \todo{Appendix} for how we select
-our Reed-Solomon numbers.
+We use the Reed-Solomon erasure code \cite{rs}. For each object that we store
+we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
+$k$ and $n$ are the standard Reed Solomon numbers, where $k$ is the minimum
+required number of pieces for reconstruction, and $n$ is the total number of
+pieces generated during creation.
+
+$m$ and $o$ are the {\em minimum safe} and {\em optimal} values, respectively.
+$m$ is chosen such that if the amount of available pieces falls below $m$, a
+repair is triggered immediately in an attempt to make sure we always maintain
+$k$ or more pieces. $o$ is chosen such that during uploads, as soon as $o$
+pieces have finished uploading, remaining pieces up to $n$ are canceled as
+described above. Storing more than $o$ pieces is unnecessary for the file's
+target durability.
+
+See \todo{Appendix} for how we select our Reed-Solomon numbers.
 
 \subsection{Structured file storage}
 
@@ -523,9 +547,9 @@ the metadata required to keep track of its book keeping.
 
 \item[Stripe] A \x{stripe} is a further subdivision of a \x{segment}. A
 \x{stripe} is a fixed amount of bytes that is used as an encryption and erasure
-encoding boundary size. Encryption and erasure encoding happen on \x{stripe}s
-individually. Encryption happens on all \x{segment}s, but erasure encoding only
-happens on \x{remote segment}s.
+encoding boundary size. Erasure encoding happen on \x{stripe}s individually,
+whereas encryption may happen on a small multiple of stripes at a time. All
+\x{segments} are encrypted, but only \x{remote segments} are erasure encoded.
 
 \item[Erasure Share] When a \x{segment} is a \x{remote segment}, its \x{stripe}s
 will get erasure encoded. When a \x{stripe} is erasure encoded, it generates
@@ -599,23 +623,28 @@ archives support the concept of seeking, where only a partial subset of the data
 is needed for correct operation. In these cases it's useful to be able to decode
 and decrypt only parts of a file.
 
-A \x{stripe} is no more than a couple of kilobytes, and encrypting and encoding
-a single \x{stripe} at a time allows us to read portions of a large \x{segment}
+A \x{stripe} is no more than a couple of kilobytes, and encoding a single
+\x{stripe} at a time allows us to read portions of a large \x{segment}
 without retrieving the entire \x{segment}, allows us to stream data into the
 network without staging it beforehand, and enables a number of other useful
-features. \x{Stripe}s should be encrypted client-side before being erasure
-encoded. The reference implementation uses AES256-GCM by default,
-but XSalsa20+Poly1305 is also provided. This protects the content of the
-data from the \x{farmer} housing the data. The data owner retains complete
-control over the encryption key, and thus over access to the data.
+features.
+
+Depending on the sizes, \x{stripes} are either encrypted individually or in
+small batches. Only a few stripes should be needed for successful
+decryption. In either case, \x{stripes} should be encrypted client-side before
+being erasure encoded. The reference implementation uses AES256-GCM by default,
+but XSalsa20+Poly1305 is also provided. This protects the
+content of the data from the \x{farmer} housing the data. The data owner
+retains complete control over the encryption key, and thus over access to the
+data.
 
 It's important to use authenticated encryption to defend against data corruption
-(willful or negligent), and with a monotonically increasing nonce to defeat
-reordering attacks. The nonce should be monotonically increasing across
-\x{segment}s throughout the \x{stream}. If \x{stripe} $i$ is encrypted with
-nonce $j$, \x{stripe} $i+1$ should be encrypted with nonce $j+1$. Each
+(willful or negligent) with a monotonically increasing nonce to defeat
+reordering attacks. The nonce should be monotonically increasing throughout
+the entire \x{stream}. If \x{stripe} batch $i$ is encrypted
+with nonce $j$, stripe batch $i+1$ should be encrypted with nonce $j+1$. Each
 \x{segment} should get a new encryption key whenever the content in the
-\x{segment} changes to avoid nonce reuse.
+\x{segment} changes to avoid nonce reuse. \todo{jt: fix this}
 
 \subsubsection{Stripes as Erasure Shares}
 
@@ -817,7 +846,6 @@ solutions).
 %Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
 %others\cite{mickens-bft}).
 
-
 \todo{talk about merkle-dag, git-inspired approaches to metadata, potentially
 built on kademlia, potentially reworking this entire section because ugh}
 
@@ -877,40 +905,193 @@ specifically in this component of our framework.
 
 \subsection{Encryption}
 
+Data should be encrypted as early as possible in the data storage pipeline,
+ideally before the data ever leaves the source computer. This means that the
+S3-compatible gateway or appropriate similar client library should run
+colocated on the same computer as the user's application.
+
+Ideally encryption uses a pluggable mechanism that allows users to choose their
+desired encryption scheme as well as store metadata about that encryption
+scheme to allow them to recover their data using the appropriate decryption
+mechanism.
+
+To support rich access management features, the same encryption key should not
+be used for every file, as having access to one file would result in access
+to decryption keys for all files. Instead, each file should be encrypted with
+a unique key, such that users can share access to certain selected files
+without giving up encryption details for others.
+
+Because each file should be encrypted differently with different keys and
+potentially different algorithms, the metadata about that encryption must
+be stored somewhere in a way that is secure and reliable. This metadata will
+be stored in appropriate \x{pointers}, itself encrypted by a deterministic,
+hierarchical encryption scheme. A hierarchical encryption scheme similar to
+BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
+parents, and will allow some files to be shared without sharing other files.
+
+Like all other metadata, paths themselves can be encrypted using a hierarchical
+encryption scheme.
+
 \subsubsection{Concrete implementation}
+
+Encryption is authenticated encryption, with support for the AES-GCM cipher
+and the Salsa20 and Poly1305 combination NaCl calls "Secretbox"
+\cite{nacl-crypto}. Authenticated encryption is used so that the user can know
+if the data has been tampered with. Encryption keys are chosen randomly.
+
+Data is encrypted in small batches of \x{stripes}, recommended to be 4KB or
+less \cite{nacl-packetlen}. While the same encryption key is used for every
+\x{stripe} in a \x{segment}, \x{segments} may have
+different encryption keys. On the other hand, the nonce for each \x{stripe}
+batch must be monotonically increasing from the previous batch throughout the
+entire \x{stream}. The nonce wraps around to 0 if the counter reaches the
+maximum representable nonce. The first nonce is chosen at random and is stored
+with the \x{stream}'s metadata.
+
+Paths are also encrypted with authenticated encryption, but the nonce and key
+must be deterministic, determined entirely from a root secret combined with the
+unencrypted path.
+
+\todo{describe path encryption}
+
+Path encryption is optional, as encrypted paths make efficient sorted path
+listing challenging. When path encryption is enabled (a per-bucket feature),
+objects are sorted by their encrypted path name, which is relatively unhelpful
+when interested in unencrypted paths. For this reason, users can opt in to
+disabling path encryption. When path encryption is disabled, unencrypted paths
+are only revealed to the user's chosen metadata storage system.
 
 \subsection{Authorization}
 
+Encryption protects the privacy of data while allowing for the identification
+of tampering, but authorization allows for the prevention of tampering by
+disallowed clients. Users who are authorized should be able to add, remove,
+and edit files, while users who are not authorized should not be able to.
+
+First, metadata operations should be authorized. Users should authenticate with
+their chosen metadata service, which should allow them given their authorization
+configuration access to various operations.
+
+Once authorized with a metadata service, that metadata service has an associated
+{\em payer ID} \todo{discuss payer IDs} and is able to sign operations. All
+operations with storage nodes require a specific payer ID and associated
+signature. A storage node should reject operations not signed by the appropriate
+payer ID. The client must retrieve valid signatures from the metadata service
+prior to operations with storage nodes.
+
 \subsubsection{Concrete implementation}
+
+Our initial metadata authorization scheme uses macaroons \cite{macaroons}.
+Each account has a root macaroon and operations are validated against a supplied
+macaroon's set of caveats.
+
+\subsection{Audits}
+
+Incentivizing farmers to accurately store data is of paramount importance to
+the viability of this whole system. As such, it is important to be able to
+validate and verify that farmers are accurately storing what they have been
+asked to store.
+
+Many storage systems use audits as a way of determining when to do repair and
+which files to repair. Our storage system does not. In our storage system,
+audits are simply a mechanism by which a node's degree of stability is
+determined. Failed audits will result in marking a storage node as bad, which
+could result in shuffling data to new nodes and avoiding that node altogether
+in the future. File repair needs are detected via another mechanism.
+
+Audits in this case are probabilistic challenges that confirm with a high
+degree of certainty and a low amount of overhead that a storage node is well
+behaved, is keeping the data it claims, and is not susceptible to hardware
+failure or malintent. An audit functions as a spot check to help calculate a
+storage node's future usefulness.
+
+This partial auditing mechanism does not audit all bytes in all files and
+leaves room for false positives, where the verifier believes the storage node
+retains the intact \x{piece}, when it has actually been modified or partially
+deleted. Fortunately, the probability of a false positive on an individual
+partial audit is easily calculable (see Section \todo{}). When applied
+iteratively to a storage node as a whole, detection of unexpected behavior
+becomes practically certain.
+
+\subsubsection{Concrete implementation}
+
+Some distributed storage systems (including the previous release of Storj
+\cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
+and expected responses are pregenerated ahead of time. By using a Merkle tree,
+the amount of metadata needed to store these pregenerated challenges and
+responses can be made to be negligible.
+
+Unfortunately, the challenges and responses must be pregenerated, and without
+a periodic regeneration of these challenges, a storage node can begin to pass
+most audits without storing all of the requested data.
+
+Notably, we are already using Reed-Solomon erasure coding \cite{rs} on small
+ranges (\x{stripes}). Reed-Solomon is an error correcting code, so we use
+Reed-Solomon to issue challenges and verify responses instead.
+
+A central assumption in our storage system is that most storage nodes are
+reasonably well-behaved, and most data is stored faithfully. As long as that
+assumption holds, Reed-Solomon is able to detect errors and even correct them,
+via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
+This feature can be used for arbitrary audits without pregenerated challenges.
+
+To perform an audit, we first choose a \x{stripe} to audit. We request that
+\x{stripe}'s \x{erasure shares} from all storage nodes responsible. We then run
+the Berlekamp-Welch algorithm across all the \x{erasure shares}. When enough
+storage nodes return correct information, any faulty or missing response can
+easily be identified. These audit failures will be stored and saved in the
+reputation system.
+
+It is important that every storage node has a frequent set of random audits to
+gain statistical power on how well-behaved that storage node is, but it is not
+a requirement that audits are performed on every byte, or even on every file.
 
 \subsection{Data repair}
 
-\todo{thresholds} \todo{ To prevent loss of the file, data owners should set
-shard loss tolerance levels. Consider a 20-of-40 erasure coding scheme. A data
-owner might tolerate the loss of 5 shards out of 40, knowing that the chance of
-16 more becoming inaccessible in the near future is low. However, at some point
-the probabilistic availability will fall below safety thresholds. At that point
-the data owner must initiate a retrieve and rebuild process.
+An ever-present risk in any distributed storage system is file loss. While there
+are many potential causes for file loss, storage node churn is the leading
+cause by far \todo{citation needed}. Storage nodes may go offline due to
+hardware failure, intermittent internet connectivity, or operator choices.
+Because audits are validating that conforming nodes store data correctly, all
+that remains is to detect when a storage node goes offline and reshuffle the
+data.
 
-Because node uptimes are known via the audit process, tolerance levels may be
-optimized based on the characteristics of the nodes involved. Many strategies
-may be implemented to handle this process. }
+The Overlay Network already has caches in place that have accurate and
+up-to-date information about which storage nodes have been online recently.
+When a storage node changes state from recently online to offline, this can
+trigger a lookup in a reverse index in a user's metadata database, identifying
+all \x{segment} \x{pointers} that were stored in part on that storage node.
+For every \x{segment} that drops below the appropriate minimum safety
+threshold, the segment should be downloaded and reconstructed and the missing
+pieces should be regenerated and uploaded to new nodes. Finally, the
+\x{pointer} should be updated to include the new information.
 
 \subsubsection{Concrete implementation}
 
+\todo{merkle trees}
+\todo{cloud provider cost benefit}
+
 \subsection{Reputation}
+
+\todo{farmer reputation vs payer reputation}
+\todo{reasons a farmer can get penalized - missing an uptime check, missing an
+      audit, missing a download, etc}
 
 \subsubsection{Concrete implementation}
 
 \subsection{Payments}
 
+\todo{ Storj is payment agnostic. Neither the protocol nor the contract requires
+a specific payment system. The current implementation assumes Storjcoin, but
+many other payment types could be implemented, including BTC, Ether, ACH
+transfer, or physical transfer of live goats. }
+
 \subsubsection{Concrete implementation}
 
-\subsection{Encryption}
+\subsection{Garbage collection}
 
-\todo{}
+\subsubsection{Concrete implementation}
 
-\subsection{Structured file storage}
 
 \subsection{Network state overview} The network state is a
 component of the
@@ -979,48 +1160,6 @@ client then sends a put request of new pointers with the updated node IDs.
 
 Diagram Technical Detail <WIP>
 
-\subsection{Authorization}
-
-\todo{}
-
-\subsection{Farmer reputation}
-
-\todo{}
-
-\subsection{Payments}
-
-\todo{}
-
-\subsection{Payer reputation}
-
-\todo{}
-
-\subsection{Repair and maintenance}
-
-\todo{discussion about audits using erasure codes instead of challenge merkle
-trees} \todo{discussion about spot checks}
-
-\todo{
-
-Partial audits provide only probabilistic assurance that the farmer retains the
-entire file. They allow for false positive results, where the verifier believes
-the farmer retains the intact shard, when it has actually been modified or
-partially deleted. The probability of a false positive on an individual partial
-audit is easily calculable (see Section 6.4)
-
-Thus the data owner can have a known confidence level that a shard is still
-intact and available. In practice, this is more complex, as farmers may
-implement intelligent strategies to attempt to defeat partial audits.
-Fortunately, this is a bounded problem in the case of iterative audits. The
-probability of several consecutive false positives becomes very low, even when
-small portions of the file have been deleted. }
-
-\subsection{Payment}
-
-\todo{ Storj is payment agnostic. Neither the protocol nor the contract requires
-a specific payment system. The current implementation assumes Storjcoin, but
-many other payment types could be implemented, including BTC, Ether, ACH
-transfer, or physical transfer of live goats. }
 
 \section{Product details}\label{sec:product_details}
 
@@ -1036,6 +1175,8 @@ system to keep track of which nodes the data resides on for future reading. }
 \subsection{Farmer}
 
 \todo{}
+
+\todo{talk about what farmers get paid for}
 
 \subsection{Bridge}
 
@@ -1076,6 +1217,8 @@ function of the data owner can be split across two or more parties by delegating
 trust. }
 
 \subsection{Client library}
+
+\todo{discuss long tail elimination via overencoding}
 
 
 \subsection{Bridge as a Network Information Repository}
