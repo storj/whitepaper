@@ -115,8 +115,14 @@ trustworthy. Storj operates over the public internet, and allows anyone to sign
 up to become a storage node.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
-participants in the network. {\em Byzantine} nodes can depart arbitrarily from a
-proposed protocol whether it benefits them or not. {\em Altruistic} nodes
+participants in the network. 
+{\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for 
+any reason. Some examples include nodes that are broken, nodes that are 
+trying to cheat the suggested protocol to their advantage, or nodes that 
+are actively trying to sabotage the protocol. In general, a Byzantine node is 
+one that optimizes for a utility function that is independent of the one 
+given for the suggested protocol.
+{\em Altruistic} nodes
 participate in a proposed protocol even if the rational choice is to deviate.
 {\em Rational} nodes participate exactly when it is in their net benefit to do
 so, and may depart for the same reason.
