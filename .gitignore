@@ -19,6 +19,17 @@
 # *.eps
 # *.pdf
 
+## htlatex
+*.4ct
+*.4tc
+*.css
+*.html
+*.idv
+*.lg
+*.tmp
+*.xref
+storj-whitepaper-v3*x.png
+
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
 *.bcf
