@@ -488,7 +488,7 @@ pieces have finished uploading, remaining pieces up to $n$ are canceled as
 described above. Storing more than $o$ pieces is unnecessary for the file's
 target durability.
 
-See \todo{Appendix} for how we select our Reed-Solomon numbers.
+See \todo{data science: Appendix} for how we select our Reed-Solomon numbers.
 
 \subsection{Structured file storage}
 
@@ -1068,16 +1068,73 @@ pieces should be regenerated and uploaded to new nodes. Finally, the
 
 \subsubsection{Concrete implementation}
 
+As farmer nodes go offline, taking their file pieces with them, it will be 
+necessary for the missing pieces to be rebuilt once the entire file’s pieces 
+fall below a certain, predetermined threshold. If a node goes offline, the 
+heavy client will mark that nodes’ file pieces as missing. Once enough 
+correlating file pieces are lost, the heavy client will download the 
+remaining file pieces from their corresponding farmers. Those pieces will 
+be used to rebuild the file’s missing, encrypted, erasure encoded pieces. 
+Once the repair process is complete, the heavy client will send the 
+recovered pieces to new farmers. 
+
+Missing files in need of data repair will be identified through audits 
+and monitoring the overlay network, which tracks recently connected nodes. 
+When a file piece is identified as missing, the heavy client will mark it 
+as such in its meta data. The threshold to trigger a repair will be set by 
+the user when they sign up for an account. The process will be easy and 
+simple, with the user choosing durability options that correlate to specific
+Reed Solomon erasure encoding schemes and file rebuilding tolerances. 
+
+At launch, the system will not identify and rebuild corrupted data, however 
+corrupted data will be corrected through Reed Solomon erasure encoding. As 
+previously mentioned, node churn accounts for the grand majority of data 
+loss on decentralized networks. 
+
+
+
+
+
 \todo{merkle trees}
 \todo{cloud provider cost benefit}
 
 \subsection{Reputation}
+Reputation inside of decentralized networks is a critical part of creating trust between nodes where there would otherwise be none. Reputation ensures bad actors within the network are eliminated as participants, improving security, reliability and durability. Within the Storj network, there are two portions of the network where reputation is used: in farmer nodes to evaluate whether they can be trusted to effectively store data and heavy clients to evaluate whether they can be trusted to pay farmers and maintain high availability. 
+
+\todo{Reputation score range. }
+
+
+\subsubsection{Farmer Reputation}
+
+Reputation for Farmers centers around analyzing how effective the farmer is at storing data, focusing on whether they remain online and deliver data when it’s downloaded. Before a farmer can be trusted to store large numbers of file pieces, they will be required to earn a positive reputation throughout a vetting period to prove they are not malicious. This vetting process for new farmers aims to slightly increase the barrier to entry so bad actors on the network cannot quickly rejoin. During this evaluation period, new farmers will contribute proof of work, spending CPU to join, to prove they have a long-term interest in storing data. 
+
+On the Storj network, farmer reputation is only used to select where new data should be stored - both during repair and during the upload of new files. If a farmers’ reputation score decreases, their file pieces will not be moved or repaired to other farmer nodes, unless the farmer with low reputation is blacklisted from the network. 
+
+When a new farmer joins the network, their farmer reputation score will be 0, indicating they have not been proven to be either a good or bad actor. New farmers will slowly be given more and more files to ensure that if they are a bad actor, they do not drastically damage the network. If a farmer loses or deletes data during this trial phase, they will be immediately blacklisted. The system will monitor this through measures like audits, and new farmers will undergo audits more often than their established, proven, trusted counterparts. 
+
+If a farmer successfully delivers a file piece or passes an audit, their farmer reputation score will improve. If a farmer delivers a file piece quickly, their farmer reputation score will increase faster than slower farmers. If a farmer reports to the overlay network that it is online, their reputation score will slowly improve over an extended period of time. Other factors, like amount of available bandwidth and disk space will also impact farmer reputation, however a farmer’s reputation will not decrease if they decline to store a file piece. 
+
+If a gateway attempts to download its data from a farmer, but the farmer does not have the data, the gateway’s heavy client will be alerted that the node is not trustworthy. At that time, the heavy client will also perform an audit to see if the farmer has the data it should be storing. If it does not, the farmer will be blacklisted and its file pieces will be flagged for repair within the heavy client’s pointer database. Similarly, if a farmer fails an audit by a heavy client, that heavy client will immediately blacklist the farmer node.  
+
+Farmers will not be expected to be online at all times, however if a farmer fails a certain number of uptime checks through pings by the overlay network, their reputation levels will fall below the required threshold and they will be blacklisted. If a farmer maintains a higher uptime, their preference by the corresponding heavy client will be higher and in turn they will be rewarded with a greater number of file pieces 
+
+
+\subsubsection{Heavy Client Reputation}
+A heavy client’s reputation score will center around whether they are meeting their obligations to both the farmers and the users storing data on the network. If the heavy client is not paying farmers for the files they store, the heavy client will be given a lower reputation, signaling to farmers that they should not utilize that heavy client to secure storage contracts. If a heavy client is not correctly storing data for gateways, they will also experience a decrease in reputation, informing other gateways that they cannot be trusted to effectively store data. 
+
+Reputation for heavy clients will be managed through a clearing house were farmers and gateway operators can provide feedback based on their interactions. Heavy clients with lower reputations will be less likely to receive opportunities to store data from gateways. Feedback to these clearing houses will happen automatically by farmers and gateways.
+
+If a heavy client would like to become a Storj Approved Heavy Client, they will be required to have insurance with Storj, so that in the case that they do act maliciously, they will have some proof of stake which would be lost. The Storj Labs team will run and maintain a certain number of heavy clients to ensure gateway users have sufficient availability across the network.
+
 
 \todo{farmer reputation vs payer reputation}
 \todo{reasons a farmer can get penalized - missing an uptime check, missing an
       audit, missing a download, etc}
 
 \subsubsection{Concrete implementation}
+Initially, farmer reputation will be determined by each heavy client. If a farmer is blacklisted by one heavy client, it could still store data for other heavy clients. Reputation will not be shared between heavy clients. Over time, we plan to eliminate heavy clients, and reputation would be determined globally. 
+
+Reputation for heavy clients will initially be enforced by Storj Labs. Farmers will utilize a whitelist provided by Storj until network stability is thoroughly proven in beta. At that time, individuals will be allowed to run their own heavy clients, with those who have insurance with Storj receiving a Storj Approved Heavy Client designation. 
 
 \subsection{Payments}
 
@@ -1288,9 +1345,50 @@ scale, and many areas of research are still open. }
 
 \subsection{Fast Byzantine Consensus}
 
-\todo{}
+Over time, we plan to program the heavy client out of the platform. The heavy 
+client’s role on the network means that the network could be prone to some 
+centralization if others outside of the Storj Labs team do not run their own 
+heavy clients. The biggest challenge is achieving fast byzantine consensus, 
+where farmer nodes can interact with one another, share encoded pieces of files 
+and still operate within the performance levels users will expect from a 
+platform that is competing with traditional cloud storage providers. 
+
+Our team will be researching ways to store lots of small pieces of metadata 
+in a distributed manner, even when those pieces are constantly changing. There 
+currently is not a way to achieve this without significant investment in time, 
+compute and bandwidth. A practical byzantine fault tolerance algorithm could 
+work. They are generally faster and use less disk space than blockchain protocols, 
+however there is significant trade off around network usage and coordination 
+contention, as there could be problematic overlap with two farmer nodes trying 
+to communicate with one another at the same time. 
+
 
 \subsection{Distributed Repair}
+The system can detect when a files’ Reed Solomon erasure encoding pieces fall below a 
+certain threshold. At that time, the file would need to be repaired and the missing pieces 
+would need to be stored on new farmer nodes. Currently, this repair process takes place on 
+the heavy client. The heavy client downloads all the file fragments needed to repair the 
+file, the file is rebuilt and the previously missing shards are sent to farmers selected by
+the heavy client. 
+
+Long term, it would be better to create a technique where file repair takes place in a 
+distributed manner on farmer nodes, putting their excess CPU cycles to work. This will 
+be a first step to eliminating the heavy client. This approach would also be more 
+decentralized than file repair on heavy clients. It is also more efficient to execute 
+this operation at the edge of the network. 
+
+The system would need more checks and balances to ensure the farmer is correctly executing
+a repair and that the data inside the encrypted file is accurate. Merkle tree roots will 
+greatly help with distributed repair. The farmer node executing the repair would get approval 
+from the heavy client to repair a file, the heavy client would share its merkle tree root 
+with the farmer and notify which farmers should store the restored file pieces. The farmer 
+would then download the file pieces needed for the repair from the farmers where they reside. 
+The farmer repair node would execute the repair and run the shards through the merkle tree 
+root to prove the data was correct and properly repaired. We are currently taking the steps 
+needed to ensure the network and our data format will support merkle tree repair in the future. 
+
+
+
 
 \todo{}
 
