@@ -45,6 +45,9 @@ implementations for each responsibility of the framework. \end{abstract}
 
 \section{Introduction}
 
+\todo{make sure this paper explains conclusively why we're doing v3 and why
+we won't have to do a v4}
+
 Storj is a protocol that creates a distributed network for the reliable storage
 of data and facilitates payment for successful data storage between peers. The
 Storj protocol enables peers on the network to transfer data, verify the
@@ -115,12 +118,12 @@ trustworthy. Storj operates over the public internet, and allows anyone to sign
 up to become a storage node.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
-participants in the network. 
-{\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for 
-any reason. Some examples include nodes that are broken, nodes that are 
-trying to cheat the suggested protocol to their advantage, or nodes that 
-are actively trying to sabotage the protocol. In general, a Byzantine node is 
-one that optimizes for a utility function that is independent of the one 
+participants in the network.
+{\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
+any reason. Some examples include nodes that are broken, nodes that are
+trying to cheat the suggested protocol to their advantage, or nodes that
+are actively trying to sabotage the protocol. In general, a Byzantine node is
+one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
 {\em Altruistic} nodes
 participate in a proposed protocol even if the rational choice is to deviate.
