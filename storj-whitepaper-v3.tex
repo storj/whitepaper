@@ -46,7 +46,7 @@ implementations for each responsibility of the framework. \end{abstract}
 \section{Introduction}
 
 \todo{make sure this paper explains conclusively why we're doing v3 and why
-we won't have to do a v4}
+we won't have to do a v4 - difference between framework vs concrete sections}
 
 Storj is a protocol that creates a distributed network for the reliable storage
 of data and facilitates payment for successful data storage between peers. The
@@ -278,8 +278,9 @@ rearchitecting the rest of the network. The individual components are:
 \item Authorization
 \item Audits
 \item Data repair
-\item Reputation
+\item Storage node reputation
 \item Payments
+\item Payer reputation
 \item Garbage collection
 \end{enumerate}
 
@@ -514,6 +515,8 @@ concrete implementation has significant detail.
 
 \subsubsection{Concrete implementation}
 
+\todo{an introduction before diving into a list of definitions}
+
 \begin{description}
 \item[Bucket] A \x{bucket} is an unbounded but named
 collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
@@ -622,7 +625,7 @@ Segmenting large files like video content and distributing the \x{segment}s
 across the network separately reduces the impact of content delivery on any
 given node. Bandwidth demands are distributed more evenly across the network. In
 addition, the end-user can take advantage of parallel transfer, similar to
-BitTorrent \cite{24} or other peer-to-peer networks.
+BitTorrent or other peer-to-peer networks.
 
 \subsubsection{Segments as Stripes}
 
@@ -735,8 +738,6 @@ Aside from scale requirements, the desired API is straightforward and
 simple: Put (store a pointer given a path), Get (retrieve a pointer given a
 path), List (paginated, ordered listing of existing paths), and Delete (remove a
 path).
-
-
 
 \subsubsection{Aside about distributed consensus}
 
@@ -1026,44 +1027,71 @@ becomes practically certain.
 
 Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
-and expected responses are pregenerated ahead of time. By using a Merkle tree,
-the amount of metadata needed to store these pregenerated challenges and
-responses can be made to be negligible.
+and expected responses are generated ahead of time, as a form of compact
+proof of retrievability \cite{proof-of-retrievability}. By using a Merkle tree
+\cite{merkle-tree}, the amount of metadata needed to store these pregenerated
+challenges and responses can be made to be negligible.
 
-Unfortunately, the challenges and responses must be pregenerated, and without
-a periodic regeneration of these challenges, a storage node can begin to pass
-most audits without storing all of the requested data.
+Unfortunately, in such a scheme, the challenges and responses must be
+pregenerated, and without a periodic regeneration of these challenges, a
+storage node can begin to pass most audits without storing all of the requested
+data.
 
-Notably, we are already using Reed-Solomon erasure coding \cite{rs} on small
-ranges (\x{stripes}). Reed-Solomon is an error correcting code, so we use
-Reed-Solomon to issue challenges and verify responses instead.
-
+We do something else.
 A central assumption in our storage system is that most storage nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
 via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
+We are already using Reed-Solomon erasure coding
+\cite{rs} on small ranges (\x{stripes}), so we use it to issue challenges and
+verify responses as well.
 This feature can be used for arbitrary audits without pregenerated challenges.
 
 To perform an audit, we first choose a \x{stripe} to audit. We request that
 \x{stripe}'s \x{erasure shares} from all storage nodes responsible. We then run
-the Berlekamp-Welch algorithm across all the \x{erasure shares}. When enough
-storage nodes return correct information, any faulty or missing response can
-easily be identified. These audit failures will be stored and saved in the
+the Berlekamp-Welch algorithm \cite{bw} across all the \x{erasure shares}. When
+enough storage nodes return correct information, any faulty or missing response
+can easily be identified. These audit failures will be stored and saved in the
 reputation system.
 
 It is important that every storage node has a frequent set of random audits to
 gain statistical power on how well-behaved that storage node is, but it is not
 a requirement that audits are performed on every byte, or even on every file.
+Additionally, it is important that every byte stored in the system has an equal
+probability of being checked for a future audit to every other byte in the
+system. Audits should happen uniformly at random by byte with replacement.
 
 \subsection{Data repair}
+
+\todo{general framework repair - should work with any version of our framework.
+goal is to replace missing pieces}
+
+\subsubsection{Concrete implementation}
 
 An ever-present risk in any distributed storage system is file loss. While there
 are many potential causes for file loss, storage node churn is the leading
 cause by far \todo{citation needed}. Storage nodes may go offline due to
 hardware failure, intermittent internet connectivity, or operator choices.
 Because audits are validating that conforming nodes store data correctly, all
-that remains is to detect when a storage node goes offline and reshuffle the
+that remains is to detect when a storage node goes offline and repair at-risk
 data.
+
+We're taking a huge shortcut with this assumption. We're assuming that
+probabilistic audits are enough for us to estimate the likelihood that a node
+will have the data it should have, and then using that along with node uptime
+(which is much more efficient than audits) to calculate when a file is at risk.
+We {\em only} consider {\em node} availability and configured repair thresholds
+when determining which {\em files} to repair.
+
+There are many other ways data might get lost in the network besides node churn:
+corruption, malicious behavior, bad hardware, software error, user space
+reclaimation, but these issues are less serious than full node churn (power
+loss, internet connectivity intermittency, software shutdown or removal).
+Our spot-check-based audits will incentivize farmers to reliabily store data
+while estimating the rate at which data is actually stored reliably.
+Therefore, our repair system only seeks to solve the node churn problem, and
+we expect to make up the difference via configuring Reed-Solomon erasure code
+parameters to match.
 
 The Overlay Network already has caches in place that have accurate and
 up-to-date information about which storage nodes have been online recently.
@@ -1075,75 +1103,153 @@ threshold, the segment should be downloaded and reconstructed and the missing
 pieces should be regenerated and uploaded to new nodes. Finally, the
 \x{pointer} should be updated to include the new information.
 
+As farmer nodes go offline, taking their file pieces with them, it will be
+necessary for the missing pieces to be rebuilt once the entire file's pieces
+fall below a certain, predetermined threshold. If a node goes offline, the
+heavy client will mark that nodes' file pieces as missing. Once enough
+correlating file pieces are lost, the heavy client will download the
+remaining file pieces from their corresponding farmers. Those pieces will
+be used to rebuild the file's missing, encrypted, erasure encoded pieces.
+Once the repair process is complete, the heavy client will send the
+recovered pieces to new farmers.
+
+Users will choose their desired durability when they sign up for an account
+(which may impact price among other things). This desired durability, along with
+statistics from ongoing audits, will directly inform what Reed-Solomon erasure
+code choices should be made for new and repaired files, and what thresholds
+should be set for when uploads are successful and when repair is needed. See
+Appendex \todo{} for how we calculate these things given user inputs.
+
+A practical upshot of this design is that for now, the heavy client must
+constantly stay running. If the user's heavy client stops running, repairs will
+stop, and data will eventually fall out of the network due to node churn. This
+is similar to the design of how value storing and republishing works in
+Kademlia \cite{kad}.
+
+The ingress bandwidth demands of the audit and repair system are large, but the
+egress demands are relatively small. Lots of data comes in to the system for
+audits and repairs, but just the formerly missing pieces get sent back out.
+While the repair and audit system can run anywhere, hosting providers
+that offer free ingress \todo{should we mention specific hosts?
+(e.g., Google Cloud Platform, Amazon AWS, and Microsoft Azure)}
+make for an especially attractive
+hosting location for users of this system.
+
+\subsubsection{Merkle trees}
+
+Repairs are one of the few places latency doesn't matter. The data repair system
+just needs to get through as many files as possible, but it doesn't matter if
+a specific file takes longer. Throughput is much more important than
+latency during repair. Further, while potentially using cheap bandwidth, repair
+is still a costly operation that costs a single operator, so work should be
+minimal.
+
+As a result, when repairing a segment, the minimum number of pieces required
+should be all that are needed for download. Unfortunately, this means that
+with little redundancy, erasure codes will be less effective at catching errors.
+Further, the fallback safety mechanism that the user has for detecting errors
+(authenticated encryption) is unavailable to the repair system (no decryption
+keys).
+
+Because full segments are repaired at a time from minimal pieces, hashes of
+each \x{piece} should be stored in the system via a Merkle tree
+\cite{merkle-tree}, storing the root of the tree in the \x{pointer}. This allows
+the repair system to correctly assess whether or not repair has completed
+successfully without using extra redundancy for the same task.
+
+A full copy of the leaves of the Merkle tree of \x{pieces} (enough to generate
+the full tree) should be stored alongside each \x{piece} on each storage node,
+with the root in the \x{pointer}, such that the only additional central
+metadata storage required is just for the root.
+
+Repair should validate the tree after each repair before updating the
+\x{pointer} to point to new locations.
+
+\subsection{Storage node reputation}
+
+Reputation inside of decentralized networks is a critical part of creating trust
+between nodes where there would otherwise be none. Reputation ensures bad actors
+within the network are eliminated as participants, improving security,
+reliability and durability.
+
+Storage node reputation can be divided into three subsystems. The first
+subsystem is the initial vetting process, the second subsystem is a filtering
+system, and the third system is a preference system.
+
+When storage nodes first join the network, their quality is unknown.
+As a result, storage nodes with unknown reputation will be placed into a vetting
+process until enough data is known about that storage node.
+Every time a file is uploaded, the system will select some small amount of
+unvetted storage nodes to include in the list of target nodes.
+The Reed-Solomon parameters will be chosen such that these unvetted storage
+nodes will not affect the durability of the file, but allow the network to test
+the node with a small fraction of data until we are sure the node is reliable.
+After the storage node has successfully stored enough data for a long enough
+period (potentially months), the system will then start selecting that storage
+node for general uploads. Importantly, storage nodes get paid during this
+vetting period, but simply don't receive as much data.
+
+While new nodes require a proof of work to avoid some Sybil attacks
+\cite{sybil-attack}, additional effort may be required to prevent
+malicious and determined new nodes from overwhelming the vetting process and
+preventing well-behaved new nodes from getting enough data to progress past it.
+As a result, users will be able to choose as a configuration parameter the
+minimum proof of work required from storage nodes for new data. Additionally,
+other schemes are possible, such as a form of proof of stake as we proposed in
+our previous work \cite{sybil-cost}.
+
+The filtering system is the second subsystem and blocks bad storage nodes from
+participating.
+Certain actions a storage node can take are disqualifying events, and the
+reputation system will be used to filter these nodes out from future uploads,
+regardless of where the node is in the vetting process.
+What these events are will require careful selection and tuning to make sure
+that incentives are correct, but will at least include failing too many audits,
+failing to return data (with reasonable speed), and failing too many uptime
+checks.
+If a storage node is disqualified by failing too many audits, that node will no
+longer be selected for future data storage and the data that node stores will
+be moved to new storage nodes.
+Likewise, if a client attempts to download a piece from a storage node that
+the node should have and the node fails to return it too many times, the
+node will be disqualified. Importantly, storage nodes will be allowed to reject
+and fail uploads without penalty, as we want to allow nodes to choose which data
+to store.
+
+After a storage node is disqualified, the system will no longer select that
+node for future data storage. If the node decides to start over with a brand
+new identity, the node must restart the vetting process from the beginning (in
+addition to generating a new node ID via the proof-of-work system). This
+strongly disincentivizes storage nodes from being cavalier with their
+reputation.
+
+The third subsystem is a preference system. After disqualified storage nodes
+have been eliminated, remaining statistics collected during audits
+will be used to prefer better storage nodes during uploads.
+These statistics include performance characteristics such as throughput and
+latency, history of reliability and uptime, geographic location, and other
+desirable qualities.
+These statistics will be combined into a load-balancing selection process, such
+that all uploads are sent to qualified nodes, with a higher likelihood of
+uploads to preferred nodes, but with a non-zero chance for any qualified node.
+Initially, we'll be load balancing with these preferences via a randomized
+scheme such as the Power of Two Choices \cite{power-of-two-choices}.
+
+On the Storj network, storage node reputation is only used to select where new
+data should be stored - both during repair and during the upload of new files.
+If a storage node's preferential reputation decreases, its file pieces will not
+be moved or repaired to other nodes. However, data stored on disqualified nodes
+will be moved to qualified nodes.
+
 \subsubsection{Concrete implementation}
 
-As farmer nodes go offline, taking their file pieces with them, it will be 
-necessary for the missing pieces to be rebuilt once the entire file’s pieces 
-fall below a certain, predetermined threshold. If a node goes offline, the 
-heavy client will mark that nodes’ file pieces as missing. Once enough 
-correlating file pieces are lost, the heavy client will download the 
-remaining file pieces from their corresponding farmers. Those pieces will 
-be used to rebuild the file’s missing, encrypted, erasure encoded pieces. 
-Once the repair process is complete, the heavy client will send the 
-recovered pieces to new farmers. 
+Initially, storage node reputation will be individually determined by each
+heavy client. If a node is disqualified by one heavy client, it could still
+store data for other heavy clients. Reputation will not be shared between
+heavy clients initially. Over time, as we plan to eliminate heavy clients,
+reputation would then be determined globally.
 
-Missing files in need of data repair will be identified through audits 
-and monitoring the overlay network, which tracks recently connected nodes. 
-When a file piece is identified as missing, the heavy client will mark it 
-as such in its meta data. The threshold to trigger a repair will be set by 
-the user when they sign up for an account. The process will be easy and 
-simple, with the user choosing durability options that correlate to specific
-Reed Solomon erasure encoding schemes and file rebuilding tolerances. 
-
-At launch, the system will not identify and rebuild corrupted data, however 
-corrupted data will be corrected through Reed Solomon erasure encoding. As 
-previously mentioned, node churn accounts for the grand majority of data 
-loss on decentralized networks. 
-
-
-
-
-
-\todo{merkle trees}
-\todo{cloud provider cost benefit}
-
-\subsection{Reputation}
-Reputation inside of decentralized networks is a critical part of creating trust between nodes where there would otherwise be none. Reputation ensures bad actors within the network are eliminated as participants, improving security, reliability and durability. Within the Storj network, there are two portions of the network where reputation is used: in farmer nodes to evaluate whether they can be trusted to effectively store data and heavy clients to evaluate whether they can be trusted to pay farmers and maintain high availability. 
-
-\todo{Reputation score range. }
-
-
-\subsubsection{Farmer Reputation}
-
-Reputation for Farmers centers around analyzing how effective the farmer is at storing data, focusing on whether they remain online and deliver data when it’s downloaded. Before a farmer can be trusted to store large numbers of file pieces, they will be required to earn a positive reputation throughout a vetting period to prove they are not malicious. This vetting process for new farmers aims to slightly increase the barrier to entry so bad actors on the network cannot quickly rejoin. During this evaluation period, new farmers will contribute proof of work, spending CPU to join, to prove they have a long-term interest in storing data. 
-
-On the Storj network, farmer reputation is only used to select where new data should be stored - both during repair and during the upload of new files. If a farmers’ reputation score decreases, their file pieces will not be moved or repaired to other farmer nodes, unless the farmer with low reputation is blacklisted from the network. 
-
-When a new farmer joins the network, their farmer reputation score will be 0, indicating they have not been proven to be either a good or bad actor. New farmers will slowly be given more and more files to ensure that if they are a bad actor, they do not drastically damage the network. If a farmer loses or deletes data during this trial phase, they will be immediately blacklisted. The system will monitor this through measures like audits, and new farmers will undergo audits more often than their established, proven, trusted counterparts. 
-
-If a farmer successfully delivers a file piece or passes an audit, their farmer reputation score will improve. If a farmer delivers a file piece quickly, their farmer reputation score will increase faster than slower farmers. If a farmer reports to the overlay network that it is online, their reputation score will slowly improve over an extended period of time. Other factors, like amount of available bandwidth and disk space will also impact farmer reputation, however a farmer’s reputation will not decrease if they decline to store a file piece. 
-
-If a gateway attempts to download its data from a farmer, but the farmer does not have the data, the gateway’s heavy client will be alerted that the node is not trustworthy. At that time, the heavy client will also perform an audit to see if the farmer has the data it should be storing. If it does not, the farmer will be blacklisted and its file pieces will be flagged for repair within the heavy client’s pointer database. Similarly, if a farmer fails an audit by a heavy client, that heavy client will immediately blacklist the farmer node.  
-
-Farmers will not be expected to be online at all times, however if a farmer fails a certain number of uptime checks through pings by the overlay network, their reputation levels will fall below the required threshold and they will be blacklisted. If a farmer maintains a higher uptime, their preference by the corresponding heavy client will be higher and in turn they will be rewarded with a greater number of file pieces 
-
-
-\subsubsection{Heavy Client Reputation}
-A heavy client’s reputation score will center around whether they are meeting their obligations to both the farmers and the users storing data on the network. If the heavy client is not paying farmers for the files they store, the heavy client will be given a lower reputation, signaling to farmers that they should not utilize that heavy client to secure storage contracts. If a heavy client is not correctly storing data for gateways, they will also experience a decrease in reputation, informing other gateways that they cannot be trusted to effectively store data. 
-
-Reputation for heavy clients will be managed through a clearing house were farmers and gateway operators can provide feedback based on their interactions. Heavy clients with lower reputations will be less likely to receive opportunities to store data from gateways. Feedback to these clearing houses will happen automatically by farmers and gateways.
-
-If a heavy client would like to become a Storj Approved Heavy Client, they will be required to have insurance with Storj, so that in the case that they do act maliciously, they will have some proof of stake which would be lost. The Storj Labs team will run and maintain a certain number of heavy clients to ensure gateway users have sufficient availability across the network.
-
-
-\todo{farmer reputation vs payer reputation}
-\todo{reasons a farmer can get penalized - missing an uptime check, missing an
-      audit, missing a download, etc}
-
-\subsubsection{Concrete implementation}
-Initially, farmer reputation will be determined by each heavy client. If a farmer is blacklisted by one heavy client, it could still store data for other heavy clients. Reputation will not be shared between heavy clients. Over time, we plan to eliminate heavy clients, and reputation would be determined globally. 
-
-Reputation for heavy clients will initially be enforced by Storj Labs. Farmers will utilize a whitelist provided by Storj until network stability is thoroughly proven in beta. At that time, individuals will be allowed to run their own heavy clients, with those who have insurance with Storj receiving a Storj Approved Heavy Client designation. 
+\todo{future work section about reputation sharing}
 
 \subsection{Payments}
 
@@ -1152,99 +1258,92 @@ a specific payment system. The current implementation assumes Storjcoin, but
 many other payment types could be implemented, including BTC, Ether, ACH
 transfer, or physical transfer of live goats. }
 
+\todo{heavy clients need payment for audits, repair, metadata storage, etc}
+
+\todo{approved heavy clients, insurance, branding, etc}
+
+\todo{bandwidth accounting protocol}
+
+\todo{
+If a heavy client would like to become a Storj Approved Heavy Client, they will
+be required to have insurance with Storj, so that in the case that they do act
+maliciously, they will have some proof of stake which would be lost. The Storj
+Labs team will run and maintain a certain number of heavy clients to ensure
+gateway users have sufficient availability across the network.
+}
+
 \subsubsection{Concrete implementation}
+
+\subsection{Payer reputation}
+
+Storage nodes have a strong incentive to avoid accepting data assigned to payers
+that don't have a good history of paying their bills.
+
+\subsubsection{Concrete implementation}
+
+Initially, storage nodes should put payers through a vetting process
+where storage nodes limit their exposure to unknown payers and build up trust
+over time that specific payers are likely to pay their bills. Storage nodes
+will have a configurable maximum amount of data that they will store for an
+unknown payer, and use whether or not they get paid for that data as input into
+whether or not that payer should be trusted for more data in the future.
+
+Storage nodes will also feature a whitelist, where storage node operators can
+input a list of payers they already trust. Storj Labs will ship a prefilled
+whitelist with guaranteed and insured payers (see payments).
+
+\todo{future work - shared reputation}
 
 \subsection{Garbage collection}
 
+When data is moved or deleted, it's important to inform impacted storage nodes
+that they are no longer required to store that data. Unfortunately, sometimes
+storage nodes will be temporarily unavailable and delete messages will be
+missed. In these cases, data that is no longer needed is considered
+{\em garbage}. Payers only pay for data they expect to be stored, so storage
+nodes with lots of garbage will be sad to find less earnings than they would
+otherwise be entitled to unless a garbage collection system is employed.
+
+A garbage collection algorithm is a method for freeing no-longer used resources.
+A {\em precise} garbage collector collects all garbage exactly and
+leaves no addition garbage, whereas a {\em conservative} garbage collector may
+leave some small proportion of garbage around given some other tradeoffs, often
+performance.
+
 \subsubsection{Concrete implementation}
 
+When data is deleted through the client, the metadata system (and thus a payer,
+with payer reputation on the line) will require proof that deletes were issued
+to a configurable minimum number of storage nodes.
 
-\subsection{Network state overview} The network state is a
-component of the
-distributed network, and has a primary role of storing information related to
-the segment. The network state keeps track of \x{pointer}s, which contain the
-IDs of \x{piece storage nodes} holding \x{remote segment}s, indication if the
-segment is \x{inline} and other descriptors. The network state service houses a
-\x{pointer} database that can be called by other services to put, get, list, and
-delete \x{pointers}.
+Additionally, we start with a conservative garbage collector. Periodically,
+a payer will send out a highly-compressible data structure such as a
+{\em Bloom filter} \cite{bloom-filter} that contains hints about what pieces
+a node is expected to continue storing. A Bloom filter is like a set that can
+answer set membership questions with the answers {\em isn't contained} or
+{\em maybe contained}, but not {\em is contained}. By sending a custom data
+structure to each node on a periodic schedule, a payer can give a storage node
+the ability to clean up garbage to a configurable tolerance.
 
-Two components of the distributed network depend on the network state: the
-light client, and repair and maintenance (also known as data repair). The light
-client makes requests to the network state to store or receive \x{pointer}s to
-\x{segment}s depending on whether there is an upload or download action.
-Similarly, the data repair will request and receive a list of \x{pointer}s. Each
-\x{pointer} contains the metadata mentioned above, including the following
-values related to Reed Solomon encoding: the minimum number of \x{piece}s
-required for a \x{segment}'s reconstruction, the total amount of \x{pieces}
-generated through erasure encoding, the repair threshold (or number of pieces
-needed to lose before triggering repair), and the success threshold (or amount
-of pieces needed to be stored in order to be counted as a success). Below are
-descriptions of how the light client and data repair interact with the network
-state for uploads, downloads, and data repair, respectively.
+Because Bloom filters are probabilistic and their collision risk is
+configurable, the conservative garbage collector can be tuned to eliminate
+garbage down to an acceptable tolerance, given the tradeoff of additional
+bandwidth for these cleanup messages.
 
-
-\subsubsection{Download overview} In order to download a file, the light
-client will login and send a request to the network state to get pointers to the
-stored segments and other metadata. The light client extracts the node IDs that
-are storing the data and sends a request to the overlay network with those IDs.
-The overlay network responds with an object containing the nodes’ IP addresses.
-Finally, the light client sends a request to farmers in order to receive pieces
-using those IP addresses.
-
-
-Technical Dive into how Download Works \todo{}
-
-\subsubsection{Upload overview}
-In order to upload a file, the light client will log in
-and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
-storage availability and bandwidth to potentially store files. The overlay
-network will have a list of nodes that meet those criteria and use the
-reputation network to filter out reputable farmers. The overlay network then
-sends a refined list of farmers to the light client, which is then used to
-directly upload data. Finally, the light client sends a request to the network
-state in order to store the IDs of the piece storage nodes holding the segments
-and other related metadata in pointers.
-
-
-Technical Dive into how Upload Works \todo{}
-
-\subsubsection{Repair and maintenance}
-The repair and maintenance component (also known as data
-repair) is essential to ensure data integrity is maintained. It confirms that
-nodes responsible for pieces continue to store the data that the light client
-sent. To do this, it first makes a request to the network state to receive
-pointers. From there, the repair and maintenance component extracts the node IDs
-from the response and makes a request with that information to the DHT cache.
-The DHT cache sends a response containing only the online nodes from the
-original node ID list. The data repair component takes the response from the DHT
-cache and the repair threshold value from the pointer, then calculates which
-pieces need to get repaired. The light client directly downloads pieces that
-need to get repaired from farmers and re-uploads them to new reputable farmers.
-To ensure the network state has up-to-date information about the data, the light
-client then sends a put request of new pointers with the updated node IDs.
-
-
-Diagram Technical Detail <WIP>
-
+Because this garbage collection system is not precise, storage nodes have a
+strong incentive to stay online to witness all delete messages if possible.
+On the other hand, because this garbage collection system is not precise,
+bandwidth overhead for negotiating the list of pieces a storage node must store
+will be negligible.
 
 \section{Product details}\label{sec:product_details}
 
-\todo{ The client provides the actual storage API. It should be run co-located
-with wherever data is generated, and will communicate directly with storage
-nodes so as to avoid central bandwidth costs. The client can provide an
-S3-compatible API to interoperate with existing software.
-
-When data is sent to the client, the client will encrypt the data, choose
-appropriate storage nodes, store the data on those nodes, then use the metadata
-system to keep track of which nodes the data resides on for future reading. }
-
+\subsection{Overview of components}
 \subsection{Farmer}
-
-\todo{}
 
 \todo{talk about what farmers get paid for}
 
-\subsection{Bridge}
+\subsection{Heavy client}
 
 \todo{ As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
@@ -1282,46 +1381,6 @@ minimize the trust it places in either Bridge server. In the long run, any
 function of the data owner can be split across two or more parties by delegating
 trust. }
 
-\subsection{Client library}
-
-\todo{discuss long tail elimination via overencoding}
-
-
-\subsection{Bridge as a Network Information Repository}
-
-\todo{ As noted earlier, data owners are responsible for negotiating contracts
-and managing file state. With enough information about peers on the network,
-contract selection becomes a powerful tool for maintaining file state. A Bridge
-will have many active contracts with many farmers, and will therefore have
-access to information about those farmers. A Bridge could use this information
-to intelligently distribute shards across a set of farmers in order to achieve
-specific performance goals.
-
-For instance, via the execution of a contract, a Bridge node gathers data about
-the farmer’s communication latency, audit success rate, audit response latency,
-and availability. With minimal additional effort, the Bridge could also gather
-information about the node’s available bandwidth. By gathering a large pool of
-reliable data about farmers, a Bridge node can intelligently select a set of
-farmers that collectively provides a probabilistic guarantee of a certain
-quality of service.
-
-In other words, the Bridge can leverage its knowledge about peers on the network
-to tailor the service to the client’s requirements. Rather than a limited set of
-service tiers, a Bridge could assemble a package of contracts on the fly to meet
-any service requirement. This allows the client to determine the optimal
-latency, bandwidth, or location of a file, and have confidence that its goals
-will be met. For instance, a streaming video application may specify a need for
-high bandwidth, while archival storage needs only high availability. In a
-sufficiently large network, any need could be met.
-
-Secure distributed computation is an unsolved problem and, as such, each Bridge
-server uses its accumulated knowledge of the network. The Bridge is able to
-provide a probabilistic quality of service based on its knowledge the
-performance and reliability of farmers that a distributed network alone cannot
-provide. }
-
-\subsection{Bridge as a Service}
-
 \todo{ In cases where the cost of delegating trust is not excessively high,
 clients may use third-party Bridges. Because Bridges do not store data and have
 no access to keys, this is still a large improvement on the traditional
@@ -1342,7 +1401,74 @@ to pay for storage with standard payment mechanisms, like credit cards, rather
 than managing a cryptocurrency wallet. Storj Labs Inc. currently provides this
 service. }
 
-\subsection{S3 gateway}
+\subsection{Gateway}
+
+\todo{ The client provides the actual storage API. It should be run co-located
+with wherever data is generated, and will communicate directly with storage
+nodes so as to avoid central bandwidth costs. The client can provide an
+S3-compatible API to interoperate with existing software.
+
+When data is sent to the client, the client will encrypt the data, choose
+appropriate storage nodes, store the data on those nodes, then use the metadata
+system to keep track of which nodes the data resides on for future reading. }
+
+\subsection{Detailed walkthroughs}
+
+\subsubsection{Detailed walkthrough: upload}
+
+In order to upload a file, the light client will log in
+and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
+storage availability and bandwidth to potentially store files. The overlay
+network will have a list of nodes that meet those criteria and use the
+reputation network to filter out reputable farmers. The overlay network then
+sends a refined list of farmers to the light client, which is then used to
+directly upload data. Finally, the light client sends a request to the network
+state in order to store the IDs of the piece storage nodes holding the segments
+and other related metadata in pointers.
+
+Technical Dive into how Upload Works \todo{}
+
+\todo{discuss long tail elimination via overencoding}
+\todo{Deep dive into example upload steps}
+
+\subsubsection{Detailed walkthrough: download}
+
+In order to download a file, the light
+client will login and send a request to the network state to get pointers to the
+stored segments and other metadata. The light client extracts the node IDs that
+are storing the data and sends a request to the overlay network with those IDs.
+The overlay network responds with an object containing the nodes' IP addresses.
+Finally, the light client sends a request to farmers in order to receive pieces
+using those IP addresses.
+
+Technical Dive into how Download Works \todo{}
+
+\todo{discuss long tail elimination via overencoding}
+\todo{Deep dive into example download steps}
+
+\subsubsection{Detailed walkthrough: repair}
+
+The repair and maintenance component (also known as data
+repair) is essential to ensure data integrity is maintained. It confirms that
+nodes responsible for pieces continue to store the data that the light client
+sent. To do this, it first makes a request to the network state to receive
+pointers. From there, the repair and maintenance component extracts the node IDs
+from the response and makes a request with that information to the DHT cache.
+The DHT cache sends a response containing only the online nodes from the
+original node ID list. The data repair component takes the response from the DHT
+cache and the repair threshold value from the pointer, then calculates which
+pieces need to get repaired. The light client directly downloads pieces that
+need to get repaired from farmers and re-uploads them to new reputable farmers.
+To ensure the network state has up-to-date information about the data, the light
+client then sends a put request of new pointers with the updated node IDs.
+
+Diagram Technical Detail <WIP>
+
+\todo{Deep dive into example repair steps}
+
+\subsubsection{Detailed walkthrough: payment}
+
+\todo{Deep dive into example payment steps}
 
 \todo{}
 
@@ -1354,50 +1480,49 @@ scale, and many areas of research are still open. }
 
 \subsection{Fast Byzantine Consensus}
 
-Over time, we plan to program the heavy client out of the platform. The heavy 
-client’s role on the network means that the network could be prone to some 
-centralization if others outside of the Storj Labs team do not run their own 
-heavy clients. The biggest challenge is achieving fast byzantine consensus, 
-where farmer nodes can interact with one another, share encoded pieces of files 
-and still operate within the performance levels users will expect from a 
-platform that is competing with traditional cloud storage providers. 
+Over time, we plan to program the heavy client out of the platform. The heavy
+client's role on the network means that the network could be prone to some
+centralization if others outside of the Storj Labs team do not run their own
+heavy clients. The biggest challenge is achieving fast byzantine consensus,
+where farmer nodes can interact with one another, share encoded pieces of files
+and still operate within the performance levels users will expect from a
+platform that is competing with traditional cloud storage providers.
 
-Our team will be researching ways to store lots of small pieces of metadata 
-in a distributed manner, even when those pieces are constantly changing. There 
-currently is not a way to achieve this without significant investment in time, 
-compute and bandwidth. A practical byzantine fault tolerance algorithm could 
-work. They are generally faster and use less disk space than blockchain protocols, 
-however there is significant trade off around network usage and coordination 
-contention, as there could be problematic overlap with two farmer nodes trying 
-to communicate with one another at the same time. 
+Our team will be researching ways to store lots of small pieces of metadata
+in a distributed manner, even when those pieces are constantly changing. There
+currently is not a way to achieve this without significant investment in time,
+compute and bandwidth. A practical byzantine fault tolerance algorithm could
+work. They are generally faster and use less disk space than blockchain
+protocols, however there is significant trade off around network usage and
+coordination contention, as there could be problematic overlap with two farmer
+nodes trying to communicate with one another at the same time.
 
 
 \subsection{Distributed Repair}
-The system can detect when a files’ Reed Solomon erasure encoding pieces fall below a 
-certain threshold. At that time, the file would need to be repaired and the missing pieces 
-would need to be stored on new farmer nodes. Currently, this repair process takes place on 
-the heavy client. The heavy client downloads all the file fragments needed to repair the 
-file, the file is rebuilt and the previously missing shards are sent to farmers selected by
-the heavy client. 
+The system can detect when a files' Reed Solomon erasure encoding pieces fall
+below a certain threshold. At that time, the file would need to be repaired and
+the missing pieces would need to be stored on new farmer nodes. Currently, this
+repair process takes place on the heavy client. The heavy client downloads all
+the file fragments needed to repair the file, the file is rebuilt and the
+previously missing shards are sent to farmers selected by the heavy client.
 
-Long term, it would be better to create a technique where file repair takes place in a 
-distributed manner on farmer nodes, putting their excess CPU cycles to work. This will 
-be a first step to eliminating the heavy client. This approach would also be more 
-decentralized than file repair on heavy clients. It is also more efficient to execute 
-this operation at the edge of the network. 
+Long term, it would be better to create a technique where file repair takes
+place in a distributed manner on farmer nodes, putting their excess CPU cycles
+to work. This will be a first step to eliminating the heavy client. This
+approach would also be more decentralized than file repair on heavy clients. It
+is also more efficient to execute this operation at the edge of the network.
 
-The system would need more checks and balances to ensure the farmer is correctly executing
-a repair and that the data inside the encrypted file is accurate. Merkle tree roots will 
-greatly help with distributed repair. The farmer node executing the repair would get approval 
-from the heavy client to repair a file, the heavy client would share its merkle tree root 
-with the farmer and notify which farmers should store the restored file pieces. The farmer 
-would then download the file pieces needed for the repair from the farmers where they reside. 
-The farmer repair node would execute the repair and run the shards through the merkle tree 
-root to prove the data was correct and properly repaired. We are currently taking the steps 
-needed to ensure the network and our data format will support merkle tree repair in the future. 
-
-
-
+The system would need more checks and balances to ensure the farmer is correctly
+executing a repair and that the data inside the encrypted file is accurate.
+Merkle tree roots will greatly help with distributed repair. The farmer node
+executing the repair would get approval from the heavy client to repair a file,
+the heavy client would share its merkle tree root with the farmer and notify
+which farmers should store the restored file pieces. The farmer would then
+download the file pieces needed for the repair from the farmers where they
+reside. The farmer repair node would execute the repair and run the shards
+through the merkle tree root to prove the data was correct and properly
+repaired. We are currently taking the steps needed to ensure the network and our
+data format will support merkle tree repair in the future.
 
 \todo{}
 
@@ -1425,7 +1550,7 @@ the network. }
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
 disrupt network operation by hijacking or dropping messages. Kademlia, because
 it relies on message redundancy and a concrete distance metric, is reasonably
-resistant to Sybil attacks. A node’s neighbors in the network are selected by
+resistant to Sybil attacks. A node's neighbors in the network are selected by
 Node ID from an evenly distributed pool, and most messages are sent to at least
 three neighbors. If a Sybil attacker controls 50\% of the network, it
 successfully isolates only 12.5\% of honest nodes. While reliability and
@@ -1439,14 +1564,14 @@ Sybil attack carried out by an entity with extreme resources. Google attacks are
 hard to address, as it is difficult to predict the actions of an organization
 with orders of magnitude more resources than the sum of the resources of network
 participants. The only reliable defence against a Google attack is to create a
-network whose resources are on the same order of magnitude as the attacker’s. At
+network whose resources are on the same order of magnitude as the attacker's. At
 that scale, any attack against the network would represent an unsustainable
 commitment of resources for such an organization.
 
 \subsubsection{Honest Geppetto}
 
 The Honest Geppetto attack is a storage-specific variant of the Google attack.
-The attacker operates a large number of ‘puppet’ nodes on the network,
+The attacker operates a large number of 'puppet' nodes on the network,
 accumulating trust and contracts over time. Once he reaches a certain threshold
 he pulls the strings on each puppet to execute a hostage attack with the data
 involved, or simply drops each node from the network. Again, the best defence
@@ -1506,7 +1631,7 @@ across multiple malicious nodes, which is difficult to execute in practice.
 
 \todo{ A data owner may attempt to avoid paying a farmer for data storage by
 refusing to verify a correct audit. In response the farmer may drop the
-data-owner’s shard. This attack primarily poses a problem for any future
+data-owner's shard. This attack primarily poses a problem for any future
 distributed reputation system, as it is difficult for outside observers to
 verify the claims of either party. There is no known practical publicly
 verifiable proof of storage, and no known scheme for independently verifying
@@ -1548,7 +1673,7 @@ preferable.
 
 Using the pre-leaf as an intermediary defeats another attack, where the farmer
 simply guesses which leaf corresponds to the current challenge. While this
-attack is unlikely to succeed, it’s trivially defeated by forcing the farmer to
+attack is unlikely to succeed, it's trivially defeated by forcing the farmer to
 provide the pre-leaf. The farmer cannot know the pre-leaf before the challenge
 is issued. Requiring transmission of the pre-leaf also allows the data owner to
 proceed through the challenge set linearly instead of being forced to select
