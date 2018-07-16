@@ -11,7 +11,7 @@ textfont={it},singlelinecheck=on,justification=centering]{caption}
 numberstyle=\tiny, stepnumber=1, numbersep=5pt} \lstset{language=TeX}
 \setlength{\parskip}{1em} \renewcommand{\baselinestretch}{1.2}
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
-\newcommand{\todo}[1]{{\color{red} TODO #1}}
+\newcommand{\todo}[1]{{\color{red} TODO #1 }}
 
 
 \title{\textbf{Storj\\A Decentralized Cloud Storage Network Framework}}
@@ -693,6 +693,9 @@ index $i$. As a result, where each \x{erasure share} is $\frac{1}{k}$th of a
 \x{stripe}, each \x{piece} is $\frac{1}{k}$th of a \x{segment}, and only $k$
 \x{piece}s are needed to recover the full \x{segment}.
 
+\todo{piece ids are generated as the hmac of a root piece id and the storing
+node id}
+
 \subsubsection{Pointers}
 
 \todo{}
@@ -1216,12 +1219,17 @@ node will be disqualified. Importantly, storage nodes will be allowed to reject
 and fail uploads without penalty, as we want to allow nodes to choose which data
 to store.
 
-After a storage node is disqualified, the system will no longer select that
-node for future data storage. If the node decides to start over with a brand
-new identity, the node must restart the vetting process from the beginning (in
-addition to generating a new node ID via the proof-of-work system). This
-strongly disincentivizes storage nodes from being cavalier with their
-reputation.
+It's worth reiterating that failing too many uptime checks is a disqualifying
+event. Storage nodes can be taken down for maintenance, but if a storage node
+is offline too much, it can have an adverse impact on the network. See Appendix
+\todo{} for why uptime is so important in our storage system.
+
+After a storage node is disqualified, the node must go back through the vetting
+process again, potentially with a minor headstart. If the node decides to start
+over with a brand new identity, the node must restart the vetting process from
+the beginning (in addition to generating a new node ID via the proof-of-work
+system). This strongly disincentivizes storage nodes from being cavalier with
+their reputation.
 
 The third subsystem is a preference system. After disqualified storage nodes
 have been eliminated, remaining statistics collected during audits
@@ -1235,11 +1243,20 @@ uploads to preferred nodes, but with a non-zero chance for any qualified node.
 Initially, we'll be load balancing with these preferences via a randomized
 scheme such as the Power of Two Choices \cite{power-of-two-choices}.
 
-On the Storj network, storage node reputation is only used to select where new
-data should be stored - both during repair and during the upload of new files.
+On the Storj network, preferential storage node reputation is only used to
+select where new data should be stored - both during repair and during the
+upload of new files.
 If a storage node's preferential reputation decreases, its file pieces will not
-be moved or repaired to other nodes. However, data stored on disqualified nodes
-will be moved to qualified nodes.
+be moved or repaired to other nodes.
+However, data stored on disqualified nodes may be moved to qualified nodes.
+
+There is not a facility planned in our system for storage nodes to contest their
+reputation scores. It is in the best interest of storage nodes to have good
+uptime, pass audits, and return data. Storage nodes that don't do these things
+are not useful to the network. Storage nodes that are treated by payers unfairly
+should not accept future data from those payers. See the section \todo{} about
+quality control on how we plan to ensure payers are incentivized to treat
+farmers fairly.
 
 \subsubsection{Concrete implementation}
 
@@ -1258,11 +1275,20 @@ a specific payment system. The current implementation assumes Storjcoin, but
 many other payment types could be implemented, including BTC, Ether, ACH
 transfer, or physical transfer of live goats. }
 
+\todo{users pay heavy clients, heavy clients pay farmers}
+
 \todo{heavy clients need payment for audits, repair, metadata storage, etc}
 
 \todo{approved heavy clients, insurance, branding, etc}
 
 \todo{bandwidth accounting protocol}
+
+\todo{list what farmers are paid for: returning data and keeping data, but
+NOT the initial store of data. no ingress payment to farmers, just egress.
+farmers should be incentivized to hang on to data they already have instead of
+replacing it with something new.}
+
+\todo{payers roll up payments every day, but pay every month}
 
 \todo{
 If a heavy client would like to become a Storj Approved Heavy Client, they will
@@ -1308,42 +1334,70 @@ A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
 leaves no addition garbage, whereas a {\em conservative} garbage collector may
 leave some small proportion of garbage around given some other tradeoffs, often
-performance.
+performance. As long as a conservative garbage collector is used, it should
+be assumed that the cost of storage owed to a storage node is high enough
+to amortize the cost of storing the garbage.
 
 \subsubsection{Concrete implementation}
 
 When data is deleted through the client, the metadata system (and thus a payer,
 with payer reputation on the line) will require proof that deletes were issued
-to a configurable minimum number of storage nodes.
+to a configurable minimum number of storage nodes. This means that every time
+data is deleted, storage nodes that are online and reachable will get
+notification right away.
 
-Additionally, we start with a conservative garbage collector. Periodically,
+For the nodes that miss initial delete messages, we propose a conservative
+garbage collection strategy. Periodically,
 a payer will send out a highly-compressible data structure such as a
 {\em Bloom filter} \cite{bloom-filter} that contains hints about what pieces
 a node is expected to continue storing. A Bloom filter is like a set that can
 answer set membership questions with the answers {\em isn't contained} or
-{\em maybe contained}, but not {\em is contained}. By sending a custom data
-structure to each node on a periodic schedule, a payer can give a storage node
-the ability to clean up garbage to a configurable tolerance.
+{\em maybe contained}, but not {\em is contained}. By sending a data
+structure tailored to each node on a periodic schedule, a payer can give a
+storage node the ability to clean up garbage to a configurable tolerance.
 
 Because Bloom filters are probabilistic and their collision risk is
 configurable, the conservative garbage collector can be tuned to eliminate
 garbage down to an acceptable tolerance, given the tradeoff of additional
-bandwidth for these cleanup messages.
+bandwidth for these larger, more exact cleanup messages. Further, each time a
+Bloom filter is generated, it can be generated with a new hashing seed, making
+the probability that a specific piece of garbage is continually missed by the
+garbage collector lower over time.
 
 Because this garbage collection system is not precise, storage nodes have a
 strong incentive to stay online to witness all delete messages if possible.
+If a storage node misses a handful of delete messages due to an outage, the
+garbage with almost guaranteed certainty will eventually get cleaned up with
+enough Bloom filter based cleanups.
 On the other hand, because this garbage collection system is not precise,
 bandwidth overhead for negotiating the list of pieces a storage node must store
-will be negligible.
+will be efficient and small.
+
+\todo{future work: is a bloom filter the best data structure?}
 
 \section{Product details}\label{sec:product_details}
 
 \subsection{Overview of components}
+
+\begin{itemize}
+\item Farmer
+\item Heavy Client
+\item Gateway
+\end{itemize}
+
 \subsection{Farmer}
+
+\todo{store data}
+\todo{bandwidth accounting}
+\todo{participate in dht}
+\todo{wait around to get paid}
 
 \todo{talk about what farmers get paid for}
 
 \subsection{Heavy client}
+
+\todo{metadata, farmer reputation, payments, user accounts, authorization,
+overlay cache, node selection, repair}
 
 \todo{ As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
@@ -1403,6 +1457,9 @@ service. }
 
 \subsection{Gateway}
 
+\todo{s3 compatible}
+\todo{encryption, reed solomon, streaming, segmenting}
+
 \todo{ The client provides the actual storage API. It should be run co-located
 with wherever data is generated, and will communicate directly with storage
 nodes so as to avoid central bandwidth costs. The client can provide an
@@ -1411,6 +1468,11 @@ S3-compatible API to interoperate with existing software.
 When data is sent to the client, the client will encrypt the data, choose
 appropriate storage nodes, store the data on those nodes, then use the metadata
 system to keep track of which nodes the data resides on for future reading. }
+
+\subsection{Quality control and branding}
+
+\todo{discuss quality control and branding}
+\todo{insurance}
 
 \subsection{Detailed walkthroughs}
 
@@ -1428,6 +1490,37 @@ and other related metadata in pointers.
 
 Technical Dive into how Upload Works \todo{}
 
+\todo{
+First thing, at some point prior, the gateway is going to talk to the heavy
+client and authorize itself as having an account. The heavy client won't talk
+to any gateway; the gateway needs an account on the heavy client.
+
+Next, the gateway is going to talk to the heavy client and try and get a bunch
+of things all at once.
+Make sure it can upload data. Does this heavy client have funds for this
+gateway? Is the gateway out of funds?
+Gateway: "I'm about to do an upload, it's for this much data, I'd like to
+         store it"
+Heavy client: chosen piece id, signatures to authorize gateway communication
+   to storage nodes on heavy client's behalf, what nodes to talk to, how
+   to talk to them (ips, port)
+Gateway starts upload with those farmers using bandwidth accounting protocol.
+Gateway breaks encrypts object, breaks object into segments, erasure encodes,
+uploads.
+At any point the storage node can stop upload due to bandwidth accounting
+protocol failure.
+At the end, storage node has data and signed document about how much
+bandwidth was used, approved by the gateway and heavy client. Storage node
+stores data, signed check, ttl.
+Gateway keeps track of which storage nodes succeed.
+Gateway sends back which nodes successfully uploaded to heavy client, along
+with encrypted path, what nodes were selected, encryption, encoding metadata
+(which algorithms were used).
+}
+
+\todo{gateways must send data to heavy client and can't cache it locally because
+heavy clients won't authorize gets for data that doesn't exist}
+
 \todo{discuss long tail elimination via overencoding}
 \todo{Deep dive into example upload steps}
 
@@ -1443,8 +1536,33 @@ using those IP addresses.
 
 Technical Dive into how Download Works \todo{}
 
+\todo{
+  for every segment, gateway will ask heavy client for a big chunk of
+  information given an encrypted path.
+
+  heavy client: returns what nodes the segment is on, what ip addresses those
+    nodes have, check authorizing request for next 10 minutes for
+    specific pieces.
+
+  gateway: starts downloading pieces using bandwidth accounting protocol
+    (promises to pay). storage node keeps track of promises to pay and sends
+    them to appropriate heavy client.
+  gateway reed solomon decodes, decrypts, returns data.
+
+}
+
 \todo{discuss long tail elimination via overencoding}
-\todo{Deep dive into example download steps}
+
+\subsubsection{Detailed walkthrough: delete}
+
+\todo{similar to puts}
+\todo{needs guarantees for garbage collection that deletes were issued}
+\todo{heavy client forces gateway to help heavy client keep reputation with
+      farmers}
+
+\subsubsection{Detailed walkthrough: list}
+
+\todo{just talks to heavy client directly}
 
 \subsubsection{Detailed walkthrough: repair}
 
@@ -1472,11 +1590,19 @@ Diagram Technical Detail <WIP>
 
 \todo{}
 
+\subsubsection{Detailed walkthrough: export/import}
+
+\todo{Deep dive into how porting your account to a new heavy client works}
+
 \section{Future Areas of Research}\label{sec:future_work}
 
 \todo{ Storj is a work in progress, and many features are planned for future
 versions. There are relatively few examples of functional distributed systems at
 scale, and many areas of research are still open. }
+
+\subsection{Improving user experience around metadata}
+
+\todo{automatic exports, backups, distributed consensus}
 
 \subsection{Fast Byzantine Consensus}
 
@@ -1497,8 +1623,8 @@ protocols, however there is significant trade off around network usage and
 coordination contention, as there could be problematic overlap with two farmer
 nodes trying to communicate with one another at the same time.
 
-
 \subsection{Distributed Repair}
+
 The system can detect when a files' Reed Solomon erasure encoding pieces fall
 below a certain threshold. At that time, the file would need to be repaired and
 the missing pieces would need to be stored on new farmer nodes. Currently, this
