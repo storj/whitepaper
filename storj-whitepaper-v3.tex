@@ -1270,35 +1270,41 @@ reputation would then be determined globally.
 
 \subsection{Payments}
 
-\todo{ Storj is payment agnostic. Neither the protocol nor the contract requires
-a specific payment system. The current implementation assumes Storjcoin, but
-many other payment types could be implemented, including BTC, Ether, ACH
-transfer, or physical transfer of live goats. }
+Payments in decentralized networks are a critical part of maintaining a healthy ecosystem of both supply and demand. In the Storj network, payments are made by gateway users who store data on the platform to the heavy client they utilize. The heavy client then pays farmers for the amount of storage and bandwidth they provide on the network. 
 
-\todo{users pay heavy clients, heavy clients pay farmers}
+The Storj network is payment agnostic. Neither the protocol nor the contract requires a specific payment type. The network assumes STORJ as the default payment medium, but many other payment types could be implemented, including Bitcoin, Ether, ACH transfer, or physical transfer of live goats. Currently, the platform supports STORJ as payment (providing a discount for using this method), Bitcoin, Ether and credit card. 
 
-\todo{heavy clients need payment for audits, repair, metadata storage, etc}
+Previous distributed systems have handled payments as hard-coded contracts. For example, the previous Storj network utilized 90-day contracts to maintain data on the network. After that period of time, the file would be deleted. Other distributed storage platforms use 15-day renewable contracts that delete data if the user does not login every 15 days. Others use 30-day contracts. Moving forward, the network will not use contracts to manage payments and file storage durations.
 
-\todo{approved heavy clients, insurance, branding, etc}
+Heavy clients will pay farmers for the data they store long-term, audits and downloads. Farmers will not be paid for the initial storage of data, but they will be paid for storing the data month-by-month. At the end of the payment period, heavy clients will calculate earnings for each farmer. Provided the farmer node hasn’t been blacklisted, the farmer will be paid by the heavy client for the data the heavy client thinks it has stored over the course of the month. If a farmer misses a delete file command due to the node being offline, it will be storing more data than the heavy client credits it for. In this case, the farmer would not be paid for storing those file pieces and they would eventually be cleaned up through the garbage collection process. 
 
-\todo{bandwidth accounting protocol}
+The payment system is focused on simplicity and efficiency to minimize the amount of resources needed to properly execute monthly payments. Because of the way delete commands are issued, and because farmers are not expected to be online at all times, farmers may be storing file pieces that should have been deleted because they missed the delete command. This scenario is factored into the farmer payment amounts, meaning farmers are paid slightly more than they should for the file pieces they store, offsetting any lost revenue due to garbage data. In theory, this means farmers that maintain higher availability can maximize their profits by properly deleting files and minimizing the amount of garbage data on their nodes. 
 
-\todo{list what farmers are paid for: returning data and keeping data, but
-NOT the initial store of data. no ingress payment to farmers, just egress.
-farmers should be incentivized to hang on to data they already have instead of
-replacing it with something new.}
+The heavy client maintains a database of all file pieces it is responsible for and the farmers it believes are storing these pieces. Each day, the heavy client adds another day’s worth of credits to that farmer for each file piece it should be storing. As files are downloaded from the farmer, the heavy client also tracks this in the database. At the end of the month, the heavy client adds up all the bandwidth and storage payments its farmer has earned and makes the payments to the farmer nodes.
 
-\todo{payers roll up payments every day, but pay every month}
+Heavy clients will track utilized bandwidth through a bandwidth accounting protocol. To download a file, the gateway user connects to the heavy client to identify where its file pieces are stored and to provide a promise to pay for the file download. The heavy clients sends a confirmation of this promise to pay back to the gateway along with the location of the file pieces the gateway needs to download the file. The gateway then sends the promise to pay directly to the farmer nodes along with the details on the file pieces it needs. The farmer then accepts or rejects this operation. If the farmer accepts this operation, it confirms and retains a copy of this promise to pay and sends the farmer the file piece it needs. Later, the farmer sends the promise to pay to the heavy client, and the heavy client credits that farmer node as having successfully delivered the file piece. 
 
-\todo{
-If a heavy client would like to become a Storj Approved Heavy Client, they will
-be required to have insurance with Storj, so that in the case that they do act
-maliciously, they will have some proof of stake which would be lost. The Storj
-Labs team will run and maintain a certain number of heavy clients to ensure
-gateway users have sufficient availability across the network.
-}
+Heavy clients will also earn revenue from farmers for executing audits, repairing files and storing metadata. Every day, each heavy client will execute a number of audits across all of its farmers on the network. During an audit, if a farmer does not have the file it should be storing, it will be immediately blacklisted and the heavy client will flag that farmer’s file pieces for repair in the system. The heavy client will be paid for both completing the audit and for the repair, once that file falls below the file piece threshold needed for repair. 
+
+If a heavy client is not executing payments properly, farmers can report them to the Storj network clearing houses, where all heavy clients’ reputations are tracked. By default, the farmer node will only trust a whitelist of heavy clients, however, during the farmer setup phase, the farmer operator can choose to work with non-whitelisted heavy clients. If a heavy client has a low reputation score, farmers should always forgo utilizing that particular heavy client. 
+
+If  a  heavy  client  would  like  to  become  a  Storj  Approved Heavy Client, they will be required to have insurance with Storj. This guarantees that if a heavy client does act maliciously, they have some proof of stake, which would be lost and would help compensate network participants for the missing payments and service interruption. The Storj Labs team will always run and maintain a certain number of heavy clients to ensure gateway users have sufficient availability across the network.
+
+
+\todo{Payment automation?}
+
+\todo{Payment wallets vs payment addresses. }
+
+
+
+
 
 \subsubsection{Concrete implementation}
+At launch, reputable heavy clients will be identified through a Storj-maintained whitelist and blacklist. As more heavy clients emerge, Storj will launch the heavy client clearing house where farmers can review specific heavy clients and see which heavy clients are Storj-approved. 
+
+Payments to farmers will be calculated on a daily basis, based on the bandwidth utilized and files stored, and paid at the end of the month. If a farmer acts maliciously and does not store files properly or maintain sufficient availability, they will not be paid for the services rendered, and the funds allocated to their farmer node will instead be used to repair their missing file pieces and pay new farmers to store the data long-term.  
+
+
 
 \subsection{Payer reputation}
 
