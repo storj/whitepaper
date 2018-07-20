@@ -34,13 +34,13 @@ Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 \begin{abstract} Decentralized cloud storage is attractive for a number of
 reasons. Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
-many traditional data failures and outages while it simultaneously increases
-security and privacy. It allows market forces to innovate on cheaper ways to
-provide storage at a greater rate than any single entity can afford. While there
+many traditional data failures and outages while simultaneously increasing
+security and privacy. At a greater rate than any single entity can afford, it allows
+market forces to innovate on cheaper ways to provide storage. While there
 are many ways to build such a system, there are some specific responsibilities
 any given system should address. Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such a system, along with initial concrete
+responsibilities and building such a system. Additionally, we describe initial concrete
 implementations for each responsibility of the framework. \end{abstract}
 
 \section{Introduction}
@@ -50,8 +50,8 @@ we won't have to do a v4 - difference between framework vs concrete sections}
 
 Storj is a protocol that creates a distributed network for the reliable storage
 of data and facilitates payment for successful data storage between peers. The
-Storj protocol enables peers on the network to transfer data, verify the
-integrity and availability of remote data, retrieve data, and pay other nodes
+Storj protocol enables peers on the network to transfer and receive data, verify the
+integrity and availability of remote data, and pay other nodes
 for storing data. Each peer is an autonomous agent, capable of performing these
 actions without significant human interaction.
 
@@ -59,20 +59,25 @@ Many storage products have been created based on distributed storage techniques.
 Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
 Filecoin, Crashplan, Mozy, HDFS, Storj, S3, GFS, all share one thing in common:
 a single computer is not as powerful or as robust as a network. These products
-and others attempt to solve many different use cases and have many different
+and others attempt to solve a variety of use cases and have many different
 requirements, but at a high level, they all operate on the same principles. They
 generate redundancy for data in case of failure, store this redundancy in
 locations with varying degrees of failure isolation, then keep track of where
 the data was placed.
 
-There are many different primary focuses one could choose when creating a
+There are a multitude of primary focuses one could choose when creating a
 distributed storage system. Speed, capacity, simplicity, trustlessness,
 byzantine fault tolerance, security, cost, etc., are all desirable traits in a
-storage system, but independently of anything else, data must be maintained to
+storage system. However, independently of anything else, data must be maintained to
 prevent data loss, nodes in the system must be able to be communicated with, and
 metadata must be kept track of.
 
-While the Storj design space is different from systems such as HDFS or Wuala, we
+While the Storj design space is different from systems such as HDFS or Wuala 
+
+\textcolor{blue}{Why do we need
+to include this comparison here?}
+
+, we
 propose a framework that will allow us to choose some reasonable tradeoffs and
 then iterate on improvements to components of the system without changing the
 overall system. We accomplish this by breaking the design up into a collection
@@ -80,18 +85,18 @@ of relatively independent concerns, and then bring them together to form the
 final protocol.
 
 The rest of the paper is divided into 4 sections. In Section
-\ref{sec:design_constraints} we discuss the design space Storj operates in and
-we elaborate on some specific design constraints. Section \ref{sec:framework}
-covers our framework and proposes a simple concrete implementation of each
-framework component. Section \ref{sec:product_details} covers specific details
-about how we will ship section \ref{sec:framework} to users. Section
+\ref{sec:design_constraints} we discuss the design space in which Storj and
+elaborate on specific design constraints. Section \ref{sec:framework}
+covers our framework and proposes a simple concrete implementation of each 
+component. Section \ref{sec:product_details} covers specific details
+about how we will deliver this implementation to users. Section
 \ref{sec:future_work} covers future areas of research.
 
 \section{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
-Before designing a system, it's important to understand the requirements of said
-system, so we'll begin with a discussion of Storj's design constraints.
+Before designing a system, it's important to understand its requirements. 
+We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
 
