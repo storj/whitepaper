@@ -65,14 +65,14 @@ generate redundancy for data in case of failure, store this redundancy in
 locations with varying degrees of failure isolation, then keep track of where
 the data was placed.
 
-There are a multitude of primary focuses one could choose when creating a
+There are a multitude of optimization focuses one could target when creating a
 distributed storage system. Speed, capacity, simplicity, trustlessness,
 byzantine fault tolerance, security, cost, etc., are all desirable traits in a
 storage system. However, independently of anything else, data must be maintained to
 prevent data loss, nodes in the system must be able to be communicated with, and
 metadata must be kept track of.
 
-While the Storj design space is different from systems such as HDFS or Wuala 
+While the Storj design space is different from systems such as HDFS or Wuala
 
 \textcolor{blue}{Why do we need
 to include this comparison here?}
@@ -87,7 +87,7 @@ final protocol.
 The rest of the paper is divided into 4 sections. In Section
 \ref{sec:design_constraints} we discuss the design space in which Storj and
 elaborate on specific design constraints. Section \ref{sec:framework}
-covers our framework and proposes a simple concrete implementation of each 
+covers our framework and proposes a simple concrete implementation of each
 component. Section \ref{sec:product_details} covers specific details
 about how we will deliver this implementation to users. Section
 \ref{sec:future_work} covers future areas of research.
@@ -95,7 +95,7 @@ about how we will deliver this implementation to users. Section
 \section{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
-Before designing a system, it's important to understand its requirements. 
+Before designing a system, it's important to understand its requirements.
 We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
