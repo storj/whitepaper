@@ -65,7 +65,7 @@ generate redundancy for data in case of failure, store this redundancy in
 locations with varying degrees of failure isolation, then keep track of where
 the data was placed.
 
-There are a variety of optimization focuses one could target when creating a
+There are many different primary focuses one could choose when creating a
 distributed storage system. Speed, capacity, simplicity, trustlessness,
 byzantine fault tolerance, security, cost, etc., are all desirable traits in a
 storage system, but independently of anything else, data must be maintained to
@@ -1419,7 +1419,7 @@ otherwise be entitled to unless a garbage collection system is employed.
 
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
-leaves no addition garbage, whereas a {\em conservative} garbage collector may
+leaves no additional garbage, whereas a {\em conservative} garbage collector may
 leave some small proportion of garbage around given some other tradeoffs, often
 performance. As long as a conservative garbage collector is used, it should
 be assumed that the cost of storage owed to a storage node is high enough
