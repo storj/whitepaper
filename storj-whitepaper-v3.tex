@@ -154,17 +154,17 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
-storage protocols, a graceful transition must be allowed for users with data
-currently on a centralized provider who are interested in the benefits of
- decentralized cloud storage but have low tolerance for switching costs.
+storage protocols, we must create a graceful transition from centralized providers. 
+For users with data currently stored on a centralized provider, this will alleviate 
+any switching costs.
 
-For Storj to compete successfully in the wider cloud storage industry and bring
-decentralized cloud storage to the mainstream -- thus enabling more people
-greater security and less centralized control -- applications built against S3
-should be able to be made to work with Storj with minimal friction and changes.
-Imagine if 90\% of existing application services could switch to Storj with a
-single configuration change. \todo{maybe talk about s3 market penetration?}
-This adds strong requirements on feature set, performance, and durability.
+Our objective is for Storj to compete successfully in the wider cloud storage 
+industry and bring decentralized cloud storage to the mainstream -- thus enabling 
+more people greater security and less centralized control. To achieve this goal, 
+applications built against S3 should be able to be configured to work with Storj with 
+minimal friction and changes. Imagine if 90\% of existing application services could switch to Storj with a
+single configuration change. \todo{maybe talk about s3 market penetration?} This adds strong requirements on feature set, 
+performance, and durability.
 
 \subsection{Device failure and churn}
 
@@ -201,7 +201,7 @@ function of node churn and uptime.
 \subsection{Latency}
 
 Decentralized, distributed storage has massive opportunities for parallelism
-with transfer rates, processing, and number of other factors. Parallelism by
+with transfer rates, processing, and a number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism cannot by itself improve {\em
 latency}. If an individual network link has fixed latency and is a required part
@@ -212,7 +212,8 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
-focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
+focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
+{\color{red}What are long tails?}
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without waiting for a slow
 subset. Focusing on operations where the result is only dependent on the fastest
@@ -226,11 +227,11 @@ Global bandwidth availability is increasing year over year; however, access to
 high-bandwidth internet connections is unevenly distributed. While users in some
 countries can easily access symmetric, high-speed, unlimited bandwidth, users in
 other countries may have significant difficulty in obtaining access to the same.
-In the United States, many residential internet service providers provide
-internet in a way that presents two specific challenges for designers of a
+In the United States, the way many residential internet service providers provide
+internet presents two specific challenges for designers of a
 decentralized network protocol. The first challenge is that the internet
-connection is often asymmetric, where customers subscribe to internet service
-based on the advertised download speed, and the upload speed is potentially an
+connection is often asymmetric. Customers subscribe to internet service
+based on an advertised download speed, but the upload speed is potentially an
 order of magnitude or two slower. The second challenge is that bandwidth is
 sometimes "capped" at a fixed amount of traffic per month. For example, in many
 markets, Comcast poses a one terabyte per month bandwidth cap with stiff fines
@@ -241,9 +242,9 @@ TB/month may not average more than 385 KB/s over the month without going
 over the monthly bandwidth cap.
 
 With device failure and churn guaranteed, any decentralized system will have a
-corresponding amount of repair traffic. It's therefore important to make sure
+corresponding amount of repair traffic. It is therefore important to make sure
 there is enough headroom for the bandwidth required by data maintenance, over
-and above the bandwidth required for data storage and retrieval. Designing a
+and above that required for data storage and retrieval. Designing a
 storage system that is careless with bandwidth usage would be to relegate that
 system below storage providers with access to unlimited high-speed bandwidth,
 recentralizing the system to some degree. To keep the storage system as
@@ -262,8 +263,8 @@ combined with required repair traffic, limits usable space.
 Broadly, large storage systems can be classified into two groups by average
 object size. When storing lots of small bits of information, generally a
 database is the preferred route. On the other hand, when storing lots of large
-files (where "large" files means a few megabytes or more), an object store or
-filesystem are ideal.
+files, an object store or filesystem is ideal. We classify a "large" file as a 
+few megabytes or greater.
 
 The initial product offering by Storj Labs is designed to function primarily as
 an object store for larger files. While future improvements may enable
@@ -271,7 +272,7 @@ database-like use cases, the predominant use case described by this paper is
 object storage. Protocol design decisions are made with the assumption that the
 vast majority of objects stored will be a couple of megabytes or more. It is
 worth pointing out that this will not negatively impact use cases that require
-lots of files smaller than a megabyte, since such cases can admit a packing
+lots of files smaller than a megabyte. Such cases can admit a packing
 strategy, where many small files are aggregated and stored together as one large
 file. As the protocol has streaming support, small files can be retrieved
 without requiring full retrieval of any aggregated object they were packed into.
@@ -311,13 +312,14 @@ retrieving data, and maintaining data.
 \begin{description}
 
 \item[Storing data] When data is stored with the network, the client encrypts
-it, breaks it up into multiple little pieces, distributes the pieces to peers in
-the network, and generates and stores some metadata about where to find the data
+it and breaks it up into multiple little pieces. It then distributes the pieces to peers in
+the network then generates and stores some metadata about where to find the data
 again.
 
-\item[Retrieving data] When data is retrieved from the network, the metadata
-about where to find the pieces is recovered first, then the pieces are retrieved
-and the original data is reconstructed on the client's local machine.
+\item[Retrieving data] When data is retrieved from the network, 
+it first recovers the metadata about where to find the pieces. 
+Then the pieces are retrieved and the original data is reconstructed 
+on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
 missing pieces when the amount of redundancy drops below a certain threshold.
@@ -327,10 +329,10 @@ The data is reconstructed and the missing pieces are regenerated and replaced.
 
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
-break the design up into a collection of relatively independent concerns and
-then combine them to form the desired protocol. One important benefit of doing
-so is this makes it much easier to update individual components without
-rearchitecting the rest of the network. The individual components are:
+break up the design into a collection of relatively independent concerns and
+then combine them to form the desired protocol. One important benefit is it makes 
+updating individual components much easier without having to rearchitect the rest 
+of the network. The individual components are:
 
 \begin{enumerate}
 \item Storage nodes
