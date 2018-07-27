@@ -34,64 +34,118 @@ Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 \begin{abstract} Decentralized cloud storage is attractive for a number of
 reasons. Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
-many traditional data failures and outages while it simultaneously increases
-security and privacy. It allows market forces to innovate on cheaper ways to
-provide storage at a greater rate than any single entity can afford. While there
+many traditional data failures and outages while simultaneously increasing
+security and privacy. At a greater rate than any single entity can afford, it allows
+market forces to innovate on cheaper ways to provide storage. While there
 are many ways to build such a system, there are some specific responsibilities
 any given system should address. Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such a system, along with initial concrete
+responsibilities and building such a system. Additionally, we describe initial concrete
 implementations for each responsibility of the framework. \end{abstract}
+
+\todo{
+Remaining big todo items:
+\begin{itemize}
+\item Datascience: write an appendix about repair bandwidth based on node
+  churn and uptime
+\item Datascience: Write an appendix about how we select RS numbers
+\item Eng/marketing: Quality control/branding section - talk about how we
+  plan to ensure heavy client quality by quality control evaluations, formal
+  partnerships, relationships, and not letting poor quality heavy clients
+  use the brand.
+\item Eng: Walkthroughs - highly detailed walkthroughs of how each op works
+\begin{itemize}
+\item Upload walkthrough
+\item Download walkthrough
+\item Delete walkthrough
+\item List walkthrough
+\item Repair walkthrough
+\item Payment walkthrough
+\item Export/import walkthrough
+\end{itemize}
+\item Alex/JT: Bandwidth allocation protocol
+\end{itemize}
+
+Remaining medium todo items:
+\begin{itemize}
+\item Anyone: Make sure this paper explains conclusively why we're doing v3 and
+  why we won't have to do a v4 - difference between framework vs concrete
+  sections
+\item Anyone:
+  Clean up distributed consensus positioning in the Metadata section.
+\item JT: Move merkle-tree-based-filesystem idea to future work section
+\item Eng: Describe how path encryption works
+\item Eng: Describe payer (heavy client) ids and why they're needed
+\item Eng: General data repair framework description
+\item Anyone: Clean up attacks section
+\item Anyone: Clean up selected calculations section
+\item Eng: more macaroon details
+\end{itemize}
+
+Remaining little todo items:
+\begin{itemize}
+\item Anyone: Write the security and privacy requirements section
+\item Eng: Write a future work section about eliminating TLS handshakes
+\item Anyone: Clean up the pacing for the structured file storage section
+\item Eng: Write about how piece ids are generated
+\item Eng: Describe pointers
+\item Eng: Future work section about reputation sharing
+\item Eng: Future work section about finding a better data structure than
+ a bloom filter for gc
+\end{itemize}
+}
 
 \section{Introduction}
 
-\todo{make sure this paper explains conclusively why we're doing v3 and why
-we won't have to do a v4 - difference between framework vs concrete sections}
-
 Storj is a protocol that creates a distributed network for the reliable storage
-of data and facilitates payment for successful data storage between peers. The
-Storj protocol enables peers on the network to transfer data, verify the
-integrity and availability of remote data, retrieve data, and pay other nodes
-for storing data. Each peer is an autonomous agent, capable of performing these
-actions without significant human interaction.
+of data and facilitates payment for successful data storage and transfer
+between peers.
+The Storj protocol enables peers on the network to transfer and receive data,
+verify the integrity and availability of remote data, and pay other nodes
+for storing data.
+While not all peers in the network have the same responsibilities,
+every peer is an autonomous agent, capable of performing these actions without
+significant human interaction.
 
 Many storage products have been created based on distributed storage techniques.
 Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
 Filecoin, Crashplan, Mozy, HDFS, Storj, S3, GFS, all share one thing in common:
 a single computer is not as powerful or as robust as a network. These products
-and others attempt to solve many different use cases and have many different
+and others attempt to solve a variety of use cases and have many different
 requirements, but at a high level, they all operate on the same principles. They
 generate redundancy for data in case of failure, store this redundancy in
 locations with varying degrees of failure isolation, then keep track of where
 the data was placed.
 
-There are many different primary focuses one could choose when creating a
+There are a multitude of optimization focuses one could target when creating a
 distributed storage system. Speed, capacity, simplicity, trustlessness,
 byzantine fault tolerance, security, cost, etc., are all desirable traits in a
-storage system, but independently of anything else, data must be maintained to
+storage system. However, independently of anything else, data must be maintained to
 prevent data loss, nodes in the system must be able to be communicated with, and
 metadata must be kept track of.
 
-While the Storj design space is different from systems such as HDFS or Wuala, we
-propose a framework that will allow us to choose some reasonable tradeoffs and
-then iterate on improvements to components of the system without changing the
-overall system. We accomplish this by breaking the design up into a collection
+We propose a framework that will allow us to choose some reasonable tradeoffs
+and then iterate on improvements to components of the system without changing
+the overall system.
+We accomplish this by breaking the design up into a collection
 of relatively independent concerns, and then bring them together to form the
 final protocol.
 
-The rest of the paper is divided into 4 sections. In Section
-\ref{sec:design_constraints} we discuss the design space Storj operates in and
-we elaborate on some specific design constraints. Section \ref{sec:framework}
-covers our framework and proposes a simple concrete implementation of each
-framework component. Section \ref{sec:product_details} covers specific details
-about how we will ship section \ref{sec:framework} to users. Section
+After this first introduction section, the rest of the paper is divided into 4
+sections. In Section \ref{sec:design_constraints} we discuss the design space
+in which Storj operates in and elaborate on specific design constraints that
+focus what we plan to optimize for.
+Section \ref{sec:framework} covers our framework and proposes a simple
+concrete implementation of each component.
+Section \ref{sec:product_details} covers specific details
+about how we will deliver this implementation to users. Section
 \ref{sec:future_work} covers future areas of research.
 
 \section{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
-Before designing a system, it's important to understand the requirements of said
-system, so we'll begin with a discussion of Storj's design constraints.
+Before designing a system, it's important to understand its requirements.
+We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
 
@@ -100,40 +154,17 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
-storage protocols, a graceful transition must be allowed for users with data
-currently on a centralized provider who are interested in the benefits of
-decentralized cloud storage but have low tolerance for switching costs.
+storage protocols, we must create a graceful transition from centralized providers. 
+For users with data currently stored on a centralized provider, this will alleviate 
+any switching costs.
 
-For Storj to compete successfully in the wider cloud storage industry and bring
-decentralized cloud storage to the mainstream -- thus enabling more people
-greater security and less centralized control -- applications built against S3
-should be able to be made to work with Storj with minimal friction and changes.
-This adds strong requirements on feature set, performance, and durability.
-
-\subsection{Byzantine Fault Tolerance}
-
-Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
-environment, where individual storage nodes are not necessarily assumed to be
-trustworthy. Storj operates over the public internet, and allows anyone to sign
-up to become a storage node.
-
-We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
-participants in the network.
-{\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
-any reason. Some examples include nodes that are broken, nodes that are
-trying to cheat the suggested protocol to their advantage, or nodes that
-are actively trying to sabotage the protocol. In general, a Byzantine node is
-one that optimizes for a utility function that is independent of the one
-given for the suggested protocol.
-{\em Altruistic} nodes
-participate in a proposed protocol even if the rational choice is to deviate.
-{\em Rational} nodes participate exactly when it is in their net benefit to do
-so, and may depart for the same reason.
-
-Some distributed storage systems operate in an environment where all nodes are
-altruistic {\color{red}add citation?}. Storj operates in an environment where a
-majority of storage nodes are rational and a minority are byzantine. Any
-potential design must account for this distinction.
+Our objective is for Storj to compete successfully in the wider cloud storage 
+industry and bring decentralized cloud storage to the mainstream -- thus enabling 
+more people greater security and less centralized control. To achieve this goal, 
+applications built against S3 should be able to be configured to work with Storj with 
+minimal friction and changes. Imagine if 90\% of existing application services could switch to Storj with a
+single configuration change. \todo{maybe talk about s3 market penetration?} This adds strong requirements on feature set, 
+performance, and durability.
 
 \subsection{Device failure and churn}
 
@@ -154,18 +185,23 @@ before their hardware has actually failed. A network with a high churn rate will
 use a large amount of bandwidth just to ensure durability of the data, and such
 a network will fail to scale. As a result, a scalable, highly durable storage
 system must prefer stable nodes and endeavor to keep the churn rate as low as
-possible. Despite the issues with hardware failure and node churn, Maymounkov et
-al. found that in decentralized systems, the probability of a node staying on
-for an additional hour as a member of the network is an increasing function of
-uptime \cite{kad}. In other words, the longer a node is a participant in the
-network, the more likely it is to continue participating. See Appendix \todo{}
-for a discussion about how repair bandwidth varies as a function of node churn
-and uptime.
+possible.
+
+Despite the chance of hardware failure, Maymounkov et al. found that in
+decentralized systems, due to churn rates the probability of a node staying on
+for an additional hour as a member of the network is an {\em increasing}
+function of uptime \cite{kad}. In other words, the longer a node is a
+participant in the network, in general the more likely it is to continue
+participating. This gives our system a strong incentive to prefer long-lived,
+stable nodes.
+
+See Appendix \todo{} for a discussion about how repair bandwidth varies as a
+function of node churn and uptime.
 
 \subsection{Latency}
 
 Decentralized, distributed storage has massive opportunities for parallelism
-with transfer rates, processing, and number of other factors. Parallelism by
+with transfer rates, processing, and a number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism cannot by itself improve {\em
 latency}. If an individual network link has fixed latency and is a required part
@@ -176,7 +212,8 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
-focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
+focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
+{\color{red}What are long tails?}
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without waiting for a slow
 subset. Focusing on operations where the result is only dependent on the fastest
@@ -186,26 +223,28 @@ storage network.
 
 \subsection{Bandwidth}
 
-Global bandwidth availability is increasing year over year, and access to
+Global bandwidth availability is increasing year over year; however, access to
 high-bandwidth internet connections is unevenly distributed. While users in some
 countries can easily access symmetric, high-speed, unlimited bandwidth, users in
 other countries may have significant difficulty in obtaining access to the same.
-In the United States, many residential internet service providers provide
-internet in a way that presents two specific challenges for designers of a
+In the United States, the way many residential internet service providers provide
+internet presents two specific challenges for designers of a
 decentralized network protocol. The first challenge is that the internet
-connection is often asymmetric, where customers subscribe to internet service
-based on the advertised download speed, and the upload speed is potentially an
+connection is often asymmetric. Customers subscribe to internet service
+based on an advertised download speed, but the upload speed is potentially an
 order of magnitude or two slower. The second challenge is that bandwidth is
-sometimes "capped" at a fixed amount of traffic per month. Such caps impose
-significant limitations on the bandwidth available at any given moment. For
-example, an internet connection with a throughput of 10 MBPS with a cap of one
-terabyte per month may not average more than 380 KBPS (in a month) without going
+sometimes "capped" at a fixed amount of traffic per month. For example, in many
+markets, Comcast poses a one terabyte per month bandwidth cap with stiff fines
+for customers who go over. Such caps impose
+significant limitations on the bandwidth available at any given moment.
+An internet connection with a throughput of 10 MB/s and a cap of 1
+TB/month may not average more than 385 KB/s over the month without going
 over the monthly bandwidth cap.
 
 With device failure and churn guaranteed, any decentralized system will have a
-corresponding amount of repair traffic. It's therefore important to make sure
+corresponding amount of repair traffic. It is therefore important to make sure
 there is enough headroom for the bandwidth required by data maintenance, over
-and above the bandwidth required for data storage and retrieval. Designing a
+and above that required for data storage and retrieval. Designing a
 storage system that is careless with bandwidth usage would be to relegate that
 system below storage providers with access to unlimited high-speed bandwidth,
 recentralizing the system to some degree. To keep the storage system as
@@ -224,8 +263,8 @@ combined with required repair traffic, limits usable space.
 Broadly, large storage systems can be classified into two groups by average
 object size. When storing lots of small bits of information, generally a
 database is the preferred route. On the other hand, when storing lots of large
-files (where "large" files means a few megabytes or more), an object store or
-filesystem are ideal.
+files, an object store or filesystem is ideal. We classify a "large" file as a 
+few megabytes or greater.
 
 The initial product offering by Storj Labs is designed to function primarily as
 an object store for larger files. While future improvements may enable
@@ -233,10 +272,37 @@ database-like use cases, the predominant use case described by this paper is
 object storage. Protocol design decisions are made with the assumption that the
 vast majority of objects stored will be a couple of megabytes or more. It is
 worth pointing out that this will not negatively impact use cases that require
-lots of files smaller than a megabyte, since such cases can admit a packing
+lots of files smaller than a megabyte. Such cases can admit a packing
 strategy, where many small files are aggregated and stored together as one large
 file. As the protocol has streaming support, small files can be retrieved
 without requiring full retrieval of any aggregated object they were packed into.
+
+\subsection{Byzantine Fault Tolerance}
+
+Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
+environment, where individual storage nodes are not necessarily assumed to be
+trustworthy. Storj operates over the public internet, and allows anyone to sign
+up to become a storage node.
+
+We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
+participants in the network.
+{\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
+any reason. Some examples include nodes that are broken, nodes that are
+trying to cheat the suggested protocol to their advantage, or nodes that
+are actively trying to sabotage the protocol. In general, a Byzantine node is
+one that optimizes for a utility function that is independent of the one
+given for the suggested protocol.
+Inevitable hardware failure aside, {\em Altruistic} nodes
+participate in a proposed protocol even if the rational choice is to deviate.
+{\em Rational} nodes participate exactly when it is in their net benefit to do
+so, and may depart for the same reason.
+
+Some distributed storage systems (e.g., Amazon S3) operate in an environment
+where all nodes are altruistic {\color{red}add citation?}.
+Storj operates in an environment where a
+majority of storage nodes are rational and a minority are byzantine. Storj
+assumes no altruistic nodes. Any
+potential design must account for this distinction.
 
 \section{Framework and concrete implementation}\label{sec:framework}
 
@@ -246,13 +312,14 @@ retrieving data, and maintaining data.
 \begin{description}
 
 \item[Storing data] When data is stored with the network, the client encrypts
-it, breaks it up into multiple little pieces, distributes the pieces to peers in
-the network, and generates and stores some metadata about where to find the data
+it and breaks it up into multiple little pieces. It then distributes the pieces to peers in
+the network then generates and stores some metadata about where to find the data
 again.
 
-\item[Retrieving data] When data is retrieved from the network, the metadata
-about where to find the pieces is recovered first, then the pieces are retrieved
-and the original data is reconstructed on the client's local machine.
+\item[Retrieving data] When data is retrieved from the network, 
+it first recovers the metadata about where to find the pieces. 
+Then the pieces are retrieved and the original data is reconstructed 
+on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
 missing pieces when the amount of redundancy drops below a certain threshold.
@@ -262,10 +329,10 @@ The data is reconstructed and the missing pieces are regenerated and replaced.
 
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
-break the design up into a collection of relatively independent concerns and
-then combine them to form the desired protocol. One important benefit of doing
-so is this makes it much easier to update individual components without
-rearchitecting the rest of the network. The individual components are:
+break up the design into a collection of relatively independent concerns and
+then combine them to form the desired protocol. One important benefit is it makes 
+updating individual components much easier without having to rearchitect the rest 
+of the network. The individual components are:
 
 \begin{enumerate}
 \item Storage nodes
@@ -301,7 +368,7 @@ Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. Storage nodes store {\em pieces} (to be described in more detail
 later). Each method will take a {\em piece ID}, a {\em payer ID} and signature
 by the payer, an optional TTL, and the other metadata required by the bandwidth
-accounting protocol (also to be described later).
+allocation protocol (also to be described later).
 
 The \code{put} operation will take a stream of bytes and store the bytes such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
@@ -338,7 +405,8 @@ Initially, we'll be using gRPC \cite{grpc} on top of TLS on top of $\mu$TP
 \cite{utp} with added STUN functionality. Over time, we'll be replacing TLS to
 reduce round trips due to connection handshakes in situations where the data is
 already encrypted and forward secrecy isn't necessary. \todo{} See the Future
-Work section for more details.
+Work section for more details. Gateways will be provided that allow for more
+standard protocols such as HTTPS.
 
 As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a public key
 and will serve as a proof of work for joining the network. Unlike Bitcoin proof
@@ -346,13 +414,31 @@ of work \cite{bitcoin}, the work will be dependent on how many {\em trailing}
 zero bits one can find in the hash output. This means that the node ID will
 still be usable in a balanced Kademlia \cite{kad} tree.
 
-The node's master public/private key will only be used to operate a miniature
-certificate authority. The node's private key can thus remain in cold storage if
-needed. The node will sign keys and certificates to be used for peer-to-peer
-communication. When using TLS, every peer can ascertain the ID of the node it is
-speaking with by validating the certificate chain and hashing the certificate
-authority's key. The peer can estimate how much work went into constructing that
-node ID by considering the number of 0 bits at the end of the ID.
+Each node will operate its own certificate authority, which requires a
+public/private keypair and a self-signed certificate. The certificate authority
+should ordinarily be kept in cold storage to prevent key loss.
+
+Each node will also have revokable leaf key pair and certificate, signed by
+the node's certificate authority. Nodes will use this leaf keypair for actual
+communication. Should the leaf become compromised, the node can issue a new
+leaf and a new entry in a certificate revocation list.
+
+The {\em node ID} will be determined from the certificate authority
+by hashing the DER-encoded public key.
+
+\begin{equation}
+\text{NodeID} = \text{SHA256}(\text{Pu})
+\end{equation}
+
+It's important that the certificate authority private key be managed with good
+operational security as key rotation for the certificate authority will require
+a brand new node ID.
+
+When using TLS, every peer can ascertain the ID of the node with which it is
+speaking by validating the certificate chain and hashing its peer's
+certificate authority's public key. It can then be estimated how much work went
+into constructing the node ID by considering the number of 0 bits at the end of
+the ID.
 
 For the few cases where a node cannot achieve a successful hole punch through a
 NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
@@ -382,14 +468,18 @@ caching.
 Because a cache of the DHT can be untrusted (and peer-to-peer communication is
 authenticated to avoid man-in-the-middle-attacks anyway), some well-known
 community-run DHT caches can be provided that simply attempt to talk to every
-storage node every so often, evicting nodes from their cache that have not been
-seen recently. Since nodes are expected to be long lived with good uptime, they
-are expected to have stable addresses that don't change often. Thus, such a
-cache will add a massive performance boost, even when slightly stale. In
-addition, the protocol will be resilient against an expected degree of node
+storage node every so often, such as every hour, evicting nodes from their
+cache that have not been seen recently.
+Since nodes are expected to be long lived with good uptime, they
+are expected to have stable addresses that don't change often on the order of
+more than once an hour. Thus, such a cache will add a massive performance boost, even when slightly stale.
+In addition, the protocol will be resilient against an expected degree of node
 churn, so having a small number of stale addresses in a DHT cache will not alter
 the expected performance of the network. Furthermore, we avoid a number of known
-attacks by using the S/Kademlia extensions.
+attacks by using the S/Kademlia extensions. \cite{skad}
+
+\todo{talk about how we're using kademlia to advertise disk space and bandwidth
+availability, and then storing that information in the cache}
 
 \subsection{Redundancy}
 
@@ -452,7 +542,6 @@ $k$ & $n$ & Exp. factor & P(D) \\
 \includegraphics[width=\linewidth]{durability/durability.eps}\label{fig:durability}
 \end{figure}
 
-
 By being able to tweak the durability independently of the expansion factor,
 very high durabilities can be achieved with surprisingly low expansion factors.
 Because of how limited bandwidth is as a resource, eliminating replication as a
@@ -495,8 +584,13 @@ $m$ is chosen such that if the amount of available pieces falls below $m$, a
 repair is triggered immediately in an attempt to make sure we always maintain
 $k$ or more pieces. $o$ is chosen such that during uploads, as soon as $o$
 pieces have finished uploading, remaining pieces up to $n$ are canceled as
-described above. Storing more than $o$ pieces is unnecessary for the file's
-target durability.
+described above. $o$ is chosen such that storing $o$ pieces is all that is
+needed to achieve the desired durability goals; $n$ is thus chosen such that
+storing $n$ pieces would be excess durability.
+
+Our durability story does not end with our selection of these numbers.
+Please see section \ref{sec:data_repair} for a discussion about how we repair
+data as its durability drops over time.
 
 See \todo{data science: Appendix} for how we select our Reed-Solomon numbers.
 
@@ -509,7 +603,11 @@ constraints require security, so any such metadata must be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
 features on top by means of an {\em injective embedding} (here used in the
-mathematical sense). Because so many details here depend on concrete
+mathematical sense). In other words, adding this functionality can be done by
+building on top of the basic components we have already created without loss of
+generality.
+
+Because so much here depends on concrete
 implementation details, our framework is loose in specificity, while our
 concrete implementation has significant detail.
 
@@ -530,7 +628,8 @@ slash (referred to as the \x{path separator}) separate \x{path components}.
 An example path might be \code{/etc/hosts}, where the \x{path components} are
 \code{etc} and \code{hosts}.
 
-Clients encrypt \x{paths} before they ever leave the client computer.
+We encrypt \x{paths} before they ever leave the customer's application's
+computer.
 
 \item[File] A \x{file} is a collection of \x{stream}s. Every \x{file} has
 exactly one default \x{stream} and may have 0 or more named \x{stream}s.
@@ -1064,7 +1163,7 @@ Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
 system. Audits should happen uniformly at random by byte with replacement.
 
-\subsection{Data repair}
+\subsection{Data repair}\label{sec:data_repair}
 
 \todo{general framework repair - should work with any version of our framework.
 goal is to replace missing pieces}
@@ -1130,13 +1229,14 @@ is similar to the design of how value storing and republishing works in
 Kademlia \cite{kad}.
 
 The ingress bandwidth demands of the audit and repair system are large, but the
-egress demands are relatively small. Lots of data comes in to the system for
-audits and repairs, but just the formerly missing pieces get sent back out.
-While the repair and audit system can run anywhere, hosting providers
+egress demands are relatively small. A large amount of data comes in to the
+system for audits and repairs, but just the formerly missing pieces get sent
+back out.
+While the repair and audit system can run anywhere, the bandwidth usage
+asymmetry means that hosting providers
 that offer free ingress \todo{should we mention specific hosts?
 (e.g., Google Cloud Platform, Amazon AWS, and Microsoft Azure)}
-make for an especially attractive
-hosting location for users of this system.
+make for an especially attractive hosting location for users of this system.
 
 \subsubsection{Merkle trees}
 
@@ -1241,7 +1341,9 @@ These statistics will be combined into a load-balancing selection process, such
 that all uploads are sent to qualified nodes, with a higher likelihood of
 uploads to preferred nodes, but with a non-zero chance for any qualified node.
 Initially, we'll be load balancing with these preferences via a randomized
-scheme such as the Power of Two Choices \cite{power-of-two-choices}.
+scheme such as the Power of Two Choices \cite{power-of-two-choices}, which
+selects two options entirely at random, and then chooses the more qualified
+between those two.
 
 On the Storj network, preferential storage node reputation is only used to
 select where new data should be stored - both during repair and during the
@@ -1323,7 +1425,7 @@ also tracks this in the database. At the end of the month, the heavy client
 adds up all the bandwidth and storage payments its farmer has earned and makes
 the payments to the farmer nodes.
 
-Heavy clients will track utilized bandwidth through a bandwidth accounting
+Heavy clients will track utilized bandwidth through a bandwidth allocation
 protocol. To download a file, the gateway user connects to the heavy client to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The heavy clients sends a confirmation of this promise to
@@ -1362,7 +1464,6 @@ certain number of heavy clients to ensure gateway users have sufficient
 availability across the network.
 
 \todo{users pay heavy clients}
-\todo{bandwidth accounting protocol}
 \todo{list what farmers are paid for: returning data and keeping data, but
 NOT the initial store of data. no ingress payment to farmers, just egress.
 farmers should be incentivized to hang on to data they already have instead of
@@ -1373,6 +1474,9 @@ replacing it with something new.}
 
 \todo{Payment wallets vs payment addresses. }
 
+\subsubsection{Bandwidth allocation protocol}
+
+\todo{}
 
 \subsubsection{Concrete implementation}
 At launch, reputable heavy clients will be identified through a
@@ -1394,7 +1498,7 @@ that don't have a good history of paying their bills.
 
 \subsubsection{Concrete implementation}
 
-Initially, storage nodes should put payers through a vetting process
+Initially, storage nodes will put payers through a vetting process
 where storage nodes limit their exposure to unknown payers and build up trust
 over time that specific payers are likely to pay their bills. Storage nodes
 will have a configurable maximum amount of data that they will store for an
@@ -1419,7 +1523,7 @@ otherwise be entitled to unless a garbage collection system is employed.
 
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
-leaves no addition garbage, whereas a {\em conservative} garbage collector may
+leaves no additional garbage, whereas a {\em conservative} garbage collector may
 leave some small proportion of garbage around given some other tradeoffs, often
 performance. As long as a conservative garbage collector is used, it should
 be assumed that the cost of storage owed to a storage node is high enough
@@ -1466,95 +1570,165 @@ will be efficient and small.
 
 \subsection{Overview of components}
 
+Our concrete implementation is currently subdivided into three major peer
+classes. This may change as responsibilities in the framework are improved or
+upgraded, but for our initial release, these three classes of node on the
+network work together to provide a cohesive product experience.
+
 \begin{itemize}
-\item Farmer
-\item Heavy Client
-\item Gateway
+\item {\bf Farmer} - This peer class participates in the DHT, stores data for
+  others, and gets paid for storage and bandwidth (via a bandwidth allocation
+  protocol).
+\item {\bf Heavy Client} - This peer class participates in the DHT, caches
+  DHT lookups, stores per-object metadata, stores farmer reputation, pays
+  farmers, performs audits and repair, and manages authorization and user
+  accounts. Any user can run their own heavy client, but we expect many users
+  will elect to avoid the operational complexity and create an account on
+  another heavy client hosted by a trusted party like a friend, group, or
+  workplace.
+\item {\bf Gateway/libstorj} - This peer class represents any application or
+  service that wants to store data. Applications can store data via the
+  S3-compatible gateway, or through our libstorj C-bindings. This peer class
+  is not expected to remain online like the other two classes and is otherwise
+  relatively lightweight. This peer class performs encryption, erasure encoding,
+  and coordinates between the other peer classes on behalf of the customer.
 \end{itemize}
+
+We'll dive into more details about each of these components.
 
 \subsection{Farmer}
 
-\todo{store data}
-\todo{bandwidth accounting}
-\todo{participate in dht}
-\todo{wait around to get paid}
+The main duty of a farmer is to reliably store and return data. Farmer operators
+are individuals or entities that have excess hard drive space and want to earn
+compensation for lending their space to others. Farmer operators will download,
+install, and configure Storj software locally, with no account required
+anywhere. Farmer operators will select what disk space and bandwidth usage
+is allowed during configuration.
+Farmers will advertise during DHT communications what hard drive space is still
+available, how much bandwidth is available, and what their desired STORJ token
+wallet address is.
 
-\todo{talk about what farmers get paid for}
+Because Storj is optimized for larger files, farmers have no reason to do
+anything more complex than store \x{pieces} directly on disk. As a result,
+unlike the previous release of Storj that used KFS \cite{storj-v2}, Storj no
+longer has a restriction on the maximum amount of data a farmer can store.
+
+Farmers also keep track of optional per-\x{piece} time-to-live, or TTL.
+\x{Pieces} may be stored with a specific TTL expiry where data is expected to
+be deleted after the expiration date. If no TTL was provided, data is expected
+to be stored indefinitely. This means farmers have a database of expiration
+times and must occasionally clear out old data.
+
+Farmers must additionally keep track of signed bandwidth allocations to send to
+heavy clients for later settlement and payment. This also requires a small
+database. Both TTL and bandwidth allocations are stored in a SQLite
+\cite{sqlite} database.
+
+Farmers can choose what heavy clients to work with. If farmers work with
+multiple heavy clients (the default behavior), then payment may come from
+multiple sources at varying payment schedules.
+Farmers are paid by specific heavy clients for returning data when requested in
+the form of egress bandwidth payment. Bandwidth payment is made payable after
+the farmer sends in signed bandwidth allocation messages.
+Farmers are also paid for data at rest.
+Farmers are expected to reliably store all data ever sent to them and are paid
+with the assumption that they are faithfully doing so.
+Farmers that fail random audits will be removed from the pool and will receive
+limited to no future payments.
+Farmers are {\em not} paid for the initial transfer of data to store (ingress
+bandwidth). This is to discourage farmers from deleting data only to be paid for
+storing more. Farmers are not paid for specific audits. Farmers are likewise
+not paid for DHT or other maintenance traffic.
 
 \subsection{Heavy client}
 
-\todo{metadata, farmer reputation, payments, user accounts, authorization,
-overlay cache, node selection, repair}
-
-\todo{ As should be apparent, the data owner has to shoulder significant burdens
+As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
-nodes cannot be trusted, and hidden information like challenge sets cannot be
-safely outsourced to an untrusted peer, data owners are responsible for
-negotiating contracts, pre-processing shards, issuing and verifying audits,
-providing payments, managing file state via the collection of shards, managing
-file encryption keys, etc. Many of these functions require high uptime and
+nodes cannot be trusted, data owners are responsible for selecting good
+farmers, issuing and verifying audits, providing payments, managing file state
+and object metadata, etc. Many of these functions require high uptime and
 significant infrastructure, especially for an active set of files. User run
 applications, like a file syncing application, cannot be expected to efficiently
 manage files on the network.
 
 To enable simple access to the network from the widest possible array of client
 applications, Storj implements a thin-client model that delegates trust to a
-dedicated server that manages data ownership. This is similar to the SPV wallet
-concept found in Bitcoin and other cryptocurrency ecosystems. The burdens of the
+dedicated server that manages data ownership. The burdens of the
 data owner can be split across the client and the server in a variety of ways.
-By varying the amount of trust delegated, the server could also provide a wide
-variety of other valuable services. This sort of dedicated server, called
-Bridge, has been developed and released as Free Software. Any individual or
-organization can run their own Bridge server to facilitate network access.
+This sort of dedicated server, called the heavy client, has been developed and
+released as Free Software. Any individual or organization can run their own
+heavy client to facilitate network access.
 
-Bridge is designed to store only metadata. It does not cache encrypted shards
-and, with the exception of public buckets, does not hold encryption keys. The
-only knowledge of the file that Bridge is able to share with third parties is
-metadata such as access patterns. This system protects the client's privacy and
-gives the client complete control over access to the data, while delegating the
-responsibility of keeping files available on the network to Bridge.
+With respect to customer data, the heavy client is designed to store only
+metadata. It is never given data unencrypted and does not hold encryption keys.
+The only knowledge of an object that the heavy client is able to share with
+third parties is metadata such as access patterns. This system protects the
+client's privacy and gives the client complete control over access to the data,
+while delegating the responsibility of keeping files available on the network
+to the heavy client.
 
-It is possible to envision Bridge upgrades that allow for different levels of
-delegated trust. A Bridge client may want to retain control over issuing and
-validating audits, or managing pointers to shards. Or a client may choose to
-authorize two or more unrelated Bridges to manage its audits in order to
-minimize the trust it places in either Bridge server. In the long run, any
-function of the data owner can be split across two or more parties by delegating
-trust. }
-
-\todo{ In cases where the cost of delegating trust is not excessively high,
-clients may use third-party Bridges. Because Bridges do not store data and have
-no access to keys, this is still a large improvement on the traditional
-data-center model. Many of the features Bridge servers provide, like
-permissioning and intelligent contracting, leverage considerable network
-effects. Data sets grow exponentially more useful as they increse in size,
-indicating that there are strong economic incentives to share infrastructure and
-information in a Bridge.
+In cases where the cost of delegating trust is not excessively high,
+clients may use third-party heavy clients. Because heavy clients do not store
+data and have no access to keys, this is still a large improvement over the
+traditional data-center model. Many of the features heavy clients provide, like
+farmer selection and reputation, leverage considerable network effects. Data
+sets grow more useful as they increase in size, indicating that there are
+strong economic incentives to share infrastructure and information in a heavy
+client.
 
 Applications using object stores delegate significant amounts of trust to the
-storage providers. Providers may choose to operate public Bridges as a service.
-Application developers then delegate trust to the Bridge, as they would to a
-traditional object store, but to a lesser degree. Future updates will allow for
-various distributions of responsibilities (and thus levels of trust) between
-clients and Bridges. This shifts significant operational burdens from the
-application developer to the service-provider. This would also allow developers
-to pay for storage with standard payment mechanisms, like credit cards, rather
-than managing a cryptocurrency wallet. Storj Labs Inc. currently provides this
-service. }
+storage providers. Providers may choose to operate public heavy clients as a
+service.
+Application developers then delegate trust to a specific heavy client, as they
+would to a traditional object store, but to a lesser degree. Future updates
+will allow for various distributions of responsibilities (and thus levels of
+trust) between customer applications and heavy clients. This shifts significant
+operational burdens from the application developer to the service-provider.
+This would also allow developers to pay for storage with standard payment
+mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
+Storj Labs Inc. currently provides this service.
 
-\subsection{Gateway}
+A specific heavy client {\em instance} does not necessarily constitute one
+server. A heavy client may be run by a collection of servers and be backed by
+a horizontally scalable trusted database for higher uptime.
 
-\todo{s3 compatible}
-\todo{encryption, reed solomon, streaming, segmenting}
+The heavy client is, at its core, one of the most complex and yet
+straightforward components of our initial release that fulfills our framework.
+Future framework-conforming releases nonwithstanding, the initial heavy client
+is a standard application server that wraps a trusted database such as
+PostgreSQL, Cassandra, or something else. Users sign in to a specific heavy
+client with account credentials. The heavy client is responsible for
+keeping track of accounts and authorization, farmer contact information and
+reputation, and object metadata. The heavy client is also responsible for
+payments and data repair. Data available through one heavy client instance is
+not available through another heavy client instance, though various levels of
+export and import are planned.
 
-\todo{ The client provides the actual storage API. It should be run co-located
-with wherever data is generated, and will communicate directly with storage
-nodes so as to avoid central bandwidth costs. The client can provide an
-S3-compatible API to interoperate with existing software.
+The heavy client is made up of components discussed earlier
 
-When data is sent to the client, the client will encrypt the data, choose
-appropriate storage nodes, store the data on those nodes, then use the metadata
-system to keep track of which nodes the data resides on for future reading. }
+\begin{itemize}
+\item A full DHT cache.
+\item An account management and authorization system
+\item A per-object metadata database indexed by encrypted path
+\item A reputation and farmer statistics database
+\item A farmer payment service
+\item A data audit and data repair service
+\end{itemize}
+
+\subsection{Gateway/libstorj}
+
+The gateway provides an S3-compatible drop-in interface for applications that
+need to store data but don't want to bother with the complexities of distributed
+storage directly. The gateway is a simple service layer on top of libstorj,
+which is a library that provides access to storing and retrieving data in the
+Storj network.
+
+The gateway (via libstorj) first encrypts data, then erasure encodes it, then
+streams it out to farmers, all while coordinating with a chosen heavy client
+for metadata and tracking.
+
+The gateway should run co-located with wherever data is generated, and will
+communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Quality control and branding}
 
@@ -1591,10 +1765,10 @@ Gateway: "I'm about to do an upload, it's for this much data, I'd like to
 Heavy client: chosen piece id, signatures to authorize gateway communication
    to storage nodes on heavy client's behalf, what nodes to talk to, how
    to talk to them (ips, port)
-Gateway starts upload with those farmers using bandwidth accounting protocol.
+Gateway starts upload with those farmers using bandwidth allocation protocol.
 Gateway breaks encrypts object, breaks object into segments, erasure encodes,
 uploads.
-At any point the storage node can stop upload due to bandwidth accounting
+At any point the storage node can stop upload due to bandwidth allocation
 protocol failure.
 At the end, storage node has data and signed document about how much
 bandwidth was used, approved by the gateway and heavy client. Storage node
@@ -1631,7 +1805,7 @@ Technical Dive into how Download Works \todo{}
     nodes have, check authorizing request for next 10 minutes for
     specific pieces.
 
-  gateway: starts downloading pieces using bandwidth accounting protocol
+  gateway: starts downloading pieces using bandwidth allocation protocol
     (promises to pay). storage node keeps track of promises to pay and sends
     them to appropriate heavy client.
   gateway reed solomon decodes, decrypts, returns data.
@@ -1980,22 +2154,6 @@ current contracts, as well as potential future contracts as a result of failed
 audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
 of the contract value. Thus it stands to reason that partially deleting shards
 to increase perceived storage capcity is not a viable economic strategy.
-
-\section{Reed-Solomon}
-
-\todo{}
-
-\section{Kademlia}
-
-\todo{}
-
-\section{S/Kademlia}
-
-\todo{}
-
-\section{Macaroons}
-
-\todo{}
 
 \newpage \bibliographystyle{unsrt} \begingroup \raggedright
 \bibliography{biblio} \endgroup
