@@ -56,15 +56,12 @@ Remaining big todo items:
   use the brand.
 \item Eng: Walkthroughs - highly detailed walkthroughs of how each op works
 \begin{itemize}
-\item Upload walkthrough
-\item Download walkthrough
 \item Delete walkthrough
 \item List walkthrough
 \item Repair walkthrough
 \item Payment walkthrough
 \item Export/import walkthrough
 \end{itemize}
-\item Alex/JT: Bandwidth allocation protocol
 \end{itemize}
 
 Remaining medium todo items:
@@ -1460,7 +1457,7 @@ to work with non-whitelisted heavy clients. If a heavy client has a low
 reputation score, farmers should always forgo utilizing that particular heavy
 client.
 
-If a heavy  client  would  like  to  become  a  Storj  Approved Heavy Client,
+If a heavy client would like to become a Storj Approved Heavy Client,
 they will be required to have insurance with Storj. This guarantees that if a
 heavy client does act maliciously, they have some proof of stake, which would
 be lost and would help compensate network participants for the missing payments
@@ -1469,21 +1466,16 @@ certain number of heavy clients to ensure gateway users have sufficient
 availability across the network.
 
 \todo{users pay heavy clients}
-\todo{list what farmers are paid for: returning data and keeping data, but
-NOT the initial store of data. no ingress payment to farmers, just egress.
-farmers should be incentivized to hang on to data they already have instead of
-replacing it with something new.}
 \todo{payers roll up payments every day, but pay every month}
 
 \todo{Payment automation?}
 
 \todo{Payment wallets vs payment addresses. }
 
-\subsubsection{Bandwidth allocation protocol}
-
 \todo{}
 
 \subsubsection{Concrete implementation}
+
 At launch, reputable heavy clients will be identified through a
 Storj-maintained whitelist and blacklist. As more heavy clients emerge, Storj
 will launch the heavy client clearing house where farmers can review specific
@@ -1495,6 +1487,58 @@ maliciously and does not store files properly or maintain sufficient
 availability, they will not be paid for the services rendered, and the funds
 allocated to their farmer node will instead be used to repair their missing
 file pieces and pay new farmers to store the data long-term.
+
+\subsubsection{Bandwidth allocation protocol}
+
+A core component of our system requires knowing how much bandwidth is used
+between two peers, so we introduce a protocol we call the Bandwidth Allocation
+Protocol for correctly verifying that a certain amount of bandwidth was used
+between two peers with various incentives.
+
+\todo{diagram}
+
+When a client wants to perform an operation for $x$ bytes of bandwidth, it will
+first get authorization from a payer that it has enough funds and is authorized
+to perform that operation. The payer will return an {\em unrestricted
+bandwidth allocation} message. This message will include the identity of the
+payer, the identity of the client, an expiration timestamp, a serial number,
+the maximum amount of bytes authorized, and the direction the bytes will flow
+(whether or not the data will be transfered from or to the client).
+The message will be signed by the payer. To use a metaphor, the payer is
+creating a blank check that is authorized up to $x$ in byte value and sending
+it to the client.
+
+Once the client has an unrestricted bandwidth allocation, the client will then
+create {\em restricted bandwidth allocations}, or to continue the metaphor, a
+filled-in check, indicating $y$ bytes have been transfered so far. The client
+will start by sending a restricted allocation for some small amount, perhaps
+only a few kilobytes. If the allocation is signed correctly, the farmer will
+transfer up to the amount listed in the restricted allocation ($y$ bytes) before
+awaiting another allocation. The client will then send another allocation where
+$y$ is larger, continuing to send allocations for data until $y$ has grown to
+the full $x$ value.
+
+At any point, if the request is to terminate, either as planned or unexpectedly,
+the farmer will keep the largest restricted bandwidth allocation it has seen.
+This largest restricted bandwidth allocation is a message signed by the client
+indicating that the client did agree to bandwidth measurement of up to $y$
+bytes, and the payer did agree that the client should be allowed to use that
+bandwidth. The farmer will periodically send the largest restricted bandwidth
+allocations it has received by serial number to appropriate payers, at which
+payers will "cash the check" and pay the farmer for that bandwidth.
+
+If the client can't afford the bandwidth usage, the payer will not sign an
+unrestricted bandwidth allocation to protect the payer's own reputation. If
+the client tries to use more bandwidth than allocated, the farmer will shut down
+the request. The farmer can only get paid by a payer for the maximum a client
+has agreed to, as it otherwise has no valid bandwidth allocations to return for
+payment.
+
+This mechanism is how we measure request-specific peer-to-peer bandwidth
+traffic. We don't measure all peer-to-peer traffic; some operations are simply
+the cost of doing business. This bandwidth traffic measurement only applies
+to piece storage operations (storage and retrievals of pieces) and does not
+apply to overlay traffic (Kademlia DHT) or other generic maintenance overhead.
 
 \subsection{Payer reputation}
 
@@ -1642,8 +1686,7 @@ Farmers that fail random audits will be removed from the pool and will receive
 limited to no future payments.
 Farmers are {\em not} paid for the initial transfer of data to store (ingress
 bandwidth). This is to discourage farmers from deleting data only to be paid for
-storing more. Farmers are not paid for specific audits. Farmers are likewise
-not paid for DHT or other maintenance traffic.
+storing more. Farmers are not paid for DHT or other maintenance traffic.
 
 \subsection{Heavy client}
 
@@ -1742,82 +1785,110 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
+There are three roles, the gateway, the heavy client, and farmers.
+
 \subsubsection{Detailed walkthrough: upload}
 
-In order to upload a file, the light client will log in
-and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
-storage availability and bandwidth to potentially store files. The overlay
-network will have a list of nodes that meet those criteria and use the
-reputation network to filter out reputable farmers. The overlay network then
-sends a refined list of farmers to the light client, which is then used to
-directly upload data. Finally, the light client sends a request to the network
-state in order to store the IDs of the piece storage nodes holding the segments
-and other related metadata in pointers.
+Here is a concrete list of all the steps that happen for an upload.
 
-Technical Dive into how Upload Works \todo{}
-
-\todo{
-First thing, at some point prior, the gateway is going to talk to the heavy
-client and authorize itself as having an account. The heavy client won't talk
-to any gateway; the gateway needs an account on the heavy client.
-
-Next, the gateway is going to talk to the heavy client and try and get a bunch
-of things all at once.
-Make sure it can upload data. Does this heavy client have funds for this
-gateway? Is the gateway out of funds?
-Gateway: "I'm about to do an upload, it's for this much data, I'd like to
-         store it"
-Heavy client: chosen piece id, signatures to authorize gateway communication
-   to storage nodes on heavy client's behalf, what nodes to talk to, how
-   to talk to them (ips, port)
-Gateway starts upload with those farmers using bandwidth allocation protocol.
-Gateway breaks encrypts object, breaks object into segments, erasure encodes,
-uploads.
-At any point the storage node can stop upload due to bandwidth allocation
-protocol failure.
-At the end, storage node has data and signed document about how much
-bandwidth was used, approved by the gateway and heavy client. Storage node
-stores data, signed check, ttl.
-Gateway keeps track of which storage nodes succeed.
-Gateway sends back which nodes successfully uploaded to heavy client, along
-with encrypted path, what nodes were selected, encryption, encoding metadata
-(which algorithms were used).
-}
-
-\todo{gateways must send data to heavy client and can't cache it locally because
-heavy clients won't authorize gets for data that doesn't exist}
-
-\todo{discuss long tail elimination via overencoding}
-\todo{Deep dive into example upload steps}
+\begin{itemize}
+\item First, data begins transfer to the gateway.
+\item The gateway will then choose an encryption key and starting nonce for
+  this segment and begin to encrypt the incoming data with authenticated
+  encryption as it flows through.
+\item The gateway buffers data until it knows whether the incoming file is
+short enough to be an inline segment or a remote segment. We'll assume a remote
+segment.
+\item The gateway sends a request to the heavy client to prepare for the storage
+of this first segment. The gateway will:
+  \begin{itemize}
+  \item Confirm that the gateway has appropriate authorization and funds for
+    the request. The gateway must have an account with this specific heavy
+    client already.
+  \item Make a selection of nodes that conform to the bucket's configured
+    durability, performance, geographic and reputation requirements that have
+    enough resources.
+  \item Return a list of nodes, along with their contact information and
+    signed unrestricted bandwidth allocation messages, and a chosen root piece
+    id.
+  \end{itemize}
+\item The gateway will take this information and begin parallel connections to
+  all of the chosen farmers via the bandwidth allocation protocol.
+\item The gateway will begin breaking the segment into stripes and then
+  erasure encode each stripe.
+\item The generated erasure shares will be concatenated into \x{pieces} as they
+  transfer to each farmer in parallel.
+\item The erasure encoding will be configured to over-encode to more pieces
+  than needed. This will allow for the elimination of long tails and the
+  significant improvement of visible performance by allowing the gateway to
+  cancel the slowest uploads.
+\item The data will continue to transfer until the maximum segment size is hit
+  or the stream ends, whichever is sooner.
+\item The farmer will store the largest restricted bandwidth allocation, the
+  TTL of the segment (if any), and the data itself by the farmer-specific piece
+  id (the HMAC of the root piece id and the farmer's id).
+\item If the upload is aborted for any reason, the farmer will keep the
+  largest bandwidth allocation it received but otherwise will throw away all
+  relevant request data.
+\item The gateway encrypts the random encryption key chosen for this file
+  with a deterministic hierarchical key.
+\item The gateway will upload back to the heavy client a \x{pointer}, which
+  contains which farmers were
+  ultimately successful, what encrypted path was chosen for this segment, which
+  erasure code algorithm was used, the chosen piece id, the
+  encrypted encryption key and other metadata, and a signature.
+\item The gateway will then proceed with the next segment and continue to
+  process segments until the entire stream has completed. Each segment gets
+  a new encryption key, but the nonce monotonically increases from the previous
+  segment.
+\item The last segment stored in the stream will contain additional metadata
+  about how many segments the stream contained, how large the segments were
+  in bytes, and the starting nonce of the first segment.
+\item The farmers, at some future point, will send the largest restricted
+  bandwidth allocation they received as part of the upload to the appropriate
+  heavy client for later payment.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: download}
 
-In order to download a file, the light
-client will login and send a request to the network state to get pointers to the
-stored segments and other metadata. The light client extracts the node IDs that
-are storing the data and sends a request to the overlay network with those IDs.
-The overlay network responds with an object containing the nodes' IP addresses.
-Finally, the light client sends a request to farmers in order to receive pieces
-using those IP addresses.
+Here is a concrete list of all the steps that happen for a download.
 
-Technical Dive into how Download Works \todo{}
-
-\todo{
-  for every segment, gateway will ask heavy client for a big chunk of
-  information given an encrypted path.
-
-  heavy client: returns what nodes the segment is on, what ip addresses those
-    nodes have, check authorizing request for next 10 minutes for
-    specific pieces.
-
-  gateway: starts downloading pieces using bandwidth allocation protocol
-    (promises to pay). storage node keeps track of promises to pay and sends
-    them to appropriate heavy client.
-  gateway reed solomon decodes, decrypts, returns data.
-
-}
-
-\todo{discuss long tail elimination via overencoding}
+\begin{itemize}
+\item First, a request for data is received by the gateway.
+\item The gateway is going to try and reduce round trips to the heavy client
+  by speculatively requesting the pointers for the first few segments in
+  addition to the pointer for the last segment from the heavy client. The last
+  segment is needed in order to learn the size of the object, how many segments
+  there are, and how big the segments are.
+\item For every segment pointer requested, the heavy client will:
+  \begin{itemize}
+  \item Validate that the gateway has access to the segment pointer and funds to
+    pay for its downloading.
+  \item Generate an unrestricted bandwidth allocation for the segment.
+  \item Look up the contact information for the farmers listed in the pointer.
+  \item Return the requested segment, the bandwidth allocations, and contact
+    info.
+  \end{itemize}
+\item The gateway will calculate if more segments are necessary for the
+  data request it received. If so, it will request the remaining segment
+  pointers, which it can calculate exactly now due to the earlier request of
+  the last segment pointer.
+\item Once all necessary segment pointers have been returned, if the requested
+  segments are not inline, the heavy client will initiate parallel requests
+  via the bandwidth allocation protocol to all appropriate farmers for the
+  appropriate erasure share ranges inside of each stored piece.
+\item Because not all erasure shares are necessary for recovery, long tails
+  will be eliminated and a significant and visible performance improvement will
+  be gained by allowing the gateway to cancel the slowest downloads.
+\item If the upload is aborted for any reason, the farmer will keep the
+  largest bandwidth allocation it received but otherwise will throw away all
+  relevant request data.
+\item The retrieved erasure shares will be recombined back into stripes.
+\item The stripes will be decrypted and returned to the requester.
+\item The farmers, at some future point, will send the largest restricted
+  bandwidth allocation they received as part of the download to the appropriate
+  heavy client for later payment.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: delete}
 
