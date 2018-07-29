@@ -31,8 +31,9 @@ Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 
 \begin{document} \maketitle
 
-\begin{abstract} Decentralized cloud storage is attractive for a number of
-reasons. Eliminating central control allows users to store and share data
+\begin{abstract} Decentralized Cloud Storage represents a fundamental shift in
+the efficiency and economics of distributed storage.
+Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
 security and privacy. At a greater rate than any single entity can afford, it allows
@@ -154,16 +155,18 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
-storage protocols, we must create a graceful transition from centralized providers. 
-For users with data currently stored on a centralized provider, this will alleviate 
+storage protocols, we must create a graceful transition from centralized providers.
+For users with data currently stored on a centralized provider, this will alleviate
 any switching costs.
 
-Our objective is for Storj to compete successfully in the wider cloud storage 
-industry and bring decentralized cloud storage to the mainstream -- thus enabling 
-more people greater security and less centralized control. To achieve this goal, 
-applications built against S3 should be able to be configured to work with Storj with 
-minimal friction and changes. Imagine if 90\% of existing application services could switch to Storj with a
-single configuration change. \todo{maybe talk about s3 market penetration?} This adds strong requirements on feature set, 
+Our objective is for Storj to compete successfully in the wider cloud storage
+industry and bring decentralized cloud storage to the mainstream -- thus enabling
+more people greater security and less centralized control. To achieve this goal,
+applications built against S3 should be able to be configured to work with Storj with
+minimal friction and changes.
+Imagine if \todo{90\%} of existing application services could switch to Storj with a
+single configuration change. \todo{maybe talk about s3 market penetration?}
+This adds strong requirements on feature set,
 performance, and durability.
 
 \subsection{Device failure and churn}
@@ -172,7 +175,7 @@ For any storage system, but especially a distributed storage system, component
 failure is a guarantee. All hard drives fail after enough wear
 \cite{backblaze-hd-2018-q1}, and the servers providing the network access to
 these hard drives will eventually fail, too. Network links die, power is lost,
-and storage mediums become unreliable. For data to outlast individual component
+and storage mediums become unreliable. \todo{Maybe add a joke about some ridiculous failure case here}  For data to outlast individual component
 failure, data must be stored with enough redundancy to recover from failure.
 Perhaps more importantly, no data should be assumed to be stationary and all
 data must eventually be moved. In such an environment, redundancy, data
@@ -212,7 +215,7 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
-focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
+focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
 {\color{red}What are long tails?}
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without waiting for a slow
@@ -263,7 +266,7 @@ combined with required repair traffic, limits usable space.
 Broadly, large storage systems can be classified into two groups by average
 object size. When storing lots of small bits of information, generally a
 database is the preferred route. On the other hand, when storing lots of large
-files, an object store or filesystem is ideal. We classify a "large" file as a 
+files, an object store or filesystem is ideal. We classify a "large" file as a
 few megabytes or greater.
 
 The initial product offering by Storj Labs is designed to function primarily as
@@ -280,9 +283,9 @@ without requiring full retrieval of any aggregated object they were packed into.
 \subsection{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
-environment, where individual storage nodes are not necessarily assumed to be
+environment, where individual storage providers are not necessarily assumed to be
 trustworthy. Storj operates over the public internet, and allows anyone to sign
-up to become a storage node.
+up to become a storage provider.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
@@ -316,9 +319,9 @@ it and breaks it up into multiple little pieces. It then distributes the pieces 
 the network then generates and stores some metadata about where to find the data
 again.
 
-\item[Retrieving data] When data is retrieved from the network, 
-it first recovers the metadata about where to find the pieces. 
-Then the pieces are retrieved and the original data is reconstructed 
+\item[Retrieving data] When data is retrieved from the network,
+it first recovers the metadata about where to find the pieces.
+Then the pieces are retrieved and the original data is reconstructed
 on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
@@ -330,8 +333,8 @@ The data is reconstructed and the missing pieces are regenerated and replaced.
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
-then combine them to form the desired protocol. One important benefit is it makes 
-updating individual components much easier without having to rearchitect the rest 
+then combine them to form the desired protocol. One important benefit is it makes
+updating individual components much easier without having to rearchitect the rest
 of the network. The individual components are:
 
 \begin{enumerate}
@@ -358,7 +361,7 @@ returns data provided to it. Nodes should provide reliable storage space,
 network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
 for their participation. Storage nodes will be selected based on a number of
 different criteria. Ping time, latency, throughput, disk space, geographic
-location, legal restrictions, etc., are all important factors that may need to
+location, etc., are all important factors that may need to
 be considered. This means that node selection almost certainly must be an
 explicit process.
 
@@ -434,6 +437,8 @@ It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
 a brand new node ID.
 
+\todo {Equation for PoW on public key, and more explanation.}
+
 When using TLS, every peer can ascertain the ID of the node with which it is
 speaking by validating the certificate chain and hashing its peer's
 certificate authority's public key. It can then be estimated how much work went
@@ -472,7 +477,7 @@ storage node every so often, such as every hour, evicting nodes from their
 cache that have not been seen recently.
 Since nodes are expected to be long lived with good uptime, they
 are expected to have stable addresses that don't change often on the order of
-more than once an hour. Thus, such a cache will add a massive performance boost, even when slightly stale.
+more than once an hour. \todo{How do we handle dynamic ips in general?} Thus, such a cache will add a massive performance boost, even when slightly stale.
 In addition, the protocol will be resilient against an expected degree of node
 churn, so having a small number of stale addresses in a DHT cache will not alter
 the expected performance of the network. Furthermore, we avoid a number of known
@@ -599,7 +604,7 @@ See \todo{data science: Appendix} for how we select our Reed-Solomon numbers.
 Our design constraints include S3 compatibility. This means we should support
 hierarchical objects (paths with prefixes), object metadata, arbitrarily large
 files, arbitrarily large amounts of files, and so on. Similarly, our design
-constraints require security, so any such metadata must be encrypted.
+constraints require total security, so any such metadata will be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
 features on top by means of an {\em injective embedding} (here used in the
