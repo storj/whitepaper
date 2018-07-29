@@ -31,8 +31,9 @@ Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 
 \begin{document} \maketitle
 
-\begin{abstract} Decentralized cloud storage is attractive for a number of
-reasons. Eliminating central control allows users to store and share data
+\begin{abstract} Decentralized Cloud Storage represents a fundamental shift in
+the efficiency and economics of distributed storage. 
+Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
 security and privacy. At a greater rate than any single entity can afford, it allows
@@ -104,8 +105,8 @@ The Storj protocol enables peers on the network to transfer and receive data,
 verify the integrity and availability of remote data, and pay other nodes
 for storing data.
 While not all peers in the network have the same responsibilities,
-every peer is an autonomous agent, capable of performing these actions without
-significant human interaction.
+the goal is for every peer to be an autonomous agent, capable of performing
+these actions with little to no significant human interaction.
 
 Many storage products have been created based on distributed storage techniques.
 Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
@@ -162,7 +163,7 @@ For Storj to compete successfully in the wider cloud storage industry and bring
 decentralized cloud storage to the mainstream -- thus enabling more people
 greater security and less centralized control -- applications built against S3
 should be able to be made to work with Storj with minimal friction and changes.
-Imagine if 90\% of existing application services could switch to Storj with a
+Imagine if \todo{90\%} of existing application services could switch to Storj with a
 single configuration change. \todo{maybe talk about s3 market penetration?}
 This adds strong requirements on feature set, performance, and durability.
 
@@ -172,7 +173,7 @@ For any storage system, but especially a distributed storage system, component
 failure is a guarantee. All hard drives fail after enough wear
 \cite{backblaze-hd-2018-q1}, and the servers providing the network access to
 these hard drives will eventually fail, too. Network links die, power is lost,
-and storage mediums become unreliable. For data to outlast individual component
+and storage mediums become unreliable. \todo{Maybe add a joke about some ridiculous failure case here}  For data to outlast individual component
 failure, data must be stored with enough redundancy to recover from failure.
 Perhaps more importantly, no data should be assumed to be stationary and all
 data must eventually be moved. In such an environment, redundancy, data
@@ -279,9 +280,9 @@ without requiring full retrieval of any aggregated object they were packed into.
 \subsection{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
-environment, where individual storage nodes are not necessarily assumed to be
+environment, where individual storage providers are not necessarily assumed to be
 trustworthy. Storj operates over the public internet, and allows anyone to sign
-up to become a storage node.
+up to become a storage provider.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
@@ -356,7 +357,7 @@ returns data provided to it. Nodes should provide reliable storage space,
 network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
 for their participation. Storage nodes will be selected based on a number of
 different criteria. Ping time, latency, throughput, disk space, geographic
-location, legal restrictions, etc., are all important factors that may need to
+location, etc., are all important factors that may need to
 be considered. This means that node selection almost certainly must be an
 explicit process.
 
@@ -432,6 +433,8 @@ It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
 a brand new node ID.
 
+\todo {Equation for PoW on public key, and more explanation.}
+
 When using TLS, every peer can ascertain the ID of the node with which it is
 speaking by validating the certificate chain and hashing its peer's
 certificate authority's public key. It can then be estimated how much work went
@@ -470,7 +473,7 @@ storage node every so often, such as every hour, evicting nodes from their
 cache that have not been seen recently.
 Since nodes are expected to be long lived with good uptime, they
 are expected to have stable addresses that don't change often on the order of
-more than once an hour. Thus, such a cache will add a massive performance boost, even when slightly stale.
+more than once an hour. \todo{How do we handle dynamic ips in general?} Thus, such a cache will add a massive performance boost, even when slightly stale.
 In addition, the protocol will be resilient against an expected degree of node
 churn, so having a small number of stale addresses in a DHT cache will not alter
 the expected performance of the network. Furthermore, we avoid a number of known
@@ -597,7 +600,7 @@ See \todo{data science: Appendix} for how we select our Reed-Solomon numbers.
 Our design constraints include S3 compatibility. This means we should support
 hierarchical objects (paths with prefixes), object metadata, arbitrarily large
 files, arbitrarily large amounts of files, and so on. Similarly, our design
-constraints require security, so any such metadata must be encrypted.
+constraints require total security, so any such metadata will be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
 features on top by means of an {\em injective embedding} (here used in the
