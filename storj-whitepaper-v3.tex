@@ -54,14 +54,6 @@ Remaining big todo items:
   plan to ensure heavy client quality by quality control evaluations, formal
   partnerships, relationships, and not letting poor quality heavy clients
   use the brand.
-\item Eng: Walkthroughs - highly detailed walkthroughs of how each op works
-\begin{itemize}
-\item Delete walkthrough
-\item List walkthrough
-\item Repair walkthrough
-\item Payment walkthrough
-\item Export/import walkthrough
-\end{itemize}
 \end{itemize}
 
 Remaining medium todo items:
@@ -1587,12 +1579,14 @@ data is deleted, storage nodes that are online and reachable will get
 notification right away.
 
 For the nodes that miss initial delete messages, we propose a conservative
-garbage collection strategy. Periodically,
-a payer will send out a highly-compressible data structure such as a
-{\em Bloom filter} \cite{bloom-filter} that contains hints about what pieces
-a node is expected to continue storing. A Bloom filter is like a set that can
+garbage collection strategy. Periodically, storage nodes will request
+a highly-compressible data structure such as a
+{\em Bloom filter} \cite{bloom-filter} from payers that contains hints about
+what pieces a node is expected to continue storing.
+A Bloom filter is like a set that can
 answer set membership questions with the answers {\em isn't contained} or
-{\em maybe contained}, but not {\em is contained}. By sending a data
+{\em maybe contained}, but not {\em is contained}. Payers will reject
+requests for these hints that happen too frequently. By returning a data
 structure tailored to each node on a periodic schedule, a payer can give a
 storage node the ability to clean up garbage to a configurable tolerance.
 
@@ -1862,8 +1856,8 @@ Here is a concrete list of all the steps that happen for a download.
   there are, and how big the segments are.
 \item For every segment pointer requested, the heavy client will:
   \begin{itemize}
-  \item Validate that the gateway has access to the segment pointer and funds to
-    pay for its downloading.
+  \item Validate that the gateway has access to download the segment pointer
+    and funds to pay for its downloading.
   \item Generate an unrestricted bandwidth allocation for the segment.
   \item Look up the contact information for the farmers listed in the pointer.
   \item Return the requested segment, the bandwidth allocations, and contact
@@ -1892,44 +1886,138 @@ Here is a concrete list of all the steps that happen for a download.
 
 \subsubsection{Detailed walkthrough: delete}
 
-\todo{similar to puts}
-\todo{needs guarantees for garbage collection that deletes were issued}
-\todo{heavy client forces gateway to help heavy client keep reputation with
-      farmers}
+Here is a concrete list of all the steps that happen for a delete.
+
+\begin{itemize}
+\item First, the delete operation is received by the gateway.
+\item The gateway is going to request all of the segment pointers for the file.
+\item For every segment pointer, the heavy client will:
+  \begin{itemize}
+  \item Validate that the gateway has access to delete the segment pointer.
+  \item Generate a signed agreement for the deletion of the segment, so the
+    farmer knows the heavy client is expecting the delete to proceed.
+  \item Look up the contact information for the farmers listed in the pointer.
+  \item Return the segments, the agreements, and contact info.
+  \end{itemize}
+\item For all of the segments that are not inline, the heavy client will
+  initiate parallel requests to all appropriate farmers to signal that the
+  pieces are being removed.
+\item The farmers will return a signed message saying the farmer received the
+  delete operation and will delete the file and its bookkeeping info.
+\item The gateway will upload back to the heavy client all of the signed
+  messages it received from working farmers. The heavy client will require an
+  adjustable percent of the total farmers to sign messages successfully
+  to ensure that the gateway did its part in letting farmers know the object
+  has been deleted.
+\item The heavy client will remove the segment pointers and stop charging and
+  paying for them.
+\item The gateway will return success.
+\item Periodically, farmers will ask the heavy client for generated garbage
+  collection messages that will help farmers who were offline during the main
+  deletion event.
+  The garbage collection messages will assist the farmer in pruning data that is
+  no longer live. Initially, these garbage collection messages will be tunable
+  Bloom filters to allow the farmer to probabilistically prune unneeded data
+  without using much bandwidth.
+  Heavy clients will reject requests for garbage collection messages that
+  happen too frequently.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: list}
 
-\todo{just talks to heavy client directly}
+Here is a concrete list of all the steps that happen for a list operation.
+
+\begin{itemize}
+\item First, a request for listing objects is received by the gateway.
+\item The gateway will translate the request on unencrypted paths to encrypted
+  paths.
+\item The gateway will request from the heavy client the appropriate list of
+  encrypted paths.
+\item The heavy client will validate that the gateway has appropriate access
+  and then return the requested list.
+\item The gateway will decrypt the return results and return them.
+\end{itemize}
+
+It's worth pointing out that because the heavy client stores paths in sorted
+order, the order returned to the customer is in order sorted by the encrypted
+path element, which means that unencrypted paths will be in random but
+deterministic order. If a customer wants sorted paths and doesn't mind the
+heavy client operator having access to unencrypted paths, the customer can opt
+into unencrypted (and thus lexicographically sorted) paths.
+
+\todo{future work section about lexicographic sort on encrypted paths}
+
+\subsubsection{Detailed walkthrough: audits}
+
+Here is a concrete list of all the steps that happen for the auditing process.
+
+\begin{itemize}
+\item Each heavy client has a queue of audits, where an audit will entail
+  validating a specific stripe of a segment across a set of farmers.
+\item Periodically, heavy clients will choose a stripe to audit by selecting
+  an object uniformly at random weighted by the number of bytes it has and place
+  that stripe into the audit queue.
+\item Similarly, heavy clients will choose a stripe to audit by identifying
+  farmers that have had fewer recent audits than other farmers, and selecting
+  a stripe at random from the data contained by that farmer. That stripe audit
+  request will also be placed in the audit queue.
+\item Heavy clients will process elements from the queue.
+\item For each stripe request, the heavy client will perform the entire download
+  operation for that small stripe range. Unlike standard downloads, the stripe
+  request does not need to be performant; the heavy client will attempt to
+  download all of the erasure shares for the stripe and will wait for slow
+  farmers.
+\item After receiving as many shares as is possible within a generous timeout,
+  the erasure shares will be analyzed to discover which, if any, are wrong.
+  Heavy clients will take note of farmers that return invalid data and if a
+  farmer returns too much invalid data, the farmer will be blacklisted by the
+  heavy client and marked as bad. The heavy client will not pay the farmer going
+  forward, nor will it select it for new data.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: repair}
 
-The repair and maintenance component (also known as data
-repair) is essential to ensure data integrity is maintained. It confirms that
-nodes responsible for pieces continue to store the data that the light client
-sent. To do this, it first makes a request to the network state to receive
-pointers. From there, the repair and maintenance component extracts the node IDs
-from the response and makes a request with that information to the DHT cache.
-The DHT cache sends a response containing only the online nodes from the
-original node ID list. The data repair component takes the response from the DHT
-cache and the repair threshold value from the pointer, then calculates which
-pieces need to get repaired. The light client directly downloads pieces that
-need to get repaired from farmers and re-uploads them to new reputable farmers.
-To ensure the network state has up-to-date information about the data, the light
-client then sends a put request of new pointers with the updated node IDs.
+Here is a concrete list of all the steps that happen for the repair process.
 
-Diagram Technical Detail <WIP>
-
-\todo{Deep dive into example repair steps}
+\begin{itemize}
+\item Each heavy client periodically will ping every farmer it knows about,
+  either as part of the audit process, or via standard overlay ping operations.
+\item The heavy client will keep track of which nodes fail to respond and mark
+  them as down.
+\item When a node is marked down or is marked bad via the audit process, the
+  pointers that point to that farmer will be considered for repair. Pointers
+  keep track of their minimum allowable redundancy. If a pointer is not stored
+  on enough good and online farmers, it will be added to the repair queue.
+\item A worker process will take segment pointers off the repair queue. When
+  a segment pointer is taken off the repair queue, the entire segment will be
+  downloaded. Unlike audits, only enough pieces for accurate repair are needed.
+  Unlike streaming downloads, the repair system can wait for the entire segment
+  before starting. As a result, pieces are compared against a Merkle tree of
+  hashes for correctness prior to repair, where the Merkle root is stored in
+  the pointer.
+\item Once enough correct pieces are recovered, the missing pieces are
+  regenerated.
+\item The heavy client selects some new nodes and uploads the new pieces to
+  those new nodes via the normal upload process.
+\item The heavy client updates the pointer's metadata.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: payment}
 
-\todo{Deep dive into example payment steps}
+Here is a concrete list of all the steps that happen for payment.
 
-\todo{}
-
-\subsubsection{Detailed walkthrough: export/import}
-
-\todo{Deep dive into how porting your account to a new heavy client works}
+\begin{itemize}
+\item First, a heavy client will choose a roll-up period. This is a period of
+  time, defaulting to a day, that payment for data at rest is calculated.
+\item Each roll-up period, a heavy client will consider all of the files it
+  believes are currently stored on each farmer. For all of the bytes a heavy
+  client believes a farmer has for that rollup period, the heavy client will
+  account that it owes payment to that farmer for that rollup period.
+\item Periodically, farmers will send in bandwidth allocation reports. When a
+  heavy client receives these, it calculates the owed funds, along with the
+  outstanding data at rest calculations, and sends the funds to the farmer's
+  requested destination.
+\end{itemize}
 
 \section{Future Areas of Research}\label{sec:future_work}
 
