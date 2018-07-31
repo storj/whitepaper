@@ -2,7 +2,7 @@
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
 \usepackage{graphicx} \usepackage[english]{babel} \usepackage{listings}
-\usepackage{cite}
+\usepackage{cite} \usepackage{tikz}
 \usepackage[labelfont=it,
 textfont={it},singlelinecheck=on,justification=centering]{caption}
 \usepackage{amsmath} \usepackage{float} \usepackage{xcolor}
@@ -26,13 +26,22 @@ Alex Leitner (alex@storj.io),\\ Benjamin Sirb (bens@storj.io), Braydon Fuller
 Kishore Aligeti (kishore@storj.io),\\ Nadine Farah (nadine@storj.io), Natalie
 Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 (philip@storj.io),\\ Shawn Wilkinson (shawn@storj.io), Tome Boshevski
-(tome@storj.io)}\\ \\ \small \url{https://github.com/storj/whitepaper} } \date
-{June 24, 2018 \\ v3.0}
+(tome@storj.io)}\\\\\small \url{https://github.com/storj/whitepaper} }\date
+{v3.0, June 24, 2018}
 
-\begin{document} \maketitle
+\begin{document}
 
-\begin{abstract} Decentralized cloud storage is attractive for a number of
-reasons. Eliminating central control allows users to store and share data
+\maketitle
+
+\begin{abstract}
+\begin{tikzpicture}[remember picture,overlay]
+\node[rotate=45,scale=15,text opacity=0.1]
+at (current page.center) {DRAFT};
+\end{tikzpicture}
+
+Decentralized Cloud Storage represents a fundamental shift in
+the efficiency and economics of distributed storage.
+Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
 security and privacy. At a greater rate than any single entity can afford, it allows
@@ -55,17 +64,6 @@ network. (Different variables are being used to represent the same thing.)
   plan to ensure heavy client quality by quality control evaluations, formal
   partnerships, relationships, and not letting poor quality heavy clients
   use the brand.
-\item Eng: Walkthroughs - highly detailed walkthroughs of how each op works
-\begin{itemize}
-\item Upload walkthrough
-\item Download walkthrough
-\item Delete walkthrough
-\item List walkthrough
-\item Repair walkthrough
-\item Payment walkthrough
-\item Export/import walkthrough
-\end{itemize}
-\item Alex/JT: Bandwidth allocation protocol
 \end{itemize}
 
 Remaining medium todo items:
@@ -106,8 +104,8 @@ The Storj protocol enables peers on the network to transfer and receive data,
 verify the integrity and availability of remote data, and pay other nodes
 for storing data.
 While not all peers in the network have the same responsibilities,
-every peer is an autonomous agent, capable of performing these actions without
-significant human interaction.
+the goal is for every peer to be an autonomous agent, capable of performing
+these actions with little to no significant human interaction.
 
 Many storage products have been created based on distributed storage techniques.
 Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
@@ -157,6 +155,7 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
+<<<<<<< HEAD
 storage protocols, we must create a graceful transition from centralized providers. 
 This will alleviate any switching costs for users with data currently stored on 
 a centralized provider.
@@ -169,6 +168,21 @@ minimal friction and changes. Imagine if 90\% of existing application services
 could switch to Storj with a
 single configuration change. \todo{maybe talk about s3 market penetration?} 
 This adds strong requirements on feature set, performance, and durability.
+=======
+storage protocols, we must create a graceful transition from centralized providers.
+For users with data currently stored on a centralized provider, this will alleviate
+any switching costs.
+
+Our objective is for Storj to compete successfully in the wider cloud storage
+industry and bring decentralized cloud storage to the mainstream -- thus enabling
+more people greater security and less centralized control. To achieve this goal,
+applications built against S3 should be able to be configured to work with Storj with
+minimal friction and changes.
+Imagine if \todo{90\%} of existing application services could switch to Storj with a
+single configuration change. \todo{maybe talk about s3 market penetration?}
+This adds strong requirements on feature set,
+performance, and durability.
+>>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 
 \subsection{Device failure and churn}
 
@@ -176,7 +190,7 @@ For any storage system, but especially a distributed storage system, component
 failure is a guarantee. All hard drives fail after enough wear
 \cite{backblaze-hd-2018-q1}, and the servers providing network access to
 these hard drives will eventually fail, too. Network links die, power is lost,
-and storage mediums become unreliable. For data to outlast individual component
+and storage mediums become unreliable. \todo{Maybe add a joke about some ridiculous failure case here}  For data to outlast individual component
 failure, data must be stored with enough redundancy to recover from failure.
 Perhaps more importantly, no data should be assumed to be stationary and all
 data must eventually be moved. In such an environment, redundancy, data
@@ -217,7 +231,12 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
+<<<<<<< HEAD
 focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
+=======
+focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
+{\color{red}What are long tails?}
+>>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without needing to wait 
 for a slow subset. 
@@ -269,7 +288,7 @@ combined with required repair traffic, limits usable space.
 Broadly, large storage systems can be classified into two groups by average
 object size. When storing lots of small bits of information, generally a
 database is the preferred route. On the other hand, when storing lots of large
-files, an object store or filesystem is ideal. We classify a "large" file as a 
+files, an object store or filesystem is ideal. We classify a "large" file as a
 few megabytes or greater.
 
 The initial product offering by Storj Labs is designed to function primarily as
@@ -286,9 +305,9 @@ without requiring full retrieval of any aggregated object they were packed into.
 \subsection{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
-environment, where individual storage nodes are not necessarily assumed to be
+environment, where individual storage providers are not necessarily assumed to be
 trustworthy. Storj operates over the public internet, and allows anyone to sign
-up to become a storage node.
+up to become a storage provider.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
@@ -323,9 +342,15 @@ to peers in
 the network then generates and stores some metadata about where to find the data
 again.
 
+<<<<<<< HEAD
 \item[Retrieving data] When data is retrieved from the network, 
 the client first recovers the metadata about where to find the pieces. 
 Then the pieces are retrieved and the original data is reconstructed 
+=======
+\item[Retrieving data] When data is retrieved from the network,
+it first recovers the metadata about where to find the pieces.
+Then the pieces are retrieved and the original data is reconstructed
+>>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
@@ -337,9 +362,14 @@ The data is reconstructed, and the missing pieces are regenerated and replaced.
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
+<<<<<<< HEAD
 then combine them to form the desired protocol. One benefit from this approach
 is that it makes 
 updating individual components much easier without having to rearchitect the rest 
+=======
+then combine them to form the desired protocol. One important benefit is it makes
+updating individual components much easier without having to rearchitect the rest
+>>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 of the network. The individual components are:
 
 \begin{enumerate}
@@ -366,7 +396,7 @@ returns data provided to it. Nodes should provide reliable storage space,
 network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
 for their participation. Storage nodes will be selected based on a number of
 different criteria. Ping time, latency, throughput, disk space, geographic
-location, legal restrictions, etc., are all important factors that may need to
+location, etc., are all important factors that may need to
 be considered. This means that node selection almost certainly must be an
 explicit process.
 
@@ -444,6 +474,8 @@ It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
 a brand new node ID.
 
+\todo {Equation for PoW on public key, and more explanation.}
+
 When using TLS, every peer can ascertain the ID of the node with which it is
 speaking by validating the certificate chain and hashing its peer's
 certificate authority's public key. It can then be estimated how much work went
@@ -484,7 +516,7 @@ storage node every so often, such as every hour, evicting nodes from their
 cache that have not been seen recently.
 Since nodes are expected to be long lived with good uptime, they
 are expected to have stable addresses that don't change often on the order of
-more than once an hour. Thus, such a cache will add a massive performance boost, even when slightly stale.
+more than once an hour. \todo{How do we handle dynamic ips in general?} Thus, such a cache will add a massive performance boost, even when slightly stale.
 In addition, the protocol will be resilient against an expected degree of node
 churn, so having a small number of stale addresses in a DHT cache will not alter
 the expected performance of the network. Furthermore, we avoid a number of known
@@ -612,7 +644,7 @@ See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 Our design constraints include S3 compatibility. This means we should support
 hierarchical objects (paths with prefixes), object metadata, arbitrarily large
 files, arbitrarily large amounts of files, and so on. Similarly, our design
-constraints require security, so any such metadata must be encrypted.
+constraints require total security, so any such metadata will be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
 features on top by means of an {\em injective embedding} (here used in the
@@ -1468,7 +1500,7 @@ to work with non-whitelisted heavy clients. If a heavy client has a low
 reputation score, farmers should always forgo utilizing that particular heavy
 client.
 
-If a heavy  client  would  like  to  become  a  Storj  Approved Heavy Client,
+If a heavy client would like to become a Storj Approved Heavy Client,
 they will be required to have insurance with Storj. This guarantees that if a
 heavy client does act maliciously, they have some proof of stake, which would
 be lost and would help compensate network participants for the missing payments
@@ -1477,21 +1509,16 @@ certain number of heavy clients to ensure gateway users have sufficient
 availability across the network.
 
 \todo{users pay heavy clients}
-\todo{list what farmers are paid for: returning data and keeping data, but
-NOT the initial store of data. no ingress payment to farmers, just egress.
-farmers should be incentivized to hang on to data they already have instead of
-replacing it with something new.}
 \todo{payers roll up payments every day, but pay every month}
 
 \todo{Payment automation?}
 
 \todo{Payment wallets vs payment addresses. }
 
-\subsubsection{Bandwidth allocation protocol}
-
 \todo{}
 
 \subsubsection{Concrete implementation}
+
 At launch, reputable heavy clients will be identified through a
 Storj-maintained whitelist and blacklist. As more heavy clients emerge, Storj
 will launch the heavy client clearing house where farmers can review specific
@@ -1503,6 +1530,58 @@ maliciously and does not store files properly or maintain sufficient
 availability, they will not be paid for the services rendered, and the funds
 allocated to their farmer node will instead be used to repair their missing
 file pieces and pay new farmers to store the data long-term.
+
+\subsubsection{Bandwidth allocation protocol}
+
+A core component of our system requires knowing how much bandwidth is used
+between two peers, so we introduce a protocol we call the Bandwidth Allocation
+Protocol for correctly verifying that a certain amount of bandwidth was used
+between two peers with various incentives.
+
+\todo{diagram}
+
+When a client wants to perform an operation for $x$ bytes of bandwidth, it will
+first get authorization from a payer that it has enough funds and is authorized
+to perform that operation. The payer will return an {\em unrestricted
+bandwidth allocation} message. This message will include the identity of the
+payer, the identity of the client, an expiration timestamp, a serial number,
+the maximum amount of bytes authorized, and the direction the bytes will flow
+(whether or not the data will be transfered from or to the client).
+The message will be signed by the payer. To use a metaphor, the payer is
+creating a blank check that is authorized up to $x$ in byte value and sending
+it to the client.
+
+Once the client has an unrestricted bandwidth allocation, the client will then
+create {\em restricted bandwidth allocations}, or to continue the metaphor, a
+filled-in check, indicating $y$ bytes have been transfered so far. The client
+will start by sending a restricted allocation for some small amount, perhaps
+only a few kilobytes. If the allocation is signed correctly, the farmer will
+transfer up to the amount listed in the restricted allocation ($y$ bytes) before
+awaiting another allocation. The client will then send another allocation where
+$y$ is larger, continuing to send allocations for data until $y$ has grown to
+the full $x$ value.
+
+At any point, if the request is to terminate, either as planned or unexpectedly,
+the farmer will keep the largest restricted bandwidth allocation it has seen.
+This largest restricted bandwidth allocation is a message signed by the client
+indicating that the client did agree to bandwidth measurement of up to $y$
+bytes, and the payer did agree that the client should be allowed to use that
+bandwidth. The farmer will periodically send the largest restricted bandwidth
+allocations it has received by serial number to appropriate payers, at which
+payers will "cash the check" and pay the farmer for that bandwidth.
+
+If the client can't afford the bandwidth usage, the payer will not sign an
+unrestricted bandwidth allocation to protect the payer's own reputation. If
+the client tries to use more bandwidth than allocated, the farmer will shut down
+the request. The farmer can only get paid by a payer for the maximum a client
+has agreed to, as it otherwise has no valid bandwidth allocations to return for
+payment.
+
+This mechanism is how we measure request-specific peer-to-peer bandwidth
+traffic. We don't measure all peer-to-peer traffic; some operations are simply
+the cost of doing business. This bandwidth traffic measurement only applies
+to piece storage operations (storage and retrievals of pieces) and does not
+apply to overlay traffic (Kademlia DHT) or other generic maintenance overhead.
 
 \subsection{Payer reputation}
 
@@ -1551,12 +1630,14 @@ data is deleted, storage nodes that are online and reachable will get
 notification right away.
 
 For the nodes that miss initial delete messages, we propose a conservative
-garbage collection strategy. Periodically,
-a payer will send out a highly-compressible data structure such as a
-{\em Bloom filter} \cite{bloom-filter} that contains hints about what pieces
-a node is expected to continue storing. A Bloom filter is like a set that can
+garbage collection strategy. Periodically, storage nodes will request
+a highly-compressible data structure such as a
+{\em Bloom filter} \cite{bloom-filter} from payers that contains hints about
+what pieces a node is expected to continue storing.
+A Bloom filter is like a set that can
 answer set membership questions with the answers {\em isn't contained} or
-{\em maybe contained}, but not {\em is contained}. By sending a data
+{\em maybe contained}, but not {\em is contained}. Payers will reject
+requests for these hints that happen too frequently. By returning a data
 structure tailored to each node on a periodic schedule, a payer can give a
 storage node the ability to clean up garbage to a configurable tolerance.
 
@@ -1650,8 +1731,7 @@ Farmers that fail random audits will be removed from the pool and will receive
 limited to no future payments.
 Farmers are {\em not} paid for the initial transfer of data to store (ingress
 bandwidth). This is to discourage farmers from deleting data only to be paid for
-storing more. Farmers are not paid for specific audits. Farmers are likewise
-not paid for DHT or other maintenance traffic.
+storing more. Farmers are not paid for DHT or other maintenance traffic.
 
 \subsection{Heavy client}
 
@@ -1750,123 +1830,245 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
+There are three roles, the gateway, the heavy client, and farmers.
+
 \subsubsection{Detailed walkthrough: upload}
 
-In order to upload a file, the light client will log in
-and ask the overlay network for a set of farmers that fulfill a criteria, i.e.
-storage availability and bandwidth to potentially store files. The overlay
-network will have a list of nodes that meet those criteria and use the
-reputation network to filter out reputable farmers. The overlay network then
-sends a refined list of farmers to the light client, which is then used to
-directly upload data. Finally, the light client sends a request to the network
-state in order to store the IDs of the piece storage nodes holding the segments
-and other related metadata in pointers.
+Here is a concrete list of all the steps that happen for an upload.
 
-Technical Dive into how Upload Works \todo{}
-
-\todo{
-First thing, at some point prior, the gateway is going to talk to the heavy
-client and authorize itself as having an account. The heavy client won't talk
-to any gateway; the gateway needs an account on the heavy client.
-
-Next, the gateway is going to talk to the heavy client and try and get a bunch
-of things all at once.
-Make sure it can upload data. Does this heavy client have funds for this
-gateway? Is the gateway out of funds?
-Gateway: "I'm about to do an upload, it's for this much data, I'd like to
-         store it"
-Heavy client: chosen piece id, signatures to authorize gateway communication
-   to storage nodes on heavy client's behalf, what nodes to talk to, how
-   to talk to them (ips, port)
-Gateway starts upload with those farmers using bandwidth allocation protocol.
-Gateway breaks encrypts object, breaks object into segments, erasure encodes,
-uploads.
-At any point the storage node can stop upload due to bandwidth allocation
-protocol failure.
-At the end, storage node has data and signed document about how much
-bandwidth was used, approved by the gateway and heavy client. Storage node
-stores data, signed check, ttl.
-Gateway keeps track of which storage nodes succeed.
-Gateway sends back which nodes successfully uploaded to heavy client, along
-with encrypted path, what nodes were selected, encryption, encoding metadata
-(which algorithms were used).
-}
-
-\todo{gateways must send data to heavy client and can't cache it locally because
-heavy clients won't authorize gets for data that doesn't exist}
-
-\todo{discuss long tail elimination via overencoding}
-\todo{Deep dive into example upload steps}
+\begin{itemize}
+\item First, data begins transfer to the gateway.
+\item The gateway will then choose an encryption key and starting nonce for
+  this segment and begin to encrypt the incoming data with authenticated
+  encryption as it flows through.
+\item The gateway buffers data until it knows whether the incoming file is
+short enough to be an inline segment or a remote segment. We'll assume a remote
+segment.
+\item The gateway sends a request to the heavy client to prepare for the storage
+of this first segment. The gateway will:
+  \begin{itemize}
+  \item Confirm that the gateway has appropriate authorization and funds for
+    the request. The gateway must have an account with this specific heavy
+    client already.
+  \item Make a selection of nodes that conform to the bucket's configured
+    durability, performance, geographic and reputation requirements that have
+    enough resources.
+  \item Return a list of nodes, along with their contact information and
+    signed unrestricted bandwidth allocation messages, and a chosen root piece
+    id.
+  \end{itemize}
+\item The gateway will take this information and begin parallel connections to
+  all of the chosen farmers via the bandwidth allocation protocol.
+\item The gateway will begin breaking the segment into stripes and then
+  erasure encode each stripe.
+\item The generated erasure shares will be concatenated into \x{pieces} as they
+  transfer to each farmer in parallel.
+\item The erasure encoding will be configured to over-encode to more pieces
+  than needed. This will allow for the elimination of long tails and the
+  significant improvement of visible performance by allowing the gateway to
+  cancel the slowest uploads.
+\item The data will continue to transfer until the maximum segment size is hit
+  or the stream ends, whichever is sooner.
+\item The farmer will store the largest restricted bandwidth allocation, the
+  TTL of the segment (if any), and the data itself by the farmer-specific piece
+  id (the HMAC of the root piece id and the farmer's id).
+\item If the upload is aborted for any reason, the farmer will keep the
+  largest bandwidth allocation it received but otherwise will throw away all
+  relevant request data.
+\item The gateway encrypts the random encryption key chosen for this file
+  with a deterministic hierarchical key.
+\item The gateway will upload back to the heavy client a \x{pointer}, which
+  contains which farmers were
+  ultimately successful, what encrypted path was chosen for this segment, which
+  erasure code algorithm was used, the chosen piece id, the
+  encrypted encryption key and other metadata, and a signature.
+\item The gateway will then proceed with the next segment and continue to
+  process segments until the entire stream has completed. Each segment gets
+  a new encryption key, but the nonce monotonically increases from the previous
+  segment.
+\item The last segment stored in the stream will contain additional metadata
+  about how many segments the stream contained, how large the segments were
+  in bytes, and the starting nonce of the first segment.
+\item The farmers, at some future point, will send the largest restricted
+  bandwidth allocation they received as part of the upload to the appropriate
+  heavy client for later payment.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: download}
 
-In order to download a file, the light
-client will login and send a request to the network state to get pointers to the
-stored segments and other metadata. The light client extracts the node IDs that
-are storing the data and sends a request to the overlay network with those IDs.
-The overlay network responds with an object containing the nodes' IP addresses.
-Finally, the light client sends a request to farmers in order to receive pieces
-using those IP addresses.
+Here is a concrete list of all the steps that happen for a download.
 
-Technical Dive into how Download Works \todo{}
-
-\todo{
-  for every segment, gateway will ask heavy client for a big chunk of
-  information given an encrypted path.
-
-  heavy client: returns what nodes the segment is on, what ip addresses those
-    nodes have, check authorizing request for next 10 minutes for
-    specific pieces.
-
-  gateway: starts downloading pieces using bandwidth allocation protocol
-    (promises to pay). storage node keeps track of promises to pay and sends
-    them to appropriate heavy client.
-  gateway reed solomon decodes, decrypts, returns data.
-
-}
-
-\todo{discuss long tail elimination via overencoding}
+\begin{itemize}
+\item First, a request for data is received by the gateway.
+\item The gateway is going to try and reduce round trips to the heavy client
+  by speculatively requesting the pointers for the first few segments in
+  addition to the pointer for the last segment from the heavy client. The last
+  segment is needed in order to learn the size of the object, how many segments
+  there are, and how big the segments are.
+\item For every segment pointer requested, the heavy client will:
+  \begin{itemize}
+  \item Validate that the gateway has access to download the segment pointer
+    and funds to pay for its downloading.
+  \item Generate an unrestricted bandwidth allocation for the segment.
+  \item Look up the contact information for the farmers listed in the pointer.
+  \item Return the requested segment, the bandwidth allocations, and contact
+    info.
+  \end{itemize}
+\item The gateway will calculate if more segments are necessary for the
+  data request it received. If so, it will request the remaining segment
+  pointers, which it can calculate exactly now due to the earlier request of
+  the last segment pointer.
+\item Once all necessary segment pointers have been returned, if the requested
+  segments are not inline, the heavy client will initiate parallel requests
+  via the bandwidth allocation protocol to all appropriate farmers for the
+  appropriate erasure share ranges inside of each stored piece.
+\item Because not all erasure shares are necessary for recovery, long tails
+  will be eliminated and a significant and visible performance improvement will
+  be gained by allowing the gateway to cancel the slowest downloads.
+\item If the upload is aborted for any reason, the farmer will keep the
+  largest bandwidth allocation it received but otherwise will throw away all
+  relevant request data.
+\item The retrieved erasure shares will be recombined back into stripes.
+\item The stripes will be decrypted and returned to the requester.
+\item The farmers, at some future point, will send the largest restricted
+  bandwidth allocation they received as part of the download to the appropriate
+  heavy client for later payment.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: delete}
 
-\todo{similar to puts}
-\todo{needs guarantees for garbage collection that deletes were issued}
-\todo{heavy client forces gateway to help heavy client keep reputation with
-      farmers}
+Here is a concrete list of all the steps that happen for a delete.
+
+\begin{itemize}
+\item First, the delete operation is received by the gateway.
+\item The gateway is going to request all of the segment pointers for the file.
+\item For every segment pointer, the heavy client will:
+  \begin{itemize}
+  \item Validate that the gateway has access to delete the segment pointer.
+  \item Generate a signed agreement for the deletion of the segment, so the
+    farmer knows the heavy client is expecting the delete to proceed.
+  \item Look up the contact information for the farmers listed in the pointer.
+  \item Return the segments, the agreements, and contact info.
+  \end{itemize}
+\item For all of the segments that are not inline, the heavy client will
+  initiate parallel requests to all appropriate farmers to signal that the
+  pieces are being removed.
+\item The farmers will return a signed message saying the farmer received the
+  delete operation and will delete the file and its bookkeeping info.
+\item The gateway will upload back to the heavy client all of the signed
+  messages it received from working farmers. The heavy client will require an
+  adjustable percent of the total farmers to sign messages successfully
+  to ensure that the gateway did its part in letting farmers know the object
+  has been deleted.
+\item The heavy client will remove the segment pointers and stop charging and
+  paying for them.
+\item The gateway will return success.
+\item Periodically, farmers will ask the heavy client for generated garbage
+  collection messages that will help farmers who were offline during the main
+  deletion event.
+  The garbage collection messages will assist the farmer in pruning data that is
+  no longer live. Initially, these garbage collection messages will be tunable
+  Bloom filters to allow the farmer to probabilistically prune unneeded data
+  without using much bandwidth.
+  Heavy clients will reject requests for garbage collection messages that
+  happen too frequently.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: list}
 
-\todo{just talks to heavy client directly}
+Here is a concrete list of all the steps that happen for a list operation.
+
+\begin{itemize}
+\item First, a request for listing objects is received by the gateway.
+\item The gateway will translate the request on unencrypted paths to encrypted
+  paths.
+\item The gateway will request from the heavy client the appropriate list of
+  encrypted paths.
+\item The heavy client will validate that the gateway has appropriate access
+  and then return the requested list.
+\item The gateway will decrypt the return results and return them.
+\end{itemize}
+
+It's worth pointing out that because the heavy client stores paths in sorted
+order, the order returned to the customer is in order sorted by the encrypted
+path element, which means that unencrypted paths will be in random but
+deterministic order. If a customer wants sorted paths and doesn't mind the
+heavy client operator having access to unencrypted paths, the customer can opt
+into unencrypted (and thus lexicographically sorted) paths.
+
+\todo{future work section about lexicographic sort on encrypted paths}
+
+\subsubsection{Detailed walkthrough: audits}
+
+Here is a concrete list of all the steps that happen for the auditing process.
+
+\begin{itemize}
+\item Each heavy client has a queue of audits, where an audit will entail
+  validating a specific stripe of a segment across a set of farmers.
+\item Periodically, heavy clients will choose a stripe to audit by selecting
+  an object uniformly at random weighted by the number of bytes it has and place
+  that stripe into the audit queue.
+\item Similarly, heavy clients will choose a stripe to audit by identifying
+  farmers that have had fewer recent audits than other farmers, and selecting
+  a stripe at random from the data contained by that farmer. That stripe audit
+  request will also be placed in the audit queue.
+\item Heavy clients will process elements from the queue.
+\item For each stripe request, the heavy client will perform the entire download
+  operation for that small stripe range. Unlike standard downloads, the stripe
+  request does not need to be performant; the heavy client will attempt to
+  download all of the erasure shares for the stripe and will wait for slow
+  farmers.
+\item After receiving as many shares as is possible within a generous timeout,
+  the erasure shares will be analyzed to discover which, if any, are wrong.
+  Heavy clients will take note of farmers that return invalid data and if a
+  farmer returns too much invalid data, the farmer will be blacklisted by the
+  heavy client and marked as bad. The heavy client will not pay the farmer going
+  forward, nor will it select it for new data.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: repair}
 
-The repair and maintenance component (also known as data
-repair) is essential to ensure data integrity is maintained. It confirms that
-nodes responsible for pieces continue to store the data that the light client
-sent. To do this, it first makes a request to the network state to receive
-pointers. From there, the repair and maintenance component extracts the node IDs
-from the response and makes a request with that information to the DHT cache.
-The DHT cache sends a response containing only the online nodes from the
-original node ID list. The data repair component takes the response from the DHT
-cache and the repair threshold value from the pointer, then calculates which
-pieces need to get repaired. The light client directly downloads pieces that
-need to get repaired from farmers and re-uploads them to new reputable farmers.
-To ensure the network state has up-to-date information about the data, the light
-client then sends a put request of new pointers with the updated node IDs.
+Here is a concrete list of all the steps that happen for the repair process.
 
-Diagram Technical Detail <WIP>
-
-\todo{Deep dive into example repair steps}
+\begin{itemize}
+\item Each heavy client periodically will ping every farmer it knows about,
+  either as part of the audit process, or via standard overlay ping operations.
+\item The heavy client will keep track of which nodes fail to respond and mark
+  them as down.
+\item When a node is marked down or is marked bad via the audit process, the
+  pointers that point to that farmer will be considered for repair. Pointers
+  keep track of their minimum allowable redundancy. If a pointer is not stored
+  on enough good and online farmers, it will be added to the repair queue.
+\item A worker process will take segment pointers off the repair queue. When
+  a segment pointer is taken off the repair queue, the entire segment will be
+  downloaded. Unlike audits, only enough pieces for accurate repair are needed.
+  Unlike streaming downloads, the repair system can wait for the entire segment
+  before starting. As a result, pieces are compared against a Merkle tree of
+  hashes for correctness prior to repair, where the Merkle root is stored in
+  the pointer.
+\item Once enough correct pieces are recovered, the missing pieces are
+  regenerated.
+\item The heavy client selects some new nodes and uploads the new pieces to
+  those new nodes via the normal upload process.
+\item The heavy client updates the pointer's metadata.
+\end{itemize}
 
 \subsubsection{Detailed walkthrough: payment}
 
-\todo{Deep dive into example payment steps}
+Here is a concrete list of all the steps that happen for payment.
 
-\todo{}
-
-\subsubsection{Detailed walkthrough: export/import}
-
-\todo{Deep dive into how porting your account to a new heavy client works}
+\begin{itemize}
+\item First, a heavy client will choose a roll-up period. This is a period of
+  time, defaulting to a day, that payment for data at rest is calculated.
+\item Each roll-up period, a heavy client will consider all of the files it
+  believes are currently stored on each farmer. For all of the bytes a heavy
+  client believes a farmer has for that rollup period, the heavy client will
+  account that it owes payment to that farmer for that rollup period.
+\item Periodically, farmers will send in bandwidth allocation reports. When a
+  heavy client receives these, it calculates the owed funds, along with the
+  outstanding data at rest calculations, and sends the funds to the farmer's
+  requested destination.
+\end{itemize}
 
 \section{Future Areas of Research}\label{sec:future_work}
 
