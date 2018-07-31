@@ -2,7 +2,7 @@
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
 \usepackage{graphicx} \usepackage[english]{babel} \usepackage{listings}
-\usepackage{cite}
+\usepackage{cite} \usepackage{tikz}
 \usepackage[labelfont=it,
 textfont={it},singlelinecheck=on,justification=centering]{caption}
 \usepackage{amsmath} \usepackage{float} \usepackage{xcolor}
@@ -26,12 +26,20 @@ Alex Leitner (alex@storj.io),\\ Benjamin Sirb (bens@storj.io), Braydon Fuller
 Kishore Aligeti (kishore@storj.io),\\ Nadine Farah (nadine@storj.io), Natalie
 Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
 (philip@storj.io),\\ Shawn Wilkinson (shawn@storj.io), Tome Boshevski
-(tome@storj.io)}\\ \\ \small \url{https://github.com/storj/whitepaper} } \date
-{June 24, 2018 \\ v3.0}
+(tome@storj.io)}\\\\\small \url{https://github.com/storj/whitepaper} }\date
+{v3.0, June 24, 2018}
 
-\begin{document} \maketitle
+\begin{document}
 
-\begin{abstract} Decentralized Cloud Storage represents a fundamental shift in
+\maketitle
+
+\begin{abstract}
+\begin{tikzpicture}[remember picture,overlay]
+\node[rotate=45,scale=15,text opacity=0.1]
+at (current page.center) {DRAFT};
+\end{tikzpicture}
+
+Decentralized Cloud Storage represents a fundamental shift in
 the efficiency and economics of distributed storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
