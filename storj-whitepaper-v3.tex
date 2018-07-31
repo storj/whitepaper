@@ -92,6 +92,8 @@ Remaining little todo items:
 \item Eng: Future work section about reputation sharing
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
+\item Once this is all done, look through to ensure no orphaned lines, 
+section headings, etc.
 \end{itemize}
 }
 
@@ -155,7 +157,6 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
-<<<<<<< HEAD
 storage protocols, we must create a graceful transition from centralized providers. 
 This will alleviate any switching costs for users with data currently stored on 
 a centralized provider.
@@ -168,21 +169,6 @@ minimal friction and changes. Imagine if 90\% of existing application services
 could switch to Storj with a
 single configuration change. \todo{maybe talk about s3 market penetration?} 
 This adds strong requirements on feature set, performance, and durability.
-=======
-storage protocols, we must create a graceful transition from centralized providers.
-For users with data currently stored on a centralized provider, this will alleviate
-any switching costs.
-
-Our objective is for Storj to compete successfully in the wider cloud storage
-industry and bring decentralized cloud storage to the mainstream -- thus enabling
-more people greater security and less centralized control. To achieve this goal,
-applications built against S3 should be able to be configured to work with Storj with
-minimal friction and changes.
-Imagine if \todo{90\%} of existing application services could switch to Storj with a
-single configuration change. \todo{maybe talk about s3 market penetration?}
-This adds strong requirements on feature set,
-performance, and durability.
->>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 
 \subsection{Device failure and churn}
 
@@ -231,12 +217,7 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
-<<<<<<< HEAD
 focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
-=======
-focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
-{\color{red}What are long tails?}
->>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without needing to wait 
 for a slow subset. 
@@ -342,15 +323,9 @@ to peers in
 the network then generates and stores some metadata about where to find the data
 again.
 
-<<<<<<< HEAD
 \item[Retrieving data] When data is retrieved from the network, 
 the client first recovers the metadata about where to find the pieces. 
 Then the pieces are retrieved and the original data is reconstructed 
-=======
-\item[Retrieving data] When data is retrieved from the network,
-it first recovers the metadata about where to find the pieces.
-Then the pieces are retrieved and the original data is reconstructed
->>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
@@ -362,14 +337,9 @@ The data is reconstructed, and the missing pieces are regenerated and replaced.
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
-<<<<<<< HEAD
 then combine them to form the desired protocol. One benefit from this approach
 is that it makes 
 updating individual components much easier without having to rearchitect the rest 
-=======
-then combine them to form the desired protocol. One important benefit is it makes
-updating individual components much easier without having to rearchitect the rest
->>>>>>> 8261d531f83d3ecf3afa008b286e21e538357818
 of the network. The individual components are:
 
 \begin{enumerate}
