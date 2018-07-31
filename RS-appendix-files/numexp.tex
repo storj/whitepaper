@@ -3,7 +3,7 @@
 \subsubsection{Introduction}
 We produce decision tables showcasing worst-case mean file rebuild outcomes based on simulating file piece loss for files encoded with varying Reed-Solomon parameters. 
 We assume an $(n:k)$ RS encoding scheme, where $n$ pieces are generated, with $k$ pieces needed for reconstruction, using three different values for $n$.
-We assume that a file undergoes the process of repair when less than $r$ pieces remain on the network, using three different values of $r$ for each $n$.
+We assume that a file undergoes the process of repair when less than $r$ pieces remain on the network, using three different values of $m$ for each $n$.
 For the initial table, we use a simplifying assumption that pieces on the network are lost at a constant rate per month\footnote{This constant rate may be viewed as the mean of the Poisson distribution modeling piece loss per month.}, which may be due to node churn, data corruption, or an alien megarace extracting a farmer's hard-drive to a higher dimension (amongst other possibilities).
 
 
