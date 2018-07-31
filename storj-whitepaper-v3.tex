@@ -12,7 +12,7 @@ numberstyle=\tiny, stepnumber=1, numbersep=5pt} \lstset{language=TeX}
 \setlength{\parskip}{1em} \renewcommand{\baselinestretch}{1.2}
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
-
+\newcommand{\bs}[1]{{\color{red}#1}}
 
 \title{\textbf{Storj\\A Decentralized Cloud Storage Network Framework}}
 \author{\\ \parbox{\linewidth}{\centering\small Alex Bender (bender@storj.io),
@@ -46,6 +46,8 @@ implementations for each responsibility of the framework. \end{abstract}
 \todo{
 Remaining big todo items:
 \begin{itemize}
+\item Settle on a choice for what $n,k,r,C,K$ etc. mean in reference to the 
+network. (Different variables are being used to represent the same thing.)
 \item Datascience: write an appendix about repair bandwidth based on node
   churn and uptime
 \item Datascience: Write an appendix about how we select RS numbers
@@ -109,7 +111,8 @@ significant human interaction.
 
 Many storage products have been created based on distributed storage techniques.
 Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
-Filecoin, Crashplan, Mozy, HDFS, Storj, S3, GFS, all share one thing in common:
+Filecoin, Crashplan, Mozy, HDFS, Storj, S3, GFS, all share one thing in common: 
+the idea that
 a single computer is not as powerful or as robust as a network. These products
 and others attempt to solve a variety of use cases and have many different
 requirements, but at a high level, they all operate on the same principles. They
@@ -131,7 +134,7 @@ We accomplish this by breaking the design up into a collection
 of relatively independent concerns, and then bring them together to form the
 final protocol.
 
-After this first introduction section, the rest of the paper is divided into 4
+The rest of the paper is divided into 4
 sections. In Section \ref{sec:design_constraints} we discuss the design space
 in which Storj operates in and elaborate on specific design constraints that
 focus what we plan to optimize for.
@@ -155,22 +158,23 @@ S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
 storage protocols, we must create a graceful transition from centralized providers. 
-For users with data currently stored on a centralized provider, this will alleviate 
-any switching costs.
+This will alleviate any switching costs for users with data currently stored on 
+a centralized provider.
 
 Our objective is for Storj to compete successfully in the wider cloud storage 
-industry and bring decentralized cloud storage to the mainstream -- thus enabling 
+industry and bring decentralized cloud storage into the mainstream, enabling 
 more people greater security and less centralized control. To achieve this goal, 
-applications built against S3 should be able to be configured to work with Storj with 
-minimal friction and changes. Imagine if 90\% of existing application services could switch to Storj with a
-single configuration change. \todo{maybe talk about s3 market penetration?} This adds strong requirements on feature set, 
-performance, and durability.
+applications built against S3 should be configurable to work with Storj with 
+minimal friction and changes. Imagine if 90\% of existing application services 
+could switch to Storj with a
+single configuration change. \todo{maybe talk about s3 market penetration?} 
+This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Device failure and churn}
 
 For any storage system, but especially a distributed storage system, component
 failure is a guarantee. All hard drives fail after enough wear
-\cite{backblaze-hd-2018-q1}, and the servers providing the network access to
+\cite{backblaze-hd-2018-q1}, and the servers providing network access to
 these hard drives will eventually fail, too. Network links die, power is lost,
 and storage mediums become unreliable. For data to outlast individual component
 failure, data must be stored with enough redundancy to recover from failure.
@@ -188,20 +192,21 @@ system must prefer stable nodes and endeavor to keep the churn rate as low as
 possible.
 
 Despite the chance of hardware failure, Maymounkov et al. found that in
-decentralized systems, due to churn rates the probability of a node staying on
+decentralized systems the probability of a node staying on
 for an additional hour as a member of the network is an {\em increasing}
 function of uptime \cite{kad}. In other words, the longer a node is a
-participant in the network, in general the more likely it is to continue
+participant in the network, the more likely it is to continue
 participating. This gives our system a strong incentive to prefer long-lived,
 stable nodes.
 
-See Appendix \todo{} for a discussion about how repair bandwidth varies as a
-function of node churn and uptime.
+See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth varies as a
+function of node churn.
 
 \subsection{Latency}
 
-Decentralized, distributed storage has massive opportunities for parallelism
-with transfer rates, processing, and a number of other factors. Parallelism by
+Decentralized, distributed storage has the potential to capitalize on massive 
+opportunities for parallelism in transfer rates, processing, 
+and a number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism cannot by itself improve {\em
 latency}. If an individual network link has fixed latency and is a required part
@@ -213,10 +218,10 @@ scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
 focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
-{\color{red}What are long tails?}
 The goal is a protocol that allows for every request to be satisfiable by the
-fastest nodes participating in any given transaction, without waiting for a slow
-subset. Focusing on operations where the result is only dependent on the fastest
+fastest nodes participating in any given transaction, without needing to wait 
+for a slow subset. 
+Focusing on operations where the result is only dependent on the fastest
 nodes turns what could be a potential liability (highly variable performance
 from individual actors) into a great source of strength for a distributed
 storage network.
@@ -237,8 +242,9 @@ sometimes "capped" at a fixed amount of traffic per month. For example, in many
 markets, Comcast poses a one terabyte per month bandwidth cap with stiff fines
 for customers who go over. Such caps impose
 significant limitations on the bandwidth available at any given moment.
-An internet connection with a throughput of 10 MB/s and a cap of 1
-TB/month may not average more than 385 KB/s over the month without going
+For example,
+an internet connection with a throughput of 10 MB/s and a cap of 1
+TB/month cannot average more than 385 KB/s over the month without going
 over the monthly bandwidth cap.
 
 With device failure and churn guaranteed, any decentralized system will have a
@@ -312,25 +318,27 @@ retrieving data, and maintaining data.
 \begin{description}
 
 \item[Storing data] When data is stored with the network, the client encrypts
-it and breaks it up into multiple little pieces. It then distributes the pieces to peers in
+it and breaks it up into multiple little pieces. It then distributes the pieces 
+to peers in
 the network then generates and stores some metadata about where to find the data
 again.
 
 \item[Retrieving data] When data is retrieved from the network, 
-it first recovers the metadata about where to find the pieces. 
+the client first recovers the metadata about where to find the pieces. 
 Then the pieces are retrieved and the original data is reconstructed 
 on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
 missing pieces when the amount of redundancy drops below a certain threshold.
-The data is reconstructed and the missing pieces are regenerated and replaced.
+The data is reconstructed, and the missing pieces are regenerated and replaced.
 
 \end{description}
 
 To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
-then combine them to form the desired protocol. One important benefit is it makes 
+then combine them to form the desired protocol. One benefit from this approach
+is that it makes 
 updating individual components much easier without having to rearchitect the rest 
 of the network. The individual components are:
 
@@ -366,9 +374,10 @@ explicit process.
 
 Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. Storage nodes store {\em pieces} (to be described in more detail
-later). Each method will take a {\em piece ID}, a {\em payer ID} and signature
+later \bs{where? reference}). Each method will take a {\em piece ID}, a 
+{\em payer ID} and signature
 by the payer, an optional TTL, and the other metadata required by the bandwidth
-allocation protocol (also to be described later).
+allocation protocol (also to be described later \bs{where? add section reference}).
 
 The \code{put} operation will take a stream of bytes and store the bytes such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
@@ -387,8 +396,9 @@ payer.
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network will need to communicate. The framework requires a
-reliable and ubiquitous protocol that all peers speak that:
+All peers on the network will need to communicate. The framework requires all 
+nodes to speak a
+reliable and ubiquitous protocol that:
 
 \begin{itemize}
 \item provides peer reachability, even in the face of firewalls
@@ -416,7 +426,7 @@ still be usable in a balanced Kademlia \cite{kad} tree.
 
 Each node will operate its own certificate authority, which requires a
 public/private keypair and a self-signed certificate. The certificate authority
-should ordinarily be kept in cold storage to prevent key loss.
+should ideally be kept in cold storage to prevent key loss.
 
 Each node will also have revokable leaf key pair and certificate, signed by
 the node's certificate authority. Nodes will use this leaf keypair for actual
@@ -424,7 +434,7 @@ communication. Should the leaf become compromised, the node can issue a new
 leaf and a new entry in a certificate revocation list.
 
 The {\em node ID} will be determined from the certificate authority
-by hashing the DER-encoded public key.
+by hashing the DER-encoded public key Pu.
 
 \begin{equation}
 \text{NodeID} = \text{SHA256}(\text{Pu})
@@ -445,10 +455,9 @@ NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
 intervention and port forwarding will be required.
 
 \subsection{Overlay network}
-
-If, given a peer's network address, any other peer can connect to it, the
-framework requires a system to look up peer network addresses by node ID in the
-first place. An {\em overlay network} can be built on top of our peer-to-peer
+The framework requires a way to look up peer network addresses by node ID
+so that, given a peer's network address, any other peer can connect to it.
+An {\em overlay network} can be built on top of our peer-to-peer
 communication component that provides functionality similar to DNS, where a
 node's ID can be resolved to an ephemeral network address for communication.
 
@@ -457,7 +466,9 @@ node's ID can be resolved to an ephemeral network address for communication.
 The Kademlia DHT serves as a key-value store with a built-in node lookup
 protocol. We utilize this protocol to achieve DNS-like functionality for node
 lookup, while ignoring the storage aspects of the Kademlia protocol due to some
-issues around value republishing, limits to network growth rate, and so on.
+issues around value republishing and limits to network growth rate, among 
+other things \bs{should we provide a reference here to other potential issues 
+with the Kad protocol?}.
 However, using a DHT will make it difficult to achieve millisecond-level
 response times when multiple DHT lookups must happen for every operation, so
 more work is necessary to achieve our performance goals. Fortunately, caching
@@ -466,7 +477,8 @@ with 3MB of memory, so the DHT can be sped up with some simple, optional
 caching.
 
 Because a cache of the DHT can be untrusted (and peer-to-peer communication is
-authenticated to avoid man-in-the-middle-attacks anyway), some well-known
+authenticated to avoid man-in-the-middle-attacks anyway \bs{what does this have 
+to do with the fact that a DHT cache can be untrusted?}), some well-known
 community-run DHT caches can be provided that simply attempt to talk to every
 storage node every so often, such as every hour, evicting nodes from their
 cache that have not been seen recently.
@@ -498,7 +510,7 @@ network, using bandwidth in the process. Thus, more replication results in more
 bandwidth usage for a fixed amount of data. As discussed in the protocol design
 constraints, high bandwidth usage prevents scaling, so this is an undesireable
 strategy for ensuring a high degree of file durability. Instead, {\em erasure
-codes} are a more general and more flexible scheme for manipulating data
+codes} are a more general and flexible scheme for manipulating data
 durability without tying it to bandwidth usage. Importantly, erasure codes allow
 changes in durability without changes in expansion factor!
 
@@ -557,16 +569,17 @@ coding in general does not make our streaming design requirement more
 challenging. Whatever erasure code is chosen for our framework, streaming can be
 added on top by encoding small portions at a time, instead of attempting to
 encode a file all at once. See the structured file storage section for more
-details.
+details. \bs{add reference to the section}
 
 \subsubsection{Long tails}
 
 Erasure codes enable an enormous performance benefit, which is the ability to
 avoid waiting for long-tail response times \cite{tail-at-scale}. For uploads, a
-file can be encoded to a higher $(k, n)$ ratio than necessary for durability
+file can be encoded to a higher $(k, n)$ ratio than necessary for desired 
+durability
 guarantees. During an upload, after enough pieces have uploaded to gain required
-redundancy, the remaining additional uploads can be canceled, allowing the
-upload to be blocked by the fastest nodes in a set, instead of waiting for the
+redundancy, the remaining additional uploads can be cancelled, allowing the
+upload to be blocked\bs{(?)} by the fastest nodes in a set, instead of waiting for the
 slowest nodes. Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
@@ -592,7 +605,7 @@ Our durability story does not end with our selection of these numbers.
 Please see section \ref{sec:data_repair} for a discussion about how we repair
 data as its durability drops over time.
 
-See \todo{data science: Appendix} for how we select our Reed-Solomon numbers.
+See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
 \subsection{Structured file storage}
 
@@ -2154,6 +2167,18 @@ current contracts, as well as potential future contracts as a result of failed
 audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
 of the contract value. Thus it stands to reason that partially deleting shards
 to increase perceived storage capcity is not a viable economic strategy.
+
+
+\input{RS-appendix-files/model.tex}
+\input{RS-appendix-files/numexp.tex}
+\input{RS-appendix-files/conc.tex}
+
+
+
+
+
+
+
 
 \newpage \bibliographystyle{unsrt} \begingroup \raggedright
 \bibliography{biblio} \endgroup
