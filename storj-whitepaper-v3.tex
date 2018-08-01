@@ -727,7 +727,7 @@ A \x{stream} may be small enough so that it consists of only one segment.
 If that \x{segment} is smaller than the metadata required to store it on the network, the \x{segment} will be an \x{inline
 segment} and the data will be stored directly inline with the metadata.
 
-For larger \x{stream}s past a certain size, the data will be broken into
+For larger \x{stream}s -- \x{stream}s past a certain size -- the data will be broken into
 multiple large \x{remote segment}s. Segmenting in this manner has a number of
 advantages to security, privacy, performance, and availability.
 
@@ -737,19 +737,21 @@ or 32 MB. Smaller \x{segment}s may be padded with zeroes or random data.
 Standardized sizes help frustrate attempts to determine the content of a given
 \x{segment} and can help obscure the flow of data through the network.
 
-Segmenting large files like video content and distributing the \x{segment}s
+Segmenting large files like video content, and distributing the \x{segment}s
 across the network separately reduces the impact of content delivery on any
-given node. Bandwidth demands are distributed more evenly across the network. In
-addition, the end-user can take advantage of parallel transfer, similar to
+given node. 
+Bandwidth demands are distributed more evenly across the network. 
+In addition, the end-user can take advantage of parallel transfer, similar to
 BitTorrent or other peer-to-peer networks.
 
 \subsubsection{Segments as Stripes}
 
-In many situations it's important to be able to access just a portion of some
+In many situations it's important to access just a portion of a piece of
 data. Some large file formats such as large video files, disk images, or file
-archives support the concept of seeking, where only a partial subset of the data
-is needed for correct operation. In these cases it's useful to be able to decode
-and decrypt only parts of a file.
+archives support the concept of seeking, 
+where only a partial subset of the data is needed for correct operation. 
+To support these uses, 
+it's useful to be able to decode and decrypt only parts of a file.
 
 A \x{stripe} is no more than a couple of kilobytes, and encoding a single
 \x{stripe} at a time allows us to read portions of a large \x{segment}
@@ -786,13 +788,10 @@ For example, let's say a \x{stripe} is broken into 40 \x{erasure share}s
 ($n=40$), where any 20 ($k=20$) are needed to reconstruct the \x{stripe}. Each
 of the 40 \x{erasure share}s will be $\frac{1}{20}$th the size of the original
 \x{stripe}. All $n$ \x{erasure share}s have a well defined index associated
-with them. The $i$th share will always be the same, given the same input
-parameters.
+with them. More specifically, for any given $n$, the $i$th share of an erasure code will always be the same.
 
-Because peers generally rely on separate hardware and infrastructure, data
-failure is not correlated. This implies that erasure codes are an extremely
-effective method of securing availability. Availability is proportional to the
-number of nodes storing the data.
+Because peers generally rely on independent hardware and infrastructure, data
+failure between nodes is not correlated. This implies that erasure codes are an extremely effective method of securing availability. Availability is proportional to the number of nodes storing the data.
 
 See section \todo{} for a breakdown of how varying the erasure code parameters
 affects availability and redundancy.
