@@ -820,7 +820,7 @@ node id}
 In the previous section, we discussed how we will break up files, encode them
 for redundancy, and then store them in the network. Independently of the
 concrete organization and structure of this scheme, there are two types of
-metadata that are important to store somewhere for recovery: paths and what
+metadata that are important to store for recovery: paths and what
 storage nodes received pieces (pointers).
 
 Our framework requires a relatively performant system that can store pointers by
@@ -828,46 +828,54 @@ path in a way that supports ordered iteration over those paths. Every time an
 object is added, edited, or removed, one or more entries in this metadata
 storage system will need to be adjusted. As a result, there could be heavy churn
 in this metadata system, and across the entire userbase the metadata itself
-could end up being a sizeable amount of data.
+could end up being sizeable.
 
-To talk more about the scope and scale we expect with some examples, suppose in
+To provide some examples, suppose in
 a few years this system stores 1 total exabyte of data, where the average object
 size is 50MB and our erasure code is such that $n=40$. Each object will use just
 one segment, and thus have one pointer each. The pointer will contain
-information about the segment encoding, including what $n$ nodes the segment
+information about the segment encoding, including which $n$ nodes the segment
 pieces are stored on. 1 exabyte of 50MB objects is 20 billion objects. If
 each pointer is roughly 40*64+192 bytes (info for each node plus the path and
 some general overhead), there are over 55 terabytes of metadata to keep track of
-(which is still 18,181 times less data to keep track of than an exabyte).
+\bs{\{}
+(which is still 18,181 times less data to keep track of than an exabyte)
+\bs{\}}
+\bs{is this aside necessary?}.
 Fortunately, this metadata can be heavily partitioned by user. A user storing a
 100 terabytes of 50MB objects will only incur an overhead of 5.5 gigabytes, once
 again 18,181 times less data. It's worth pointing out that these numbers vary
-heavily with average object size (the larger the object size, the less the
-metadata overhead).
+heavily with average object size: the larger the object size, the less the
+metadata overhead.
 
 One of our framework's primary focuses is making sure this component -- metadata
 storage -- is interchangeable per user. Specifically, we expect to ship with
-multiple implementations of metadata storage that we will allow users to choose
-between. Other systems have spent an enormous amount of time attempting to solve
-this problem. We've concluded that multiple {\em good enough} solutions already
+multiple implementations of metadata storage that users will be allowed to
+choose between. 
+Other object store systems have spent an enormous amount of time 
+attempting to solve this problem. 
+We've concluded that multiple {\em good enough} solutions already
 exist, and propose using them.
 
 Aside from scale requirements, the desired API is straightforward and
-simple: Put (store a pointer given a path), Get (retrieve a pointer given a
-path), List (paginated, ordered listing of existing paths), and Delete (remove a
-path).
+simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
+given a path), 
+\x{List} (paginated, ordered listing of existing paths), 
+and \x{Delete} (remove a path).
 
 \subsubsection{Aside about distributed consensus}
 
 A long and challenging area of research has been directed toward getting a
-group of computers to agree on a set of values, with the goal of constructing a
+group of computers to agree on a set of values 
+\bs{what kind of values? principles? or numerical-type values?}, 
+with the goal of constructing a
 horizontally-scalable database that works in the face of expected failures
 (crash failures, for example: failures where a server simply shuts down).
 Fortunately, this research has led to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
 can be lost. How this impacts decision making is succinctly described by the
-"Two Generals' Problem" \cite{two-generals} (earlier described as a problem
+``Two Generals' Problem" \cite{two-generals} (earlier described as a problem
 between groups of gangsters \cite{two-gangsters}), in which two armies try to
 communicate in the face of potentially lost messages. Both armies have already
 agreed to attack a shared enemy, but have yet to decide on a time. Both armies
