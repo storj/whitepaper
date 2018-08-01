@@ -20,8 +20,8 @@ Alex Leitner (alex@storj.io),\\ Benjamin Sirb (bens@storj.io), Braydon Fuller
 (braydon@storj.io),\\ Bryan White (bryan@storj.io), Chris Pollard
 (cpollard1001@gmail.com),\\ Dennis Coyle (dennis@storj.io), Dylan Lott
 (dylan@storj.io),\\ Garrett Ransom (garrett@storj.io), Gordon Hall
-(gordonhall@openmailbox.org),\\ James Hagans (jhagans@storj.io), James Prestwich
-(james@storj.io),\\ John Gleeson (jg@storj.io), Josh Brandoff
+(gordonhall@openmailbox.org),\\ James Hagans (jhagans@storj.io), James 
+Prestwich (james@storj.io),\\ John Gleeson (jg@storj.io), Josh Brandoff
 (josh@brandoff.is), JT Olio (jt@storj.io),\\ Kaloyan Raev (kaloyan@storj.io),
 Kishore Aligeti (kishore@storj.io),\\ Nadine Farah (nadine@storj.io), Natalie
 Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
@@ -44,13 +44,15 @@ the efficiency and economics of distributed storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
-security and privacy. At a greater rate than any single entity can afford, it allows
-market forces to innovate on cheaper ways to provide storage. While there
-are many ways to build such a system, there are some specific responsibilities
-any given system should address. Based on our experience with petabyte-scale
+security and privacy. At a greater rate than any single entity can afford, it 
+allows market forces to innovate on cheaper ways to provide storage. 
+While there are many ways to build such a system, there are some specific 
+responsibilities any given system should address. 
+Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such a system. Additionally, we describe initial concrete
-implementations for each responsibility of the framework. \end{abstract}
+responsibilities and building such a system. Additionally, we describe initial 
+concrete implementations for each responsibility of the framework. 
+\end{abstract}
 
 \todo{
 Remaining big todo items:
@@ -617,14 +619,14 @@ files, arbitrarily large amounts of files, and so on. Similarly, our design
 constraints require total security, so any such metadata will be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
-features on top by means of an {\em injective embedding} (here used in the
-mathematical sense). In other words, adding this functionality can be done by
+features on top our desired protocol by means of an {\em injective embedding} 
+(here used in the mathematical sense). 
+In other words, adding this functionality can be done by
 building on top of the basic components we have already created without loss of
 generality.
 
 Because so much here depends on concrete
-implementation details, our framework is loose in specificity, while our
-concrete implementation has significant detail.
+implementation details, our framework is described in more general terms, while our concrete implementation has significant detail.
 
 \subsubsection{Concrete implementation}
 
@@ -720,9 +722,9 @@ one
 
 Because \x{stream}s are used for data (the default \x{stream}) and metadata
 (extended attributes, etc.), \x{stream}s should be designed both for small data
-and large data. If a \x{stream} only has very little data, it will have one
-small \x{segment}. If that \x{segment} is smaller than the metadata it would
-require to be stored on the network, the \x{segment} will be an \x{inline
+and large data. 
+A \x{stream} may be small enough so that it consists of only one segment.
+If that \x{segment} is smaller than the metadata required to store it on the network, the \x{segment} will be an \x{inline
 segment} and the data will be stored directly inline with the metadata.
 
 For larger \x{stream}s past a certain size, the data will be broken into
