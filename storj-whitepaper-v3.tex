@@ -1303,27 +1303,34 @@ point to new locations.
 
 \subsection{Storage node reputation}
 
-Reputation inside of decentralized networks is a critical part of creating trust
-between nodes where there would otherwise be none. Reputation ensures bad actors
+Reputation metrics on decentralized networks are a critical part of 
+enabling trust between nodes 
+where there would otherwise be none. Reputation metrics
+are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
-reliability and durability.
+reliability, and durability.
 
 Storage node reputation can be divided into three subsystems. The first
 subsystem is the initial vetting process, the second subsystem is a filtering
 system, and the third system is a preference system.
 
-When storage nodes first join the network, their quality is unknown.
-As a result, storage nodes with unknown reputation will be placed into a vetting
-process until enough data is known about that storage node.
-Every time a file is uploaded, the system will select some small amount of
+When a storage node first joins the network, its reliability is unknown.
+As a result, it will be placed into a vetting
+process until enough data is known about it.
+We propose the following way to gather data about new nodes
+without compromising the integrity of the network.
+Every time a file is uploaded, the system will select a small amount of
 unvetted storage nodes to include in the list of target nodes.
 The Reed-Solomon parameters will be chosen such that these unvetted storage
-nodes will not affect the durability of the file, but allow the network to test
-the node with a small fraction of data until we are sure the node is reliable.
+nodes will not affect the durability of the file, but will allow the network 
+to test the node 
+with a small fraction of data until we are sure the node is reliable.
 After the storage node has successfully stored enough data for a long enough
-period (potentially months), the system will then start selecting that storage
-node for general uploads. Importantly, storage nodes get paid during this
-vetting period, but simply don't receive as much data.
+period (potentially months), 
+the system will then start including that storage
+node in the standard selection process used for general uploads. 
+Importantly, storage nodes get paid during this
+vetting period, but don't receive as much data.
 
 While new nodes require a proof of work to avoid some Sybil attacks
 \cite{sybil-attack}, additional effort may be required to prevent
@@ -1334,13 +1341,15 @@ minimum proof of work required from storage nodes for new data. Additionally,
 other schemes are possible, such as a form of proof of stake as we proposed in
 our previous work \cite{sybil-cost}.
 
-The filtering system is the second subsystem and blocks bad storage nodes from
+The filtering system is the second subsystem, and blocks bad storage nodes from
 participating.
 Certain actions a storage node can take are disqualifying events, and the
 reputation system will be used to filter these nodes out from future uploads,
 regardless of where the node is in the vetting process.
-What these events are will require careful selection and tuning to make sure
-that incentives are correct, but will at least include failing too many audits,
+Defining which events are disqualifying will 
+require careful thought and selection to ensure
+that incentives are correct, 
+but some events that are likely to be included are failing too many audits,
 failing to return data (with reasonable speed), and failing too many uptime
 checks.
 If a storage node is disqualified by failing too many audits, that node will no
@@ -1366,11 +1375,11 @@ their reputation.
 
 The third subsystem is a preference system. After disqualified storage nodes
 have been eliminated, remaining statistics collected during audits
-will be used to prefer better storage nodes during uploads.
+will be used to establish a preference for better storage nodes during uploads.
 These statistics include performance characteristics such as throughput and
 latency, history of reliability and uptime, geographic location, and other
 desirable qualities.
-These statistics will be combined into a load-balancing selection process, such
+They will be combined into a load-balancing selection process, such
 that all uploads are sent to qualified nodes, with a higher likelihood of
 uploads to preferred nodes, but with a non-zero chance for any qualified node.
 Initially, we'll be load balancing with these preferences via a randomized
@@ -1379,13 +1388,12 @@ selects two options entirely at random, and then chooses the more qualified
 between those two.
 
 On the Storj network, preferential storage node reputation is only used to
-select where new data should be stored - both during repair and during the
+select where new data should be stored, both during repair and during the
 upload of new files.
 If a storage node's preferential reputation decreases, its file pieces will not
 be moved or repaired to other nodes.
-However, data stored on disqualified nodes may be moved to qualified nodes.
 
-There is not a facility planned in our system for storage nodes to contest their
+There is no process planned in our system for storage nodes to contest their
 reputation scores. It is in the best interest of storage nodes to have good
 uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by payers unfairly
