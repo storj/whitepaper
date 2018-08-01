@@ -1206,45 +1206,50 @@ Because audits are validating that conforming nodes store data correctly, all
 that remains is to detect when a storage node goes offline and repair at-risk
 data.
 
-We're taking a huge shortcut with this assumption. We're assuming that
+We're taking a huge shortcut with the assumption that
 probabilistic audits are enough for us to estimate the likelihood that a node
-will have the data it should have, and then using that along with node uptime
-(which is much more efficient than audits) to calculate when a file is at risk.
+will have the data it should have, because we can use that 
+along with node uptime (which is much more efficient than audits) 
+to calculate when a file is at risk.
 We {\em only} consider {\em node} availability and configured repair thresholds
 when determining which {\em files} to repair.
 
 There are many other ways data might get lost in the network besides node churn:
 corruption, malicious behavior, bad hardware, software error, user space
-reclaimation, but these issues are less serious than full node churn (power
-loss, internet connectivity intermittency, software shutdown or removal).
+reclaimation, etc., but these issues are less serious than full node 
+churn (power loss, internet connectivity intermittency, 
+software shutdown or removal).
 Our spot-check-based audits will incentivize farmers to reliabily store data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, and
-we expect to make up the difference via configuring Reed-Solomon erasure code
-parameters to match.
+we expect to account for varying
+amounts of node churn by configuring Reed-Solomon erasure code
+parameters according to differing network conditions.
 
 The Overlay Network already has caches in place that have accurate and
 up-to-date information about which storage nodes have been online recently.
 When a storage node changes state from recently online to offline, this can
 trigger a lookup in a reverse index in a user's metadata database, identifying
-all \x{segment} \x{pointers} that were stored in part on that storage node.
+all \x{segment} \x{pointers} that were stored on that node.
 For every \x{segment} that drops below the appropriate minimum safety
-threshold, the segment should be downloaded and reconstructed and the missing
+threshold, the segment should be downloaded and reconstructed, and the missing
 pieces should be regenerated and uploaded to new nodes. Finally, the
 \x{pointer} should be updated to include the new information.
 
-As farmer nodes go offline, taking their file pieces with them, it will be
+As farmer nodes go offline -- taking their file pieces with them -- 
+it will be 
 necessary for the missing pieces to be rebuilt once the entire file's pieces
 fall below a certain, predetermined threshold. If a node goes offline, the
-heavy client will mark that nodes' file pieces as missing. Once enough
-correlating file pieces are lost, the heavy client will download the
-remaining file pieces from their corresponding farmers. Those pieces will
-be used to rebuild the file's missing, encrypted, erasure encoded pieces.
+heavy client will mark that nodes' file pieces as missing. 
+Once enough file pieces are lost, the heavy client will download the
+remaining file pieces from their corresponding farmers, using those pieces 
+to rebuild the file's missing, encrypted, erasure encoded pieces.
 Once the repair process is complete, the heavy client will send the
 recovered pieces to new farmers.
 
 Users will choose their desired durability when they sign up for an account
-(which may impact price among other things). This desired durability, along with
+(which may impact price, among other things). This desired durability, along 
+with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
 should be set for when uploads are successful and when repair is needed. See
@@ -1271,18 +1276,18 @@ make for an especially attractive hosting location for users of this system.
 Repairs are one of the few places latency doesn't matter. The data repair system
 just needs to get through as many files as possible, but it doesn't matter if
 a specific file takes longer. Throughput is much more important than
-latency during repair. Further, while potentially using cheap bandwidth, repair
-is still a costly operation that costs a single operator, so work should be
-minimal.
-
-As a result, when repairing a segment, the minimum number of pieces required
-should be all that are needed for download. Unfortunately, this means that
+latency during repair. Furthermore, repair
+is still a costly operation \bs{why?} impacting a single operator, so 
+repair work should be minimized. 
+As a result, when repairing a segment, 
+only the minimum number of pieces required should be downloaded. 
+Unfortunately, this means that
 with little redundancy, erasure codes will be less effective at catching errors.
 Further, the fallback safety mechanism that the user has for detecting errors
 (authenticated encryption) is unavailable to the repair system (no decryption
 keys).
 
-Because full segments are repaired at a time from minimal pieces, hashes of
+Because full segments are repaired at a time, hashes of
 each \x{piece} should be stored in the system via a Merkle tree
 \cite{merkle-tree}, storing the root of the tree in the \x{pointer}. This allows
 the repair system to correctly assess whether or not repair has completed
@@ -1293,8 +1298,8 @@ the full tree) should be stored alongside each \x{piece} on each storage node,
 with the root in the \x{pointer}, such that the only additional central
 metadata storage required is just for the root.
 
-Repair should validate the tree after each repair before updating the
-\x{pointer} to point to new locations.
+Each repair should validate the tree before the \x{pointer} is updated to 
+point to new locations.
 
 \subsection{Storage node reputation}
 
