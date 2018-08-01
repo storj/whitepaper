@@ -1151,7 +1151,7 @@ retains the intact \x{piece}, when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
 partial audit is easily calculable (see Section \todo{}). When applied
 iteratively to a storage node as a whole, detection of unexpected behavior
-becomes practically certain.
+becomes certain to within a known and modifiable error threshold.
 
 \subsubsection{Concrete implementation}
 
@@ -1159,11 +1159,11 @@ Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
 and expected responses are generated ahead of time, as a form of compact
 proof of retrievability \cite{proof-of-retrievability}. By using a Merkle tree
-\cite{merkle-tree}, the amount of metadata needed to store these pregenerated
+\cite{merkle-tree}, the amount of metadata needed to store these pre-generated
 challenges and responses can be made to be negligible.
 
 Unfortunately, in such a scheme, the challenges and responses must be
-pregenerated, and without a periodic regeneration of these challenges, a
+pre-generated, and without a periodic regeneration of these challenges, a
 storage node can begin to pass most audits without storing all of the requested
 data.
 
