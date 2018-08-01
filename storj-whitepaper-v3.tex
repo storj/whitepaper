@@ -993,7 +993,7 @@ built on kademlia, potentially reworking this entire section because ugh}
 Given the situation described in the asides about distributed consensus, we have
 decided that good-enough solutions already exist, so we will revisit the
 problem of solving Byzantine distributed consensus for our use
-case to a later release. We believe that a great distributed algorithm here is
+case at another time. We believe that a great distributed algorithm here is
 possible, all of the necessary building blocks are likely described above, and
 we expect to invest heavily in research to find it after we have a thriving user
 base with our solution based on good-enough approaches.
@@ -1001,10 +1001,10 @@ base with our solution based on good-enough approaches.
 The most trivial implementation for the metadata storage functionality we
 require would be to simply have each user use their preferred trusted database
 such as PostgreSQL, SQLite, MongoDB, Cassandra\cite{cassandra},
-Spanner\cite{spanner}, CockroachDB, or something else. In many cases, this will
+Spanner\cite{spanner}, CockroachDB, to name a few. In many cases, this will
 be acceptable for specific users, provided those users were managing appropriate
 backups of their metadata. Indeed, the types of users who have petabytes of data
-to store probably can manage reliable backups of a single relational database
+to store can most likely manage reliable backups of a single relational database
 storing only metadata.
 
 There are a few downsides with this punt-to-the-user approach, however, such as:
@@ -1020,7 +1020,8 @@ if the metadata server suffers a catastrophic failure without backups, all of
 the user's data is gone. This is already true with encryption keys, but a
 punt-to-the-user solution increases the risk area from just encryption keys
 considerably. Fortunately, the metadata itself can be periodically backed up
-into the Storj system, such that only needing to keep track of metadata-metadata
+into the Storj network, 
+such that only needing to keep track of metadata-metadata
 further decreases the amount of critical information that must be stored
 elsewhere.
 \item {\bf Trust} - the user has to trust the metadata server.
