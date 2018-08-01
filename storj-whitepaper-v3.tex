@@ -884,7 +884,7 @@ messengers, but the messengers are often captured by the enemy. Both armies must
 know what time to attack and that the other army has also agreed to this time.
 
 Ultimately, a solution to the two generals' problem with a finite number of
-messages has been proven to be impossible, so engineering approaches have had
+messages is readily seen to be impossible, so engineering approaches have had
 to brace uncertainty by necessity. Many distributed systems make trade-offs to
 deal with this uncertainty. Some systems embrace {\em consistency}, which means
 that the system will choose downtime over inconsistent answers. Other
@@ -892,7 +892,7 @@ systems embrace {\em availability}, which means that the system chooses
 potentially inconsistent answers over downtime. The widely-cited CAP
 theorem \cite{cap} states that every system must choose only two of consistency,
 availability, and partition tolerance. Due to the inevitability of network
-failures, partition tolerance is non-negotiable, and when a partition happens,
+failures, partition tolerance is non-negotiable, so when a partition happens,
 every system must choose to sacrifice either consistency or availability. Many
 systems sacrifice both (sometimes by accident).
 
@@ -911,12 +911,14 @@ to get computers to even agree on that \cite{no-now}.}
 
 Amazon S3 generally provides {\em read-after-write consistency}, though in some
 cases will provide {\em eventual consistency} instead \cite{s3-consistency}.
-Arguably, there may be some flexibility here for the selection of alternate
-consistency models that suit us better while still broadly providing S3
-compatibility. Many distributed databases provide eventual consistency by
+Arguably, there may be some flexibility here which allows for the selection 
+of alternate consistency models that suit us better while still broadly
+providing S3 compatibility. 
+Many distributed databases provide eventual consistency by
 default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 
-Linearizability in a distributed system is often much more desirable, as it is
+Linearizability in a distributed system is often much more desirable 
+\bs{than what?}, as it is
 useful as a building block for many higher level data structures and operations
 such as distributed locks and other coordination techniques. Initially, early
 efforts centered around two-phase commit, then three-phase commit, which both
@@ -934,7 +936,8 @@ common.
 Despite Lamport's claims that Paxos is actually simple \cite{paxos-simple},
 many papers have been published since then
 challenging that assertion. Google's description of their attempts to implement
-Paxos landed in Paxos Made Live \cite{paxos-live}, and Paxos Made Moderately
+Paxos are described in Paxos Made Live \cite{paxos-live}, 
+and Paxos Made Moderately
 Complex \cite{paxos-complex} is an attempt to try and fill in all the details of
 the protocol. The entire basis of the Raft algorithm is rooted in trying to
 wrangle and simplify the complexity of Paxos \cite{raft}. Ultimately, after an
@@ -950,7 +953,7 @@ distributed databases in the world -- is mainly just two-phase commit on top of
 multiple Paxos groups.
 
 Reliable distributed consensus algorithms have been game-changing for many
-applications needing fault-tolerant storage.
+applications requiring fault-tolerant storage.
 
 \subsubsection{Aside about Byzantine distributed consensus}
 
@@ -964,7 +967,7 @@ distributed consensus problem
 \cite{bitcoin,pbft,qu,fab,fab-revisited,zyzzyva,rbft,
 tangaroa,tendermint,aliph,hashgraph,honeybadger,algorand,casper,
 tangle,avalanche,parsec,mickens-bft}. Each of these algorithms make some
-additional tradeoffs the non-Byzantine distributed consensus algorithms don't
+additional tradeoffs that non-Byzantine distributed consensus algorithms don't
 require to deal with the potential for uncooperative nodes. For example,
 PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin
 \cite{bitcoin} intentionally limits the transaction rate with changing
