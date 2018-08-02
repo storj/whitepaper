@@ -877,8 +877,8 @@ Fortunately, this research has led to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
 can be lost. How this impacts decision making is succinctly described by the
-``Two Generals' Problem" \cite{two-generals} (earlier described as a problem
-between groups of gangsters \cite{two-gangsters}), in which two armies try to
+``Two Generals' Problem" \cite{two-generals} \footnote{earlier described as a problem
+between groups of gangsters \cite{two-gangsters}}, in which two armies try to
 communicate in the face of potentially lost messages. Both armies have already
 agreed to attack a shared enemy, but have yet to decide on a time. Both armies
 must attack at the same time or else failure is assured. Both armies can send
@@ -1170,7 +1170,7 @@ storage node can begin to pass most audits without storing all of the requested
 data.
 
 We do something else.
-A central assumption in our storage system is that most storage nodes are
+An assumption in our storage system is that most storage nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
 via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
@@ -1249,7 +1249,7 @@ to rebuild the file's missing, encrypted, erasure encoded pieces.
 Once the repair process is complete, the heavy client will send the
 recovered pieces to new farmers.
 
-Users will choose their desired durability when they sign up for an account
+Users will choose their desired durability with their chosen metadata service
 (which may impact price, among other things). This desired durability, along 
 with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
@@ -1271,7 +1271,7 @@ While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers
 that offer free ingress \todo{should we mention specific hosts?
 (e.g., Google Cloud Platform, Amazon AWS, and Microsoft Azure)}
-make for an especially attractive hosting location for users of this system.
+make for an especially attractive hosting location for users of this system. We will describe a Distributed Repair method in the Future Works section, that does not rely on the favorable pricing model of current hosting providers. 
 
 \subsubsection{Merkle trees}
 
@@ -1306,7 +1306,7 @@ point to new locations.
 \subsection{Storage node reputation}
 
 Reputation metrics on decentralized networks are a critical part of 
-enabling trust between nodes 
+enabling reasonable trust \todo{Can we eliminate the word trust here?} between nodes 
 where there would otherwise be none. Reputation metrics
 are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
@@ -1515,12 +1515,10 @@ availability across the network.
 
 \todo{}
 
-\subsubsection{Concrete implementation}
+See the payer reputation section for details on
+how farmers will know to trust payers.
 
-At launch, reputable heavy clients will be identified through a
-Storj-maintained whitelist and blacklist. As more heavy clients emerge, Storj
-will launch the heavy client clearing house where farmers can review specific
-heavy clients and see which heavy clients are Storj-approved.
+\subsubsection{Concrete implementation}
 
 Payments to farmers will be calculated on a daily basis, based on the bandwidth
 utilized and files stored, and paid at the end of the month. If a farmer acts
@@ -1595,9 +1593,11 @@ will have a configurable maximum amount of data that they will store for an
 unknown payer, and use whether or not they get paid for that data as input into
 whether or not that payer should be trusted for more data in the future.
 
-Storage nodes will also feature a whitelist, where storage node operators can
-input a list of payers they already trust. Storj Labs will ship a prefilled
-whitelist with guaranteed and insured payers (see payments).
+Storage node operators will be able to opt in and opt out of working with specific payers they already 
+trust or distrust. 
+Storj Labs will ship a list of recommended payers that
+Storj Labs has already vetted for quality control that
+node operators can elect to use.
 
 \todo{future work - shared reputation}
 
@@ -1655,6 +1655,9 @@ enough Bloom filter based cleanups.
 On the other hand, because this garbage collection system is not precise,
 bandwidth overhead for negotiating the list of pieces a storage node must store
 will be efficient and small.
+
+\todo{See our future work section about undeletes in
+the case of bugs or mistaken file removal.}
 
 \todo{future work: is a bloom filter the best data structure?}
 
