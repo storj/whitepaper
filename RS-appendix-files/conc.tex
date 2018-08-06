@@ -7,6 +7,11 @@ Informally, it takes longer to lose more pieces under a given fixed network size
 For example, assume we have a fixed network size of $10,000$ nodes and a fixed churn rate of 0.1, so that a fixed number of $1,000$ pieces are lost on the network each month\footnote{
 Technically, we assume this figure represents ``churn'', so while we assume $1,000$ nodes are lost each month, we also assume $1,000$ new nodes have come online.
 }. 
-Suppose we consider the same file encoded with two different RS parameters: once under a $(40:20)$ schema and the other as an $(80:40)$ schema. If we want to set $m$ so that $m=k+10$ for both cases, we observe from Tables \ref{table:n=40} and \ref{table:n=80} that the expected mean rebuilds is $0.416$ in the $(40:20)$ case and is $0.292$ in the $(80:40)$ case. Both encoding schemes have similar durabilities, as a repair in both cases is triggered when there are $k+10$ pieces left, though the mean rebuilds per month is empirically and theoretically lower for the $(80:40)$ case using $m=k+10$. 
-
-Finally, we remark that this work has focused on analyzing the bandwidth used by different RS encoding schemes under differing network conditions. As a prospect for future research, we propose considering how the choice of $m$ relative to $k$ affects file durability under differing network conditions. We expect that the choice of $m$ relative to $k$ depends on the ratio of $k/C$, where $C$ is the total number of nodes on the network, and on the churn rate $c$. If the number of required pieces $k$ is large relative to $C$ and $c$, the expected number of shards lost per interval is increased, which must be taken into account when selecting $m$ to ensure that the file is not lost.
+Suppose we consider the same file encoded with two different RS parameters: 
+once under a $(20,40)$ schema and the other as an $(40,80)$ schema. If we want 
+to set $m$ so that $m=k+10$ for both cases, we observe from Tables 
+\ref{table:n=40} and \ref{table:n=80} that the expected mean rebuilds is 
+$0.416$ in the $(20,40)$ case and is $0.292$ in the $(40,80)$ case. Both 
+encoding schemes have similar durabilities, as a repair in both cases is 
+triggered when there are $k+10$ pieces left, though the mean rebuilds per month 
+is empirically and theoretically lower for the $(40,80)$ case using $m=k+10$. 

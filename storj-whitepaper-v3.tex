@@ -6,6 +6,7 @@
 \usepackage[labelfont=it,
 textfont={it},singlelinecheck=on,justification=centering]{caption}
 \usepackage{amsmath} \usepackage{float} \usepackage{xcolor}
+\usepackage{comment}
 
 \lstset{basicstyle=\ttfamily\footnotesize,breaklines=true} \lstset{numbers=left,
 numberstyle=\tiny, stepnumber=1, numbersep=5pt} \lstset{language=TeX}
@@ -529,6 +530,8 @@ is better than a $(k=10,n=20)$ erasure code, even though the expansion factor
 across more nodes in the $(k=20,n=40)$ case. These considerations make erasure
 codes an important part of our general framework.
 
+\begin{comment}
+
 With the simplifying assumption that every node has an equal probability of
 failure $p$, one can gain more intuition by modeling file durability as the CDF
 of the binomial distribution, as seen in Equation \eqref{eq:binom_cdf}. In this
@@ -540,30 +543,49 @@ given by:
 \begin{equation} P(D) = \sum_{i=0}^{n-k} \binom{n}{i} p^i
 (1-p)^{n-i}\label{eq:binom_cdf}
 \end{equation}
+\end{comment}
 
-\begin{table}[b]
-\centering
-\begin{tabular}{c c c l}
-$k$ & $n$ & Exp. factor & P(D) \\
-\hline 2 & 4 & 2 & 99.629999999999996341\%\\
-4 & 8 & 2 & 99.956834999999999436\%\\
-8 & 16 & 2 & 99.999407567699549748\%\\
-16 & 32 & 2 & 99.999999871786737771\%\\
-32 & 64 & 2 & 99.999999999999988898\%\\
-\end{tabular}
-\caption{$P(D)$ for various choices of $k$ and $n$, assuming $p=0.1$.}
-\end{table}
 
-\begin{figure} \centering
-\includegraphics[width=\linewidth]{durability/durability.eps}\label{fig:durability}
-\end{figure}
 
+With the simplifying assumption that $p$ is the monthly node 
+birth/death rate (the proportion that describes the number of nodes
+leaving/joining the network per month), we can model file durability 
+as the CDF of the Poisson distribution with mean $\lambda=pn$, 
+where we expect $\lambda$ pieces of the file to be lost monthly. To estimate 
+durability, we consider the CDF up to $n-k$, 
+looking at the probability that at most $n-k$ pieces 
+of the file are lost in a month and the file can still be rebuilt.
+The CDF is given by:
+\begin{equation} 
+P(D) = e^{-\lambda} \sum_{i=0}^{n-k} \frac{\lambda^i}{i!}.
+\label{eq:poiss_cdf}
+\end{equation}
 By being able to tweak the durability independently of the expansion factor,
 very high durabilities can be achieved with surprisingly low expansion factors.
 Because of how limited bandwidth is as a resource, eliminating replication as a
 strategy entirely and using erasure codes only for redundancy causes a drastic
 decrease in bandwidth footprint and a drastic increase in the funds available
 per byte on storage nodes.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c c c l}
+$k$ & $n$ & Exp. factor & P(D) \\
+\hline 2 & 4 & 2 & 99.207366813274616391\%\\
+4 & 8 & 2 & 99.858868985411326445\%\\
+8 & 16 & 2 & 99.995462406878260756\%\\
+16 & 32 & 2 & 99.999994620652776179\%\\
+32 & 64 & 2 & 99.999999999990544376\%\\
+\end{tabular}
+\caption{$P(D)$ for various choices of $k$ and $n$, assuming $p=0.1$.}
+\end{table}
+
+\begin{figure} \centering
+\includegraphics[width=\linewidth]{durability/durability.eps}
+\label{fig:durability}
+\end{figure}
+
 
 \subsubsection{Streaming}
 

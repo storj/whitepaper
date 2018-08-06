@@ -11,7 +11,14 @@ $t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a
 
 \subsection{Indirect file piece loss: it's not that much harder}
 
-When modeling indirect file piece loss, we suppose that a fixed rate of nodes drop out of the network each month\footnote{Though the rate may be taken over any desired time interval.} whether or not they are holding pieces of the file under consideration. To describe the probability that $d$ of the dropped nodes were delegates for a specific file coded into $n$ pieces, we turn to the Hypergeometric probability distribution. Suppose $c$ nodes are replaced per month out of $C$ total nodes on the network. Then the probability that $d$ nodes were delegates for the file is given by \todo{update variables for consistency}
+When modeling indirect file piece loss, we suppose that a fixed rate of nodes 
+drop out of the network each month\footnote{Though the rate may be taken over 
+any desired time interval.} whether or not they are holding pieces of the file 
+under consideration. To describe the probability that $d$ of the dropped nodes 
+were delegates for a specific file coded into $n$ pieces, we turn to the 
+Hypergeometric probability distribution. Suppose $c$ nodes are replaced per 
+month out of $C$ total nodes on the network. Then the probability that $d$ 
+nodes were delegates for the file is given by
 \begin{align}
     P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom}
 \end{align}

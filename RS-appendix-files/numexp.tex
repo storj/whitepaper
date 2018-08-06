@@ -2,7 +2,8 @@
 \subsection{Numerical simulations for indirect file piece loss}
 \subsubsection{Introduction}
 We produce decision tables showcasing worst-case mean file rebuild outcomes based on simulating file piece loss for files encoded with varying Reed-Solomon parameters. 
-We assume an $(n:k)$ RS encoding scheme, where $n$ pieces are generated, with $k$ pieces needed for reconstruction, using three different values for $n$.
+We assume an $(k,n)$ RS encoding scheme, where $n$ pieces are generated, with 
+$k$ pieces needed for reconstruction, using three different values for $n$.
 We assume that a file undergoes the process of repair when less than $r$ pieces remain on the network, using three different values of $m$ for each $n$.
 For the initial table, we use a simplifying assumption that pieces on the network are lost at a constant rate per month\footnote{This constant rate may be viewed as the mean of the Poisson distribution modeling piece loss per month.}, which may be due to node churn, data corruption, or an alien megarace extracting a farmer's hard-drive to a higher dimension (amongst other possibilities).
 
@@ -25,7 +26,10 @@ We repeat this simulation for 1000 iterations, simulating 1000 2-year periods fo
 \linespread{1}
 \pagebreak
 \subsubsection{The decision tables}
-
+In forming the decision tables, we consider as part of our calculations how
+different choices of $m$ affect durability under a fixed expansion factor of 2.
+That is, we consider how the size of the ``safety margin'' (the number of 
+pieces between $k$ and $m$) affects durability.
 \input{RS-appendix-files/10000nodes.tex}
 
 
