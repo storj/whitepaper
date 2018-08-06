@@ -112,30 +112,15 @@ While not all peers in the network have the same responsibilities,
 the goal is for every peer to be an autonomous agent, capable of performing
 these actions with little to no significant human interaction.
 
-Many storage products have been created based on distributed storage techniques.
-Products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe,
-Filecoin, Crashplan, Mozy, HDFS, Storj, S3, GFS, all share one thing in common: 
-the idea that
-a single computer is not as powerful or as robust as a network. These products
-and others attempt to solve a variety of use cases and have many different
-requirements, but at a high level, they all operate on the same principles. They
-generate redundancy for data in case of failure, store this redundancy in
-locations with varying degrees of failure isolation, then keep track of where
-the data was placed.
 
-There are a multitude of optimization focuses one could target when creating a
-distributed storage system. Speed, capacity, simplicity, trustlessness,
-byzantine fault tolerance, security, cost, etc., are all desirable traits in a
-storage system. However, independently of anything else, data must be maintained to
-prevent data loss, nodes in the system must be able to be communicated with, and
-metadata must be kept track of.
+There are a handful of storage-based companies emerging that aim to create vast networks to store data. 
+Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Filecoin, Crashplan, Mozy, HDFS, 
+Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of 
+building large networks is that it increases security in how data is being stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each company. 
 
-We propose a framework that will allow us to choose some reasonable tradeoffs
-and then iterate on improvements to components of the system without changing
-the overall system.
-We accomplish this by breaking the design up into a collection
-of relatively independent concerns, and then bring them together to form the
-final protocol.
+When designing a distributed storage system, there are multitude of optimizations that can be made: speed, capacity, trustlessness, byzantine fault tolerance,, cost, and etc. . .  Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way of achieving this is having nodes communicate with each other and creating a functional systems that are seamlessly integrated to store and retrieve data. 
+
+We propose a framework that will horizontally scale to serve data to hundreds of millions of people across the world. Our system, The Storj Network, is a robust object store that encrypts data, shards it, and sends it to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to be independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
 
 The rest of the paper is divided into 4
 sections. In Section \ref{sec:design_constraints} we discuss the design space
@@ -162,11 +147,9 @@ S3 API.
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
 storage protocols, we must create a graceful transition from centralized providers. 
 This will alleviate any switching costs for users with data currently stored on 
-a centralized provider.
-
-Our objective is for Storj to compete successfully in the wider cloud storage 
+a centralized provider.  Our objective is for Storj to compete successfully in the wider cloud storage 
 industry and bring decentralized cloud storage into the mainstream, enabling 
-more people greater security and less centralized control. To achieve this goal, 
+more people greater security and less centralized control. To achieve this, 
 applications built against S3 should be configurable to work with Storj with 
 minimal friction and changes. Imagine if 90\% of existing application services 
 could switch to Storj with a
@@ -322,8 +305,7 @@ retrieving data, and maintaining data.
 
 \item[Storing data] When data is stored with the network, the client encrypts
 it and breaks it up into multiple little pieces. It then distributes the pieces 
-to peers in
-the network then generates and stores some metadata about where to find the data
+to peers in the network then generates and stores some metadata about where to find the data
 again.
 
 \item[Retrieving data] When data is retrieved from the network, 
@@ -364,19 +346,14 @@ of the network. The individual components are:
 
 \subsection{Storage nodes}
 
-The most basic building block is the storage node. The storage node stores and
-returns data provided to it. Nodes should provide reliable storage space,
-network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
-for their participation. Storage nodes will be selected based on a number of
-different criteria. Ping time, latency, throughput, disk space, geographic
-location, etc., are all important factors that may need to
-be considered. This means that node selection almost certainly must be an
-explicit process.
+The most fundamental part of this network is the storage node.  The storage node's role is to store and return data.  Aside from storing data,
+nodes should provide reliable storage space, network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
+for their participation. Nodes are awarded points based on how they do in certain categories. In short, storage nodes are selected to store data based on various criteria:  ping time, latency, throughput, disk space, geographic location, etc...  This means that node selection almost certainly must be an explicit process.
 
 \subsubsection{Concrete implementation}
 
 Storage nodes will support three methods: \code{get}, \code{put}, and
-\code{delete}. Storage nodes store {\em pieces} (to be described in more detail
+\code{delete}. They store {\em pieces} (to be described in more detail
 later \bs{where? reference}). Each method will take a {\em piece ID}, a 
 {\em payer ID} and signature
 by the payer, an optional TTL, and the other metadata required by the bandwidth
@@ -392,16 +369,13 @@ The {\em payer ID} forms a namespace. An identical {\em piece ID} with a
 different {\em payer ID} refers to a different {\em piece}.
 
 Storage nodes should allow administrators to configure maximum allowed disk
-space usage and maximum allowed bandwidth usage over the last rolling 30 days.
-Storage nodes should keep track of how much is remaining of both. Storage nodes
-should reject operations that do not have a valid signature from the appropriate
-payer.
+space usage and maximum allowed bandwidth usage over the last rolling 30 days. They should keep track of how much is remaining of both, and reject operations that do not have a valid signature
+ from the appropriate payer.
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network will need to communicate. The framework requires all 
-nodes to speak a
-reliable and ubiquitous protocol that:
+All peers on the network will need to communicate via a ubiquitous protocol. The framework requires all 
+nodes to fulfill these requirements for communication: 
 
 \begin{itemize}
 \item provides peer reachability, even in the face of firewalls
@@ -837,6 +811,16 @@ node id}
 
 \subsubsection{Pointers}
 
+The data owner will need knowledge of how a \x{remote segment} is broken up and
+where in the network the \x{piece}s are located to recover it. This is contained
+in the \x{pointer} data structure, and the owner can secure the \x{pointer} as
+they wish. As the set of \x{segment}s in the network grows, it becomes
+exponentially more difficult to locate any given \x{piece} set without prior
+knowledge of their locations (see Section 6.3). This implies that security of
+the \x{remote segment} is proportional to the square of the size of the network.
+
+
+Technical Dive into how Download Works
 \todo{}
 
 \subsection{Metadata}
@@ -1853,11 +1837,11 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
-There are three roles, the gateway, the heavy client, and farmers.
+There are three important roles involved in uploading a file: the gateway, the heavy client, and farmers.
 
 \subsubsection{Detailed walkthrough: upload}
 
-Here is a concrete list of all the steps that happen for an upload.
+Here are the steps that occur when a user uploads a file:
 
 \begin{itemize}
 \item First, data begins transfer to the gateway.
@@ -1919,7 +1903,7 @@ of this first segment. The gateway will:
 
 \subsubsection{Detailed walkthrough: download}
 
-Here is a concrete list of all the steps that happen for a download.
+Here are the steps that occur when a user downloads a file:
 
 \begin{itemize}
 \item First, a request for data is received by the gateway.
@@ -1960,7 +1944,7 @@ Here is a concrete list of all the steps that happen for a download.
 
 \subsubsection{Detailed walkthrough: delete}
 
-Here is a concrete list of all the steps that happen for a delete.
+Here are the steps that occur when a user deletes a file:
 
 \begin{itemize}
 \item First, the delete operation is received by the gateway.
@@ -1999,7 +1983,7 @@ Here is a concrete list of all the steps that happen for a delete.
 
 \subsubsection{Detailed walkthrough: list}
 
-Here is a concrete list of all the steps that happen for a list operation.
+Here are the steps that occur when a user wants to receive many files:
 
 \begin{itemize}
 \item First, a request for listing objects is received by the gateway.
@@ -2023,7 +2007,7 @@ into unencrypted (and thus lexicographically sorted) paths.
 
 \subsubsection{Detailed walkthrough: audits}
 
-Here is a concrete list of all the steps that happen for the auditing process.
+Here are the steps that occur for the auditing process:
 
 \begin{itemize}
 \item Each heavy client has a queue of audits, where an audit will entail
@@ -2051,7 +2035,7 @@ Here is a concrete list of all the steps that happen for the auditing process.
 
 \subsubsection{Detailed walkthrough: repair}
 
-Here is a concrete list of all the steps that happen for the repair process.
+Here are the steps that occur for the repair process: 
 
 \begin{itemize}
 \item Each heavy client periodically will ping every farmer it knows about,
@@ -2078,7 +2062,7 @@ Here is a concrete list of all the steps that happen for the repair process.
 
 \subsubsection{Detailed walkthrough: payment}
 
-Here is a concrete list of all the steps that happen for payment.
+Here are the steps that occur for the payment process: 
 
 \begin{itemize}
 \item First, a heavy client will choose a roll-up period. This is a period of
