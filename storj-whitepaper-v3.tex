@@ -1635,14 +1635,15 @@ that they are no longer required to store that data. Unfortunately, sometimes
 storage nodes will be temporarily unavailable and delete messages will be
 missed. In these cases, data that is no longer needed is considered
 {\em garbage}. Payers only pay for data they expect to be stored, so storage
-nodes with lots of garbage will be sad to find less earnings than they would
+nodes with lots of garbage will find less earnings than they would
 otherwise be entitled to unless a garbage collection system is employed.
 
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
 leaves no additional garbage, whereas a {\em conservative} garbage collector may
-leave some small proportion of garbage around given some other tradeoffs, often
-performance. As long as a conservative garbage collector is used, it should
+leave some small proportion of garbage around given some other tradeoffs, 
+often with the aim of improving performance. 
+As long as a conservative garbage collector is used, it should
 be assumed that the cost of storage owed to a storage node is high enough
 to amortize the cost of storing the garbage.
 
@@ -1659,26 +1660,28 @@ garbage collection strategy. Periodically, storage nodes will request
 a highly-compressible data structure such as a
 {\em Bloom filter} \cite{bloom-filter} from payers that contains hints about
 what pieces a node is expected to continue storing.
-A Bloom filter is like a set that can
-answer set membership questions with the answers {\em isn't contained} or
-{\em maybe contained}, but not {\em is contained}. Payers will reject
+A Bloom filter is a mechanism that can
+answer certain set membership questions, describing whether an element
+{\em isn't contained} or
+{\em maybe contained}, but can not determine whether an element 
+{\em is contained} in the set. 
+Payers will reject
 requests for these hints that happen too frequently. By returning a data
 structure tailored to each node on a periodic schedule, a payer can give a
-storage node the ability to clean up garbage to a configurable tolerance.
+storage node the ability to clean up garbage data to a configurable tolerance.
 
 Because Bloom filters are probabilistic and their collision risk is
 configurable, the conservative garbage collector can be tuned to eliminate
 garbage down to an acceptable tolerance, given the tradeoff of additional
 bandwidth for these larger, more exact cleanup messages. Further, each time a
-Bloom filter is generated, it can be generated with a new hashing seed, making
-the probability that a specific piece of garbage is continually missed by the
-garbage collector lower over time.
+Bloom filter is generated, it can be generated with a new hashing seed, lowering
+the probability that a specific piece of garbage consistently gets 
+missed by the garbage collector.
 
 Because this garbage collection system is not precise, storage nodes have a
-strong incentive to stay online to witness all delete messages if possible.
+strong incentive to stay online to witness as many delete messages as possible.
 If a storage node misses a handful of delete messages due to an outage, the
-garbage with almost guaranteed certainty will eventually get cleaned up with
-enough Bloom filter based cleanups.
+garbage will eventually get cleaned up with enough Bloom filter based cleanups.
 On the other hand, because this garbage collection system is not precise,
 bandwidth overhead for negotiating the list of pieces a storage node must store
 will be efficient and small.
