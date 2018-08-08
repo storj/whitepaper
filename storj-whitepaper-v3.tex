@@ -1056,7 +1056,7 @@ specifically in this component of our framework.
 
 Data should be encrypted as early as possible in the data storage pipeline,
 ideally before the data ever leaves the source computer. This means that the
-S3-compatible gateway or appropriate similar client library should run
+S3-compatible console or appropriate similar client library should run
 colocated on the same computer as the user's application.
 
 Ideally encryption uses a pluggable mechanism that allows users to choose their
@@ -1428,7 +1428,7 @@ reputation would then be determined globally.
 
 Payments in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand.
-In the Storj network, payments are made by gateway users who store data on the
+In the Storj network, payments are made by console users who store data on the
 platform to the satellite they utilize.
 The satellite then pays storage nodes for the amount of storage and bandwidth 
 they
@@ -1491,11 +1491,11 @@ makes
 the payments to the appropriate storage node nodes.
 
 satellites will track utilized bandwidth through a bandwidth allocation
-protocol. To download a file, a gateway user connects to the satellite to
+protocol. To download a file, a console user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The satellite sends a confirmation of this promise 
-to the gateway, along with file piece storage node node locations. 
-The gateway then sends the promise to pay directly
+to the console, along with file piece storage node node locations. 
+The console then sends the promise to pay directly
 to the storage node nodes, along with the details on the file pieces it needs. 
 Each storage node then accepts or rejects this operation. 
 If a storage node accepts this
@@ -1534,7 +1534,7 @@ This guarantees that if an approved satellite acts maliciously,
 the proof of stake would
 be lost and would help compensate network participants for the missing payments
 and service interruption. The Storj Labs team will always run and maintain a
-certain number of satellites to ensure gateway users have sufficient
+certain number of satellites to ensure console users have sufficient
 availability across the network.
 
 \todo{users pay satellites}
@@ -1734,7 +1734,7 @@ for
   workplace.
 \item {\bf Console} - This peer class represents any application or
   service that wants to store data. Applications can store data via the
-  S3-compatible gateway, or through our libstorj C-bindings. This peer class
+  S3-compatible console, or through our libstorj C-bindings. This peer class
   is not expected to remain online like the other two classes and is otherwise
   relatively lightweight. This peer class performs encryption, erasure encoding,
   and coordinates between the other peer classes on behalf of the customer.
@@ -1874,19 +1874,19 @@ The satellite is made up of components discussed earlier:
 \item A data audit and data repair service
 \end{itemize}
 
-\subsection{Gateway/libstorj}
+\subsection{Console}
 
-The gateway provides an S3-compatible drop-in interface for applications that
+The console provides an S3-compatible drop-in interface for applications that
 need to store data but don't want to bother with the complexities of distributed
-storage directly. The gateway is a simple service layer on top of libstorj,
+storage directly. The console is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The gateway (via libstorj) first encrypts data, then erasure encodes it, then
+The console (via libstorj) first encrypts data, then erasure encodes it, then
 streams it out to storage nodes, all while coordinating with a chosen satellite
 for metadata and tracking.
 
-The gateway should run co-located with wherever data is generated, and will
+The console should run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Quality control and branding}
@@ -1896,7 +1896,7 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
-There are three important roles involved in uploading a file: the gateway, the 
+There are three important roles involved in uploading a file: the console, the 
 satellite, and storage nodes.
 
 \subsubsection{Detailed walkthrough: upload}
@@ -1904,18 +1904,18 @@ satellite, and storage nodes.
 Here are the steps that occur when a user uploads a file:
 
 \begin{itemize}
-\item First, data begins transfer to the gateway.
-\item The gateway will then choose an encryption key and starting nonce for
+\item First, data begins transfer to the console.
+\item The console will then choose an encryption key and starting nonce for
   this segment and begin to encrypt the incoming data with authenticated
   encryption as it flows through.
-\item The gateway buffers data until it knows whether the incoming file is
+\item The console buffers data until it knows whether the incoming file is
 short enough to be an inline segment or a remote segment. We'll assume a remote
 segment.
-\item The gateway sends a request to the satellite to prepare for the storage
-of this first segment. The gateway will:
+\item The console sends a request to the satellite to prepare for the storage
+of this first segment. The console will:
   \begin{itemize}
-  \item Confirm that the gateway has appropriate authorization and funds for
-    the request. The gateway must have an account with this 
+  \item Confirm that the console has appropriate authorization and funds for
+    the request. The console must have an account with this 
 specific satellite already.
   \item Make a selection of nodes that conform to the bucket's configured
     durability, performance, geographic and reputation requirements that have
@@ -1924,15 +1924,15 @@ specific satellite already.
     signed unrestricted bandwidth allocation messages, and a chosen root piece
     id.
   \end{itemize}
-\item The gateway will take this information and begin parallel connections to
+\item The console will take this information and begin parallel connections to
   all of the chosen storage nodes via the bandwidth allocation protocol.
-\item The gateway will begin breaking the segment into stripes and then
+\item The console will begin breaking the segment into stripes and then
   erasure encode each stripe.
 \item The generated erasure shares will be concatenated into \x{pieces} as they
   transfer to each storage node in parallel.
 \item The erasure encoding will be configured to over-encode to more pieces
   than needed. This will allow for the elimination of long tails and the
-  significant improvement of visible performance by allowing the gateway to
+  significant improvement of visible performance by allowing the console to
   cancel the slowest uploads.
 \item The data will continue to transfer until the maximum segment size is hit
   or the stream ends, whichever is sooner.
@@ -1944,14 +1944,14 @@ the
 \item If the upload is aborted for any reason, the storage node will keep the
   largest bandwidth allocation it received but otherwise will throw away all
   relevant request data.
-\item The gateway encrypts the random encryption key chosen for this file
+\item The console encrypts the random encryption key chosen for this file
   with a deterministic hierarchical key.
-\item The gateway will upload back to the satellite a \x{pointer}, which
+\item The console will upload back to the satellite a \x{pointer}, which
   contains which storage nodes were
   ultimately successful, what encrypted path was chosen for this segment, which
   erasure code algorithm was used, the chosen piece id, the
   encrypted encryption key and other metadata, and a signature.
-\item The gateway will then proceed with the next segment and continue to
+\item The console will then proceed with the next segment and continue to
   process segments until the entire stream has completed. Each segment gets
   a new encryption key, but the nonce monotonically increases from the previous
   segment.
@@ -1968,15 +1968,15 @@ the
 Here are the steps that occur when a user downloads a file:
 
 \begin{itemize}
-\item First, a request for data is received by the gateway.
-\item The gateway is going to try and reduce round trips to the satellite
+\item First, a request for data is received by the console.
+\item The console is going to try and reduce round trips to the satellite
   by speculatively requesting the pointers for the first few segments in
   addition to the pointer for the last segment from the satellite. The last
   segment is needed in order to learn the size of the object, how many segments
   there are, and how big the segments are.
 \item For every segment pointer requested, the satellite will:
   \begin{itemize}
-  \item Validate that the gateway has access to download the segment pointer
+  \item Validate that the console has access to download the segment pointer
     and funds to pay for its downloading.
   \item Generate an unrestricted bandwidth allocation for the segment.
   \item Look up the contact information for the storage nodes listed in the 
@@ -1984,7 +1984,7 @@ Here are the steps that occur when a user downloads a file:
   \item Return the requested segment, the bandwidth allocations, and contact
     info.
   \end{itemize}
-\item The gateway will calculate if more segments are necessary for the
+\item The console will calculate if more segments are necessary for the
   data request it received. If so, it will request the remaining segment
   pointers, which it can calculate exactly now due to the earlier request of
   the last segment pointer.
@@ -1994,7 +1994,7 @@ Here are the steps that occur when a user downloads a file:
   appropriate erasure share ranges inside of each stored piece.
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
-  be gained by allowing the gateway to cancel the slowest downloads.
+  be gained by allowing the console to cancel the slowest downloads.
 \item If the upload is aborted for any reason, the storage node will keep the
   largest bandwidth allocation it received but otherwise will throw away all
   relevant request data.
@@ -2010,11 +2010,11 @@ Here are the steps that occur when a user downloads a file:
 Here are the steps that occur when a user deletes a file:
 
 \begin{itemize}
-\item First, the delete operation is received by the gateway.
-\item The gateway is going to request all of the segment pointers for the file.
+\item First, the delete operation is received by the console.
+\item The console is going to request all of the segment pointers for the file.
 \item For every segment pointer, the satellite will:
   \begin{itemize}
-  \item Validate that the gateway has access to delete the segment pointer.
+  \item Validate that the console has access to delete the segment pointer.
   \item Generate a signed agreement for the deletion of the segment, so the
     storage node knows the satellite is expecting the delete to proceed.
   \item Look up the contact information for the storage nodes listed in the 
@@ -2028,15 +2028,15 @@ Here are the steps that occur when a user deletes a file:
 received 
 the
   delete operation and will delete the file and its bookkeeping info.
-\item The gateway will upload back to the satellite all of the signed
+\item The console will upload back to the satellite all of the signed
   messages it received from working storage nodes. The satellite will require an
   adjustable percent of the total storage nodes to sign messages successfully
-  to ensure that the gateway did its part in letting storage nodes know the 
+  to ensure that the console did its part in letting storage nodes know the 
   object
   has been deleted.
 \item The satellite will remove the segment pointers and stop charging and
   paying for them.
-\item The gateway will return success.
+\item The console will return success.
 \item Periodically, storage nodes will ask the satellite for generated garbage
   collection messages that will help storage nodes who were offline during the 
   main
@@ -2056,14 +2056,14 @@ the
 Here are the steps that occur when a user wants to receive many files:
 
 \begin{itemize}
-\item First, a request for listing objects is received by the gateway.
-\item The gateway will translate the request on unencrypted paths to encrypted
+\item First, a request for listing objects is received by the console.
+\item The console will translate the request on unencrypted paths to encrypted
   paths.
-\item The gateway will request from the satellite the appropriate list of
+\item The console will request from the satellite the appropriate list of
   encrypted paths.
-\item The satellite will validate that the gateway has appropriate access
+\item The satellite will validate that the console has appropriate access
   and then return the requested list.
-\item The gateway will decrypt the return results and return them.
+\item The console will decrypt the return results and return them.
 \end{itemize}
 
 It's worth pointing out that because the satellite stores paths in sorted
