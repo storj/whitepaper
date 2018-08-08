@@ -65,7 +65,7 @@ network. (Different variables are being used to represent the same thing.)
 \item Datascience: Write an appendix about how we select RS numbers
 \item Eng/marketing: Quality control/branding section - talk about how we
   plan to ensure satellite quality by quality control evaluations, formal
-  partnerships, relationships, and not letting poor quality heavy clients
+  partnerships, relationships, and not letting poor quality satellites
   use the brand.
 \end{itemize}
 
@@ -1136,9 +1136,11 @@ macaroon's set of caveats.
 
 \subsection{Audits}
 
-Incentivizing farmers to accurately store data is of paramount importance to
+Incentivizing storage nodes to accurately store data is of paramount importance 
+to
 the viability of this whole system. As such, it is important to be able to
-validate and verify that farmers are accurately storing what they have been
+validate and verify that storage nodes are accurately storing what they have 
+been
 asked to store.
 
 Many storage systems use audits as a way of determining when to do repair and
@@ -1228,7 +1230,8 @@ corruption, malicious behavior, bad hardware, software error, user space
 reclaimation, etc., but these issues are less serious than full node 
 churn (power loss, internet connectivity intermittency, 
 software shutdown or removal).
-Our spot-check-based audits will incentivize farmers to reliabily store data
+Our spot-check-based audits will incentivize storage nodes to reliabily store 
+data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, and
 we expect to account for varying
@@ -1251,10 +1254,11 @@ necessary for the missing pieces to be rebuilt once the entire file's pieces
 fall below a certain, predetermined threshold. If a node goes offline, the
 satellite will mark that nodes' file pieces as missing. 
 Once enough file pieces are lost, the satellite will download the
-remaining file pieces from their corresponding farmers, using those pieces 
+remaining file pieces from their corresponding storage nodes, using those 
+pieces 
 to rebuild the file's missing, encrypted, erasure encoded pieces.
 Once the repair process is complete, the satellite will send the
-recovered pieces to new farmers.
+recovered pieces to new storage nodes.
 
 Users will choose their desired durability with their chosen metadata service
 (which may impact price, among other things). This desired durability, along 
@@ -1408,14 +1412,14 @@ uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by payers unfairly
 should not accept future data from those payers. See the section \todo{} about
 quality control on how we plan to ensure payers are incentivized to treat
-farmers fairly.
+storage nodes fairly.
 
 \subsubsection{Concrete implementation}
 
 Initially, storage node reputation will be individually determined by each
 satellite. If a node is disqualified by one satellite, it could still
-store data for other heavy clients. Reputation will not be shared between
-heavy clients initially. Over time, as we plan to eliminate heavy clients,
+store data for other satellites. Reputation will not be shared between
+satellites initially. Over time, as we plan to eliminate satellites,
 reputation would then be determined globally.
 
 \todo{future work section about reputation sharing}
@@ -1426,7 +1430,8 @@ Payments in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand.
 In the Storj network, payments are made by gateway users who store data on the
 platform to the satellite they utilize.
-The satellite then pays farmers for the amount of storage and bandwidth they
+The satellite then pays storage nodes for the amount of storage and bandwidth 
+they
 provide on the network.
 
 The Storj network is payment agnostic.
@@ -1445,36 +1450,38 @@ data if the user does not login every 15 days. Others use 30-day contracts.
 Moving forward, the network will not use contracts to manage payments and file
 storage durations.
 
-Heavy clients will pay farmers for the data they store long-term, 
+satellites will pay storage nodes for the data they store long-term, 
 for audits, and for downloads. 
-Farmers will not be paid for the initial storage of data, but they
+Storage nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
-period, a satellite will calculate earnings for each of its farmers. 
+period, a satellite will calculate earnings for each of its storage nodes. 
 Provided the storage node node hasn’t been blacklisted, 
-the storage node will be paid by the heavy
-client for the data it has stored over the course of
+the storage node will be paid by the satellite for the data it has stored 
+over the course of
 the month, per the satellite's records. 
 If a storage node misses a delete file command due to the node being
 offline, it will be storing more data than the satellite credits it for. 
-Farmers are not paid for storing such file pieces, and they
+Storage nodes are not paid for storing such file pieces, and they
 would eventually be cleaned up through the garbage collection process.
 
 The payment system is focused on simplicity and efficiency to minimize the
 amount of resources needed to properly execute monthly payments. Because of the
-way delete commands are issued, and because farmers are not expected to be
-online at all times, farmers may be storing file pieces that were slated for
+way delete commands are issued, and because storage nodes are not expected to be
+online at all times, storage nodes may be storing file pieces that were slated 
+for
 deletion. This is factored into
-the storage node payment amounts, meaning farmers are paid more than they
+the storage node payment amounts, meaning storage nodes are paid more than they
 should for the file pieces they store, offsetting the lost revenue due to
 storing garbage data. 
-This means that farmers who maintain higher availability
+This means that storage nodes who maintain higher availability
 can maximize their profits by deleting files on request,
 which minimizes the amount
 of garbage data on their nodes.
 
 The satellite maintains a database of all file pieces it is responsible for
-and the farmers it believes are storing these pieces. Each day, the heavy
-client adds another day’s worth of credits to each storage node for every file 
+and the storage nodes it believes are storing these pieces. Each day, 
+the satellite adds another day’s worth 
+of credits to each storage node for every file 
 piece
 it should be storing. The satellite
 also tracks file downloads in its database. 
@@ -1483,7 +1490,7 @@ adds up all bandwidth and storage payments each storage node has earned and
 makes
 the payments to the appropriate storage node nodes.
 
-Heavy clients will track utilized bandwidth through a bandwidth allocation
+satellites will track utilized bandwidth through a bandwidth allocation
 protocol. To download a file, a gateway user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The satellite sends a confirmation of this promise 
@@ -1498,9 +1505,10 @@ pay to
 the satellite, and the satellite credits that storage node node as having
 successfully delivered the file piece.
 
-Heavy clients will also earn revenue from farmers for executing audits,
+satellites will also earn revenue from storage nodes for executing audits,
 repairing files, and storing metadata. Every day, each satellite will execute
-a number of audits across all of its farmers on the network. During an audit,
+a number of audits across all of its storage nodes on the network. During an 
+audit,
 if a storage node does not have the file it should be storing, it will be 
 immediately
 blacklisted and the satellite will flag that storage node’s file pieces for 
@@ -1511,24 +1519,25 @@ and for the repair,
 once that file falls below the file piece threshold needed for
 repair.
 
-If a satellite is not executing payments properly, farmers can report them
-to the Storj network clearing houses, where all heavy clients’ reputations are
-tracked. By default, a storage node node will only trust a whitelist of heavy
-clients; however, during the storage node setup phase, the storage node 
+If a satellite is not executing payments properly, storage nodes can report them
+to the Storj network clearing houses, where all satellites’ reputations are
+tracked. By default, a storage node node will only trust a 
+whitelist of satellites; 
+however, during the storage node setup phase, the storage node 
 operator can choose
-to work with non-whitelisted heavy clients. 
-Farmers should forgo using heavy clients with low reputation scores.
+to work with non-whitelisted satellites. 
+Storage nodes should forgo using satellites with low reputation scores.
 
-Storj Approved Heavy Clients are required to have insurance with Storj, 
+Storj Approved satellites are required to have insurance with Storj, 
 which is used to act as proof of stake. 
 This guarantees that if an approved satellite acts maliciously, 
 the proof of stake would
 be lost and would help compensate network participants for the missing payments
 and service interruption. The Storj Labs team will always run and maintain a
-certain number of heavy clients to ensure gateway users have sufficient
+certain number of satellites to ensure gateway users have sufficient
 availability across the network.
 
-\todo{users pay heavy clients}
+\todo{users pay satellites}
 \todo{payers roll up payments every day, but pay every month}
 
 \todo{Payment automation?}
@@ -1538,17 +1547,18 @@ availability across the network.
 \todo{}
 
 See the payer reputation section for details on
-how farmers will know to trust payers.
+how storage nodes will know to trust payers.
 
 \subsubsection{Concrete implementation}
 
-Payments to farmers will be calculated on a daily basis based on the bandwidth
+Payments to storage nodes will be calculated on a daily basis based on the 
+bandwidth
 utilized and files stored, and will be paid at the end of each month. 
 If a storage node acts
 maliciously and does not store files properly or maintain sufficient
 availability, they will not be paid for the services rendered, and the funds
 allocated to it will instead be used to repair any missing
-file pieces and to pay new farmers for storing the data.
+file pieces and to pay new storage nodes for storing the data.
 
 \subsubsection{Bandwidth allocation protocol}
 
@@ -1742,47 +1752,57 @@ download,
 install, and configure Storj software locally, with no account required
 anywhere. Storage node operators will select what disk space and bandwidth usage
 is allowed during configuration.
-Farmers will advertise during DHT communications what hard drive space is still
+Storage nodes will advertise during DHT communications what hard drive space is 
+still
 available, how much bandwidth is available, and what their desired STORJ token
 wallet address is.
 
-Because Storj is optimized for larger files, farmers have no reason to do
+Because Storj is optimized for larger files, storage nodes have no reason to do
 anything more complex than store \x{pieces} directly on disk. As a result,
 unlike the previous release of Storj that used KFS \cite{storj-v2}, Storj no
 longer has a restriction on the maximum amount of data a storage node can store.
 
-Farmers also keep track of optional per-\x{piece} time-to-live, or TTL.
+Storage nodes also keep track of optional per-\x{piece} time-to-live, or TTL.
 \x{Pieces} may be stored with a specific TTL expiry where data is expected to
 be deleted after the expiration date. If no TTL was provided, data is expected
-to be stored indefinitely. This means farmers have a database of expiration
+to be stored indefinitely. This means storage nodes have a database of 
+expiration
 times and must occasionally clear out old data.
 
-Farmers must additionally keep track of signed bandwidth allocations to send to
-heavy clients for later settlement and payment. This also requires a small
+Storage nodes must additionally keep track of signed bandwidth allocations to 
+send to
+satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
-Farmers can choose what heavy clients to work with. If farmers work with
-multiple heavy clients (the default behavior), then payment may come from
+Storage nodes can choose what satellites to work with. If storage nodes work 
+with
+multiple satellites (the default behavior), then payment may come from
 multiple sources at varying payment schedules.
-Farmers are paid by specific heavy clients for returning data when requested in
+Storage nodes are paid by specific satellites for returning data when 
+requested in
 the form of egress bandwidth payment. Bandwidth payment is made payable after
 the storage node sends in signed bandwidth allocation messages.
-Farmers are also paid for data at rest.
-Farmers are expected to reliably store all data ever sent to them and are paid
+Storage nodes are also paid for data at rest.
+Storage nodes are expected to reliably store all data sent to them and are 
+paid
 with the assumption that they are faithfully doing so.
-Farmers that fail random audits will be removed from the pool and will receive
+Storage nodes that fail random audits will be removed from the pool and will 
+receive
 limited to no future payments.
-Farmers are {\em not} paid for the initial transfer of data to store (ingress
-bandwidth). This is to discourage farmers from deleting data only to be paid for
-storing more. Farmers are not paid for DHT or other maintenance traffic.
+Storage nodes are {\em not} paid for the initial transfer of data to store 
+(ingress
+bandwidth). This is to discourage storage nodes from deleting data only to be 
+paid for
+storing more. Storage nodes are not paid for DHT or other maintenance traffic.
 
-\subsection{Heavy client}
+\subsection{Satellite}
 
 As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
 nodes cannot be trusted, data owners are responsible for selecting good
-farmers, issuing and verifying audits, providing payments, managing file state
+storage nodes, issuing and verifying audits, providing payments, managing file 
+state
 and object metadata, etc. Many of these functions require high uptime and
 significant infrastructure, especially for an active set of files. User run
 applications, like a file syncing application, cannot be expected to efficiently
@@ -1805,22 +1825,22 @@ while delegating the responsibility of keeping files available on the network
 to the satellite.
 
 In cases where the cost of delegating trust is not excessively high,
-clients may use third-party heavy clients. Because heavy clients do not store
+clients may use third-party satellites. Because satellites do not store
 data and have no access to keys, this is still a large improvement over the
-traditional data-center model. Many of the features heavy clients provide, like
+traditional data-center model. Many of the features satellites provide, like
 storage node selection and reputation, leverage considerable network effects. 
 Data
 sets grow more useful as they increase in size, indicating that there are
-strong economic incentives to share infrastructure and information in a heavy
-client.
+strong economic incentives to share infrastructure and information 
+in a satellite.
 
 Applications using object stores delegate significant amounts of trust to the
-storage providers. Providers may choose to operate public heavy clients as a
+storage providers. Providers may choose to operate public satellites as a
 service.
 Application developers then delegate trust to a specific satellite, as they
 would to a traditional object store, but to a lesser degree. Future updates
 will allow for various distributions of responsibilities (and thus levels of
-trust) between customer applications and heavy clients. This shifts significant
+trust) between customer applications and satellites. This shifts significant
 operational burdens from the application developer to the service-provider.
 This would also allow developers to pay for storage with standard payment
 mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
@@ -1834,8 +1854,8 @@ The satellite is, at its core, one of the most complex and yet
 straightforward components of our initial release that fulfills our framework.
 Future framework-conforming releases nonwithstanding, the initial satellite
 is a standard application server that wraps a trusted database such as
-PostgreSQL, Cassandra, or something else. Users sign in to a specific heavy
-client with account credentials. The satellite is responsible for
+PostgreSQL, Cassandra, or something else. Users sign in to a specific
+satellite with account credentials. The satellite is responsible for
 keeping track of accounts and authorization, storage node contact information 
 and
 reputation, and object metadata. The satellite is also responsible for
@@ -1843,7 +1863,7 @@ payments and data repair. Data available through one satellite instance is
 not available through another satellite instance, though various levels of
 export and import are planned.
 
-The satellite is made up of components discussed earlier
+The satellite is made up of components discussed earlier:
 
 \begin{itemize}
 \item A full DHT cache.
@@ -1863,7 +1883,7 @@ which is a library that provides access to storing and retrieving data in the
 Storj network.
 
 The gateway (via libstorj) first encrypts data, then erasure encodes it, then
-streams it out to farmers, all while coordinating with a chosen satellite
+streams it out to storage nodes, all while coordinating with a chosen satellite
 for metadata and tracking.
 
 The gateway should run co-located with wherever data is generated, and will
@@ -1877,7 +1897,7 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 \subsection{Detailed walkthroughs}
 
 There are three important roles involved in uploading a file: the gateway, the 
-satellite, and farmers.
+satellite, and storage nodes.
 
 \subsubsection{Detailed walkthrough: upload}
 
@@ -1895,8 +1915,8 @@ segment.
 of this first segment. The gateway will:
   \begin{itemize}
   \item Confirm that the gateway has appropriate authorization and funds for
-    the request. The gateway must have an account with this specific heavy
-    client already.
+    the request. The gateway must have an account with this 
+specific satellite already.
   \item Make a selection of nodes that conform to the bucket's configured
     durability, performance, geographic and reputation requirements that have
     enough resources.
@@ -1905,7 +1925,7 @@ of this first segment. The gateway will:
     id.
   \end{itemize}
 \item The gateway will take this information and begin parallel connections to
-  all of the chosen farmers via the bandwidth allocation protocol.
+  all of the chosen storage nodes via the bandwidth allocation protocol.
 \item The gateway will begin breaking the segment into stripes and then
   erasure encode each stripe.
 \item The generated erasure shares will be concatenated into \x{pieces} as they
@@ -1927,7 +1947,7 @@ the
 \item The gateway encrypts the random encryption key chosen for this file
   with a deterministic hierarchical key.
 \item The gateway will upload back to the satellite a \x{pointer}, which
-  contains which farmers were
+  contains which storage nodes were
   ultimately successful, what encrypted path was chosen for this segment, which
   erasure code algorithm was used, the chosen piece id, the
   encrypted encryption key and other metadata, and a signature.
@@ -1938,7 +1958,7 @@ the
 \item The last segment stored in the stream will contain additional metadata
   about how many segments the stream contained, how large the segments were
   in bytes, and the starting nonce of the first segment.
-\item The farmers, at some future point, will send the largest restricted
+\item The storage nodes, at some future point, will send the largest restricted
   bandwidth allocation they received as part of the upload to the appropriate
   satellite for later payment.
 \end{itemize}
@@ -1959,7 +1979,8 @@ Here are the steps that occur when a user downloads a file:
   \item Validate that the gateway has access to download the segment pointer
     and funds to pay for its downloading.
   \item Generate an unrestricted bandwidth allocation for the segment.
-  \item Look up the contact information for the farmers listed in the pointer.
+  \item Look up the contact information for the storage nodes listed in the 
+  pointer.
   \item Return the requested segment, the bandwidth allocations, and contact
     info.
   \end{itemize}
@@ -1969,7 +1990,7 @@ Here are the steps that occur when a user downloads a file:
   the last segment pointer.
 \item Once all necessary segment pointers have been returned, if the requested
   segments are not inline, the satellite will initiate parallel requests
-  via the bandwidth allocation protocol to all appropriate farmers for the
+  via the bandwidth allocation protocol to all appropriate storage nodes for the
   appropriate erasure share ranges inside of each stored piece.
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
@@ -1979,7 +2000,7 @@ Here are the steps that occur when a user downloads a file:
   relevant request data.
 \item The retrieved erasure shares will be recombined back into stripes.
 \item The stripes will be decrypted and returned to the requester.
-\item The farmers, at some future point, will send the largest restricted
+\item The storage nodes, at some future point, will send the largest restricted
   bandwidth allocation they received as part of the download to the appropriate
   satellite for later payment.
 \end{itemize}
@@ -1996,25 +2017,29 @@ Here are the steps that occur when a user deletes a file:
   \item Validate that the gateway has access to delete the segment pointer.
   \item Generate a signed agreement for the deletion of the segment, so the
     storage node knows the satellite is expecting the delete to proceed.
-  \item Look up the contact information for the farmers listed in the pointer.
+  \item Look up the contact information for the storage nodes listed in the 
+  pointer.
   \item Return the segments, the agreements, and contact info.
   \end{itemize}
 \item For all of the segments that are not inline, the satellite will
-  initiate parallel requests to all appropriate farmers to signal that the
+  initiate parallel requests to all appropriate storage nodes to signal that the
   pieces are being removed.
-\item The farmers will return a signed message saying the storage node received 
+\item The storage nodes will return a signed message saying the storage node 
+received 
 the
   delete operation and will delete the file and its bookkeeping info.
 \item The gateway will upload back to the satellite all of the signed
-  messages it received from working farmers. The satellite will require an
-  adjustable percent of the total farmers to sign messages successfully
-  to ensure that the gateway did its part in letting farmers know the object
+  messages it received from working storage nodes. The satellite will require an
+  adjustable percent of the total storage nodes to sign messages successfully
+  to ensure that the gateway did its part in letting storage nodes know the 
+  object
   has been deleted.
 \item The satellite will remove the segment pointers and stop charging and
   paying for them.
 \item The gateway will return success.
-\item Periodically, farmers will ask the satellite for generated garbage
-  collection messages that will help farmers who were offline during the main
+\item Periodically, storage nodes will ask the satellite for generated garbage
+  collection messages that will help storage nodes who were offline during the 
+  main
   deletion event.
   The garbage collection messages will assist the storage node in pruning data 
   that is
@@ -2022,7 +2047,7 @@ the
   Bloom filters to allow the storage node to probabilistically prune unneeded 
   data
   without using much bandwidth.
-  Heavy clients will reject requests for garbage collection messages that
+  satellites will reject requests for garbage collection messages that
   happen too frequently.
 \end{itemize}
 
@@ -2056,24 +2081,26 @@ Here are the steps that occur for the auditing process:
 
 \begin{itemize}
 \item Each satellite has a queue of audits, where an audit will entail
-  validating a specific stripe of a segment across a set of farmers.
-\item Periodically, heavy clients will choose a stripe to audit by selecting
+  validating a specific stripe of a segment across a set of storage nodes.
+\item Periodically, satellites will choose a stripe to audit by selecting
   an object uniformly at random weighted by the number of bytes it has and place
   that stripe into the audit queue.
-\item Similarly, heavy clients will choose a stripe to audit by identifying
-  farmers that have had fewer recent audits than other farmers, and selecting
+\item Similarly, satellites will choose a stripe to audit by identifying
+  storage nodes that have had fewer recent audits than other storage nodes, and 
+  selecting
   a stripe at random from the data contained by that storage node. That stripe 
   audit
   request will also be placed in the audit queue.
-\item Heavy clients will process elements from the queue.
+\item satellites will process elements from the queue.
 \item For each stripe request, the satellite will perform the entire download
   operation for that small stripe range. Unlike standard downloads, the stripe
   request does not need to be performant; the satellite will attempt to
   download all of the erasure shares for the stripe and will wait for slow
-  farmers.
+  storage nodes.
 \item After receiving as many shares as is possible within a generous timeout,
   the erasure shares will be analyzed to discover which, if any, are wrong.
-  Heavy clients will take note of farmers that return invalid data and if a
+  satellites will take note of storage nodes that return invalid data and if 
+  a
   storage node returns too much invalid data, the storage node will be 
   blacklisted by the
   satellite and marked as bad. The satellite will not pay the storage 
@@ -2095,7 +2122,7 @@ about,
   pointers that point to that storage node will be considered for repair. 
   Pointers
   keep track of their minimum allowable redundancy. If a pointer is not stored
-  on enough good and online farmers, it will be added to the repair queue.
+  on enough good and online storage nodes, it will be added to the repair queue.
 \item A worker process will take segment pointers off the repair queue. When
   a segment pointer is taken off the repair queue, the entire segment will be
   downloaded. Unlike audits, only enough pieces for accurate repair are needed.
@@ -2119,11 +2146,11 @@ Here are the steps that occur for the payment process:
   time, defaulting to a day, that payment for data at rest is calculated.
 \item Each roll-up period, a satellite will consider all of the files it
   believes are currently stored on each storage node. For all of the bytes a 
-  heavy
-  client believes a storage node has for that rollup period, the satellite 
-  will
+  satellite believes a storage node has for that rollup period, 
+the satellite will
   account that it owes payment to that storage node for that rollup period.
-\item Periodically, farmers will send in bandwidth allocation reports. When a
+\item Periodically, storage nodes will send in bandwidth allocation reports. 
+When a
   satellite receives these, it calculates the owed funds, along with the
   outstanding data at rest calculations, and sends the funds to the storage 
   node's
@@ -2142,10 +2169,11 @@ scale, and many areas of research are still open. }
 
 \subsection{Fast Byzantine Consensus}
 
-Over time, we plan to program the satellite out of the platform. The heavy
-client's role on the network means that the network could be prone to some
+Over time, we plan to program the satellite out of the platform. 
+The satellite's role on the network means that the network could be prone 
+to some
 centralization if others outside of the Storj Labs team do not run their own
-heavy clients. The biggest challenge is achieving fast byzantine consensus,
+satellites. The biggest challenge is achieving fast byzantine consensus,
 where storage node nodes can interact with one another, share encoded pieces of 
 files
 and still operate within the performance levels users will expect from a
@@ -2169,13 +2197,13 @@ the missing pieces would need to be stored on new storage node nodes.
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt and the
-previously missing shards are sent to farmers selected by the satellite.
+previously missing shards are sent to storage nodes selected by the satellite.
 
 Long term, it would be better to create a technique where file repair takes
 place in a distributed manner on storage node nodes, putting their excess CPU 
 cycles
 to work. This will be a first step to eliminating the satellite. This
-approach would also be more decentralized than file repair on heavy clients. It
+approach would also be more decentralized than file repair on satellites. It
 is also more efficient to execute this operation at the edge of the network.
 
 The system would need more checks and balances to ensure the storage node is 
@@ -2186,8 +2214,9 @@ node
 executing the repair would get approval from the satellite to repair a file,
 the satellite would share its merkle tree root with the storage node and 
 notify
-which farmers should store the restored file pieces. The storage node would then
-download the file pieces needed for the repair from the farmers where they
+which storage nodes should store the restored file pieces. The storage node 
+would then
+download the file pieces needed for the repair from the storage nodes where they
 reside. The storage node repair node would execute the repair and run the shards
 through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
@@ -2286,7 +2315,8 @@ eclipse can easily generate a new Node ID, and find a new tunnel. }
 
 \subsection{Hostage Bytes}
 
-The hostage byte attack is a storage-specific attack where malicious farmers
+The hostage byte attack is a storage-specific attack where malicious storage 
+nodes
 refuse to transfer shards, or portions of shards, in order to extort additional
 payments from data owners. Data owners should protect themselves against hostage
 byte attacks by storing shards redundantly across several nodes (see Section
@@ -2315,10 +2345,12 @@ reputation system. }
 \todo{ While the farming software is built to require authentication via
 signature and token before serving download requests, it is reasonable to
 imagine a modification of the farming software that will provide shards to any
-paying requestor. In a network dominated by faithless farmers, any third-party
+paying requestor. In a network dominated by faithless storage nodes, any 
+third-party
 can aggregate and inspect arbitrary shards present on the network.
 
-However, even should faithless farmers dominate the network, data privacy is not
+However, even should faithless storage nodes dominate the network, data privacy 
+is not
 significantly compromised. Because the location of the shards that comprise a
 given file is held solely by the data owner, it is prohibitively difficult to
 locate a target file without compromising the owner (see Section 6.3). Storj is
@@ -2384,7 +2416,8 @@ sum([bin(i,h,k) for i in range(3,h)]) \end{lstlisting}
 
 As the number of shards on the network grows, it becomes progressively more
 difficult to locate a given file without prior knowledge of the locations of its
-shards. This implies that even should all farmers become faithless, file privacy
+shards. This implies that even should all storage nodes become faithless, file 
+privacy
 is largely preserved.
 
 The probability of locating a targeted file consisting of $ k $ shards by $ n $
@@ -2411,7 +2444,8 @@ choose(N-k,n-k) / float(choose(N,n)) def prob_success(N,k,n): return hyp(N,k,n)
 
 \subsection{Partial Audit Confidence Levels}
 
-Farmers attempting to game the system may rely on data owners to issue partial
+Storage nodes attempting to game the system may rely on data owners to issue 
+partial
 audits. Partial audits allow false positives, where the data appears intact, but
 in fact has been modified. Data owners may account for this by ascribing
 confidence values to each partial audit, based on the likelihood of a false
@@ -2437,7 +2471,7 @@ float(choose(N-K, n) / choose(N,n) def prob_false_pos(N,K,n): return hyp(N,K,n)
 \end{lstlisting}
 
 As demonstrated, the chance of false positives on even small partial audits
-becomes vanishingly small. Farmers failing audits risk losing payouts from
+becomes vanishingly small. Storage nodes failing audits risk losing payouts from
 current contracts, as well as potential future contracts as a result of failed
 audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
 of the contract value. Thus it stands to reason that partially deleting shards
