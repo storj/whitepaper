@@ -1553,20 +1553,26 @@ between two peers with various incentives.
 \todo{diagram}
 
 When a client wants to perform an operation for $x$ bytes of bandwidth, it will
-first get authorization from a payer that it has enough funds and is authorized
+first get authorization from a payer 
+\bs{who is the payer? client? heavy client? farmer?} 
+that it has enough funds and is authorized
 to perform that operation. The payer will return an {\em unrestricted
 bandwidth allocation} message. This message will include the identity of the
 payer, the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized, and the direction the bytes will flow
 (whether or not the data will be transfered from or to the client).
-The message will be signed by the payer. To use a metaphor, the payer is
-creating a blank check that is authorized up to $x$ in byte value and sending
-it to the client.
+The message will be signed by the payer. 
+
+%To use a metaphor, the payer is
+%creating a blank check that is authorized up to $x$ in byte value and sending
+%it to the client.
 
 Once the client has an unrestricted bandwidth allocation, the client will then
-create {\em restricted bandwidth allocations}, or to continue the metaphor, a
-filled-in check, indicating $y$ bytes have been transfered so far. The client
-will start by sending a restricted allocation for some small amount, perhaps
+create {\em restricted bandwidth allocations}, 
+%or to continue the metaphor, a filled-in check, 
+indicating $y$ bytes have been transfered so far. The client
+will start by sending a restricted allocation \bs{where?} 
+for some small amount, perhaps
 only a few kilobytes. If the allocation is signed correctly, the farmer will
 transfer up to the amount listed in the restricted allocation ($y$ bytes) before
 awaiting another allocation. The client will then send another allocation where
@@ -1576,20 +1582,21 @@ the full $x$ value.
 At any point, if the request is to terminate, either as planned or unexpectedly,
 the farmer will keep the largest restricted bandwidth allocation it has seen.
 This largest restricted bandwidth allocation is a message signed by the client
-indicating that the client did agree to bandwidth measurement of up to $y$
-bytes, and the payer did agree that the client should be allowed to use that
+indicating that the client agreed to bandwidth usage of up to $y$
+bytes, and the payer agreed that the client is allowed to use that
 bandwidth. The farmer will periodically send the largest restricted bandwidth
-allocations it has received by serial number to appropriate payers, at which
-payers will "cash the check" and pay the farmer for that bandwidth.
+allocations it has received to appropriate payers, at which point
+payers will pay the farmer for that bandwidth.
 
 If the client can't afford the bandwidth usage, the payer will not sign an
-unrestricted bandwidth allocation to protect the payer's own reputation. If
-the client tries to use more bandwidth than allocated, the farmer will shut down
-the request. The farmer can only get paid by a payer for the maximum a client
-has agreed to, as it otherwise has no valid bandwidth allocations to return for
+unrestricted bandwidth allocation, protecting the payer's own reputation. 
+If the client tries to use more bandwidth than allocated, 
+the farmer will shut down the request. 
+The farmer can only get paid for the maximum amount a client has agreed to, 
+as it otherwise has no valid bandwidth allocations to return for
 payment.
 
-This mechanism is how we measure request-specific peer-to-peer bandwidth
+This is how we measure request-specific peer-to-peer bandwidth
 traffic. We don't measure all peer-to-peer traffic; some operations are simply
 the cost of doing business. This bandwidth traffic measurement only applies
 to piece storage operations (storage and retrievals of pieces) and does not
