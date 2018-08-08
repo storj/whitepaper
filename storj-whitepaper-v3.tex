@@ -1896,12 +1896,9 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
-There are three important roles involved in uploading a file: the console, the 
-satellite, and storage nodes.
+\subsubsection{Upload}
 
-\subsubsection{Detailed walkthrough: upload}
-
-Here are the steps that occur when a user uploads a file:
+When a user uploads a file:
 
 \begin{itemize}
 \item First, data begins transfer to the console.
@@ -1963,9 +1960,9 @@ the
   satellite for later payment.
 \end{itemize}
 
-\subsubsection{Detailed walkthrough: download}
+\subsubsection{Download}
 
-Here are the steps that occur when a user downloads a file:
+When a user downloads a file:
 
 \begin{itemize}
 \item First, a request for data is received by the console.
@@ -2005,9 +2002,9 @@ Here are the steps that occur when a user downloads a file:
   satellite for later payment.
 \end{itemize}
 
-\subsubsection{Detailed walkthrough: delete}
+\subsubsection{Delete}
 
-Here are the steps that occur when a user deletes a file:
+When a user deletes a file:
 
 \begin{itemize}
 \item First, the delete operation is received by the console.
@@ -2051,9 +2048,9 @@ the
   happen too frequently.
 \end{itemize}
 
-\subsubsection{Detailed walkthrough: list}
+\subsubsection{List}
 
-Here are the steps that occur when a user wants to receive many files:
+When a user wants to receive many files:
 
 \begin{itemize}
 \item First, a request for listing objects is received by the console.
@@ -2075,9 +2072,9 @@ into unencrypted (and thus lexicographically sorted) paths.
 
 \todo{future work section about lexicographic sort on encrypted paths}
 
-\subsubsection{Detailed walkthrough: audits}
+\subsubsection{Audits}
 
-Here are the steps that occur for the auditing process:
+The auditing process:
 
 \begin{itemize}
 \item Each satellite has a queue of audits, where an audit will entail
@@ -2108,9 +2105,9 @@ Here are the steps that occur for the auditing process:
   forward, nor will it select it for new data.
 \end{itemize}
 
-\subsubsection{Detailed walkthrough: repair}
+\subsubsection{Repair}
 
-Here are the steps that occur for the repair process: 
+The repair process: 
 
 \begin{itemize}
 \item Each satellite periodically will ping every storage node it knows 
@@ -2137,9 +2134,9 @@ about,
 \item The satellite updates the pointer's metadata.
 \end{itemize}
 
-\subsubsection{Detailed walkthrough: payment}
+\subsubsection{Payment}
 
-Here are the steps that occur for the payment process: 
+The payment process: 
 
 \begin{itemize}
 \item First, a satellite will choose a roll-up period. This is a period of
