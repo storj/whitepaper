@@ -1896,20 +1896,20 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Detailed walkthroughs}
 
-\subsubsection{Upload}
+\subsubsection{Uploads}
 
 When a user uploads a file:
 
 \begin{itemize}
 \item First, data begins transfer to the console.
-\item The console will then choose an encryption key and starting nonce for
-  this segment and begin to encrypt the incoming data with authenticated
+\item The console chooses an encryption key and starting nonce for
+  this segment and begins encrypting incoming data with authenticated
   encryption as it flows through.
 \item The console buffers data until it knows whether the incoming file is
 short enough to be an inline segment or a remote segment. We'll assume a remote
 segment.
 \item The console sends a request to the satellite to prepare for the storage
-of this first segment. The console will:
+of this first segment. The satellite will:
   \begin{itemize}
   \item Confirm that the console has appropriate authorization and funds for
     the request. The console must have an account with this 
@@ -1943,19 +1943,19 @@ the
   relevant request data.
 \item The console encrypts the random encryption key chosen for this file
   with a deterministic hierarchical key.
-\item The console will upload back to the satellite a \x{pointer}, which
-  contains which storage nodes were
+\item The console will upload a \x{pointer} back to the satellite, which
+  contains information on which storage nodes were
   ultimately successful, what encrypted path was chosen for this segment, which
   erasure code algorithm was used, the chosen piece id, the
   encrypted encryption key and other metadata, and a signature.
-\item The console will then proceed with the next segment and continue to
+\item The console will then proceed with the next segment, continuing to
   process segments until the entire stream has completed. Each segment gets
   a new encryption key, but the nonce monotonically increases from the previous
   segment.
 \item The last segment stored in the stream will contain additional metadata
   about how many segments the stream contained, how large the segments were
   in bytes, and the starting nonce of the first segment.
-\item The storage nodes, at some future point, will send the largest restricted
+\item The storage nodes will later send the largest restricted
   bandwidth allocation they received as part of the upload to the appropriate
   satellite for later payment.
 \end{itemize}
