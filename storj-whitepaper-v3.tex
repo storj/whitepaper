@@ -2167,18 +2167,17 @@ to some
 centralization if others outside of the Storj Labs team do not run their own
 satellites. The biggest challenge is achieving fast byzantine consensus,
 where storage node nodes can interact with one another, share encoded pieces of 
-files
+files,
 and still operate within the performance levels users will expect from a
 platform that is competing with traditional cloud storage providers.
 
 Our team will be researching ways to store lots of small pieces of metadata
 in a distributed manner, even when those pieces are constantly changing. There
 currently is not a way to achieve this without significant investment in time,
-compute and bandwidth. A practical byzantine fault tolerance algorithm could
+compute, and bandwidth. A practical byzantine fault tolerance algorithm could
 work. They are generally faster and use less disk space than blockchain
 protocols, however there is significant trade off around network usage and
 coordination contention, as there could be problematic overlap with two storage 
-node
 nodes trying to communicate with one another at the same time.
 
 \subsection{Distributed Repair}
