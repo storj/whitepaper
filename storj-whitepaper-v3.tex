@@ -2183,15 +2183,16 @@ nodes trying to communicate with one another at the same time.
 \subsection{Distributed Repair}
 
 The system can detect when a files' Reed Solomon erasure encoding pieces fall
-below a certain threshold. At that time, the file would need to be repaired and
-the missing pieces would need to be stored on new storage node nodes. 
+below a certain threshold. At that time, the file must be repaired, with 
+the new pieces being stored on new storage node nodes. 
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
-the file fragments needed to repair the file, the file is rebuilt and the
-previously missing shards are sent to storage nodes selected by the satellite.
+the file fragments needed to repair the file, the file is rebuilt, and the
+previously missing shards are sent to new storage nodes 
+selected by the satellite.
 
 Long term, it would be better to create a technique where file repair takes
-place in a distributed manner on storage node nodes, putting their excess CPU 
+place in a distributed manner on storage nodes, putting their excess CPU 
 cycles
 to work. This will be a first step to eliminating the satellite. This
 approach would also be more decentralized than file repair on satellites. It
@@ -2200,7 +2201,7 @@ is also more efficient to execute this operation at the edge of the network.
 The system would need more checks and balances to ensure the storage node is 
 correctly
 executing a repair and that the data inside the encrypted file is accurate.
-Merkle tree roots will greatly help with distributed repair. The storage node 
+Merkle tree roots will greatly help with distributed repair. The storage 
 node
 executing the repair would get approval from the satellite to repair a file,
 the satellite would share its merkle tree root with the storage node and 
@@ -2208,7 +2209,7 @@ notify
 which storage nodes should store the restored file pieces. The storage node 
 would then
 download the file pieces needed for the repair from the storage nodes where they
-reside. The storage node repair node would execute the repair and run the shards
+reside. The repair node would execute the repair and run the shards
 through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
