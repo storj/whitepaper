@@ -2137,18 +2137,16 @@ The payment process:
 
 \begin{itemize}
 \item First, a satellite will choose a roll-up period. This is a period of
-  time, defaulting to a day, that payment for data at rest is calculated.
+  time -- defaulting to a day -- that payment for data at rest is calculated.
 \item Each roll-up period, a satellite will consider all of the files it
-  believes are currently stored on each storage node. For all of the bytes a 
-  satellite believes a storage node has for that rollup period, 
-the satellite will
-  account that it owes payment to that storage node for that rollup period.
+  believes are currently stored on each storage node. Satellites will keep track
+of payments owed to each storage node for each rollup period, based on 
+the data kept on each storage node.
 \item Periodically, storage nodes will send in bandwidth allocation reports. 
 When a
-  satellite receives these, it calculates the owed funds, along with the
+  satellite receives these, it calculates the owed funds along with the
   outstanding data at rest calculations, and sends the funds to the storage 
-  node's
-  requested destination.
+  node's requested destination.
 \end{itemize}
 
 \section{Future Areas of Research}\label{sec:future_work}
