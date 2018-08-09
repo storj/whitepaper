@@ -1966,10 +1966,10 @@ When a user downloads a file:
 
 \begin{itemize}
 \item First, a request for data is received by the console.
-\item The console is going to try and reduce round trips to the satellite
-  by speculatively requesting the pointers for the first few segments in
+\item The console tries to reduce round trips to the satellite
+  by speculatively requesting the pointers for the first few segments, in
   addition to the pointer for the last segment from the satellite. The last
-  segment is needed in order to learn the size of the object, how many segments
+  segment is needed to learn the size of the object, how many segments
   there are, and how big the segments are.
 \item For every segment pointer requested, the satellite will:
   \begin{itemize}
@@ -1982,9 +1982,7 @@ When a user downloads a file:
     info.
   \end{itemize}
 \item The console will calculate if more segments are necessary for the
-  data request it received. If so, it will request the remaining segment
-  pointers, which it can calculate exactly now due to the earlier request of
-  the last segment pointer.
+  data request it received, requesting the remaining segment pointers if so.
 \item Once all necessary segment pointers have been returned, if the requested
   segments are not inline, the satellite will initiate parallel requests
   via the bandwidth allocation protocol to all appropriate storage nodes for the
@@ -1992,12 +1990,11 @@ When a user downloads a file:
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
   be gained by allowing the console to cancel the slowest downloads.
-\item If the upload is aborted for any reason, the storage node will keep the
+\item If the download is aborted for any reason, the storage node will keep the
   largest bandwidth allocation it received but otherwise will throw away all
   relevant request data.
-\item The retrieved erasure shares will be recombined back into stripes.
-\item The stripes will be decrypted and returned to the requester.
-\item The storage nodes, at some future point, will send the largest restricted
+\item The console will combine the retrieved erasure shares into stripes.
+\item The storage nodes will later send the largest restricted
   bandwidth allocation they received as part of the download to the appropriate
   satellite for later payment.
 \end{itemize}
