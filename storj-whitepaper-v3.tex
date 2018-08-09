@@ -2221,7 +2221,7 @@ data format will support merkle tree repair in the future.
 \section{Attacks}
 
 As with any distributed system, a variety of attack vectors exist. Many of these
-are common to all distributed systems. Some are storage-specific, and will apply
+are common to all distributed systems. Some are storage-specific and will apply
 to any distributed storage system.
 
 \subsection{Spartacus}
@@ -2238,13 +2238,15 @@ the network. }
 \subsection{Sybil}
 
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
-disrupt network operation by hijacking or dropping messages. Kademlia, because
-it relies on message redundancy and a concrete distance metric, is reasonably
-resistant to Sybil attacks. A node's neighbors in the network are selected by
+disrupt network operation by hijacking or dropping messages. Kademlia 
+is reasonably
+resistant to Sybil attacks, because
+it relies on message redundancy and a concrete distance metric. 
+A node's neighbors in the network are selected by
 Node ID from an evenly distributed pool, and most messages are sent to at least
 three neighbors. If a Sybil attacker controls 50\% of the network, it
 successfully isolates only 12.5\% of honest nodes. While reliability and
-performance will degrade, the network will still be functional until a large
+performance will degrade, the network will still be functional unless a large
 portion of the network consists of colluding Sybil nodes.
 
 \subsubsection{Google}
@@ -2256,18 +2258,18 @@ with orders of magnitude more resources than the sum of the resources of network
 participants. The only reliable defence against a Google attack is to create a
 network whose resources are on the same order of magnitude as the attacker's. At
 that scale, any attack against the network would represent an unsustainable
-commitment of resources for such an organization.
+commitment of resources for any such organization.
 
 \subsubsection{Honest Geppetto}
 
 The Honest Geppetto attack is a storage-specific variant of the Google attack.
 The attacker operates a large number of 'puppet' nodes on the network,
-accumulating trust and contracts over time. Once he reaches a certain threshold
+accumulating trust and contracts over time. Once a certain threshold is reached,
 he pulls the strings on each puppet to execute a hostage attack with the data
-involved, or simply drops each node from the network. Again, the best defence
+involved, or simply drops each node from the network. The best defense
 against this attack is to create a network of sufficient scale that this attack
-is ineffective. In the meantime, this can be partially addressed by relatedness
-analysis of nodes. Bayesian inference across downtime, latency and other
+is ineffective. In the meantime, this can be partially prevented by relatedness
+analysis of nodes. Bayesian inference across downtime, latency, and other
 attributes can be used to assess the likelihood that two nodes are operated by
 the same organization, and data owners can and should attempt to distribute
 shards across as many unrelated nodes as possible.
@@ -2311,7 +2313,7 @@ The hostage byte attack is a storage-specific attack where malicious storage
 nodes
 refuse to transfer shards, or portions of shards, in order to extort additional
 payments from data owners. Data owners should protect themselves against hostage
-byte attacks by storing shards redundantly across several nodes (see Section
+byte attacks by storing shards redundantly across multiple nodes (see Section
 2.7). As long as the client keeps the bounds of its erasure encoding a secret,
 the malicious storage node cannot know what the last byte is. Redundant storage 
 is not
