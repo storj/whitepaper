@@ -2005,7 +2005,7 @@ When a user deletes a file:
 
 \begin{itemize}
 \item First, the delete operation is received by the console.
-\item The console is going to request all of the segment pointers for the file.
+\item The console requests all of the segment pointers for the file.
 \item For every segment pointer, the satellite will:
   \begin{itemize}
   \item Validate that the console has access to delete the segment pointer.
@@ -2041,7 +2041,7 @@ the
   Bloom filters to allow the storage node to probabilistically prune unneeded 
   data
   without using much bandwidth.
-  satellites will reject requests for garbage collection messages that
+  Satellites will reject requests for garbage collection messages that
   happen too frequently.
 \end{itemize}
 
@@ -2061,7 +2061,7 @@ When a user wants to receive many files:
 \end{itemize}
 
 It's worth pointing out that because the satellite stores paths in sorted
-order, the order returned to the customer is in order sorted by the encrypted
+order, the order returned to the customer is sorted by the encrypted
 path element, which means that unencrypted paths will be in random but
 deterministic order. If a customer wants sorted paths and doesn't mind the
 satellite operator having access to unencrypted paths, the customer can opt
