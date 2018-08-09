@@ -2077,23 +2077,23 @@ The auditing process:
 \item Each satellite has a queue of audits, where an audit will entail
   validating a specific stripe of a segment across a set of storage nodes.
 \item Periodically, satellites will choose a stripe to audit by selecting
-  an object uniformly at random weighted by the number of bytes it has and place
-  that stripe into the audit queue.
+  an object uniformly at random, weighted by the number of bytes it has, 
+and place that stripe into the audit queue.
 \item Similarly, satellites will choose a stripe to audit by identifying
   storage nodes that have had fewer recent audits than other storage nodes, and 
   selecting
   a stripe at random from the data contained by that storage node. That stripe 
   audit
   request will also be placed in the audit queue.
-\item satellites will process elements from the queue.
+\item Satellites will process elements from the queue.
 \item For each stripe request, the satellite will perform the entire download
   operation for that small stripe range. Unlike standard downloads, the stripe
   request does not need to be performant; the satellite will attempt to
   download all of the erasure shares for the stripe and will wait for slow
   storage nodes.
-\item After receiving as many shares as is possible within a generous timeout,
+\item After receiving as many shares as possible within a generous timeout,
   the erasure shares will be analyzed to discover which, if any, are wrong.
-  satellites will take note of storage nodes that return invalid data and if 
+  Satellites will take note of storage nodes that return invalid data, and if 
   a
   storage node returns too much invalid data, the storage node will be 
   blacklisted by the
