@@ -1742,7 +1742,7 @@ for
   and coordinates between the other peer classes on behalf of the customer.
 \end{itemize}
 
-We'll dive into more details about each of these components.
+We'll dive into more detail about each of these components.
 
 \subsection{Storage Node}
 
@@ -1777,10 +1777,10 @@ satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
-Storage nodes can choose what satellites to work with. If storage nodes work 
+Storage nodes can choose which satellites to work with. If storage nodes work 
 with
 multiple satellites (the default behavior), then payment may come from
-multiple sources at varying payment schedules.
+multiple sources on varying payment schedules.
 Storage nodes are paid by specific satellites for returning data when 
 requested in
 the form of egress bandwidth payment. Bandwidth payment is made payable after
@@ -1884,7 +1884,7 @@ storage directly. The console is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The console (via libstorj) first encrypts data, then erasure encodes it, then
+The console (via libstorj) first encrypts data, erasure encodes it, then
 streams it out to storage nodes, all while coordinating with a chosen satellite
 for metadata and tracking.
 
@@ -2184,9 +2184,9 @@ nodes trying to communicate with one another at the same time.
 
 \subsection{Distributed Repair}
 
-The system can detect when a files' Reed Solomon erasure encoding pieces fall
+The system can detect when a file's Reed Solomon erasure encoding pieces fall
 below a certain threshold. At that time, the file must be repaired, with 
-the new pieces being stored on new storage node nodes. 
+the new pieces being stored on new storage nodes. 
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt, and the
