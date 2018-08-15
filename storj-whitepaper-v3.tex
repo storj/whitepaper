@@ -118,12 +118,12 @@ Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Fil
 Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of 
 building large networks is that it increases security in how data is being stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each company. 
 
-When designing a distributed storage system, there are multitude of optimizations that can be made: speed, capacity, trustlessness, byzantine fault tolerance,, cost, and etc. . .  Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way of achieving this is having nodes communicate with each other and creating a functional systems that are seamlessly integrated to store and retrieve data. 
+When designing a distributed storage system, there are multitude of optimizations to make: speed, capacity, trustlessness, byzantine fault tolerance, cost, etc. Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way of achieving this is having nodes communicate with each other and creating a functional systems that are seamlessly integrated to store and retrieve data. 
 
-We propose a framework that will horizontally scale to serve data to hundreds of millions of people across the world. Our system, The Storj Network, is a robust object store that encrypts data, shards it, and sends it to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to be independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
+We propose a framework that scales horizontally serving hundreds of millions of people across the globe. Our system, the Storj Network, is a robust object store that encrypts, shards, and sends data to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to be independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
 
 The rest of the paper is divided into 4
-sections. In Section \ref{sec:design_constraints} we discuss the design space
+sections. In Section \ref{sec:design_constraints}, we discuss the design space
 in which Storj operates in and elaborate on specific design constraints that
 focus what we plan to optimize for.
 Section \ref{sec:framework} covers our framework and proposes a simple
@@ -178,7 +178,7 @@ system must prefer stable nodes and endeavor to keep the churn rate as low as
 possible.
 
 Despite the chance of hardware failure, Maymounkov et al. found that in
-decentralized systems the probability of a node staying on
+decentralized systems, the probability of a node staying on
 for an additional hour as a member of the network is an {\em increasing}
 function of uptime \cite{kad}. In other words, the longer a node is a
 participant in the network, the more likely it is to continue
@@ -305,7 +305,7 @@ retrieving data, and maintaining data.
 
 \item[Storing data] When data is stored with the network, the client encrypts
 it and breaks it up into multiple little pieces. It then distributes the pieces 
-to peers in the network then generates and stores some metadata about where to find the data
+to peers in the network and generates and stores some metadata about where to find the data
 again.
 
 \item[Retrieving data] When data is retrieved from the network, 
@@ -348,7 +348,7 @@ of the network. The individual components are:
 
 The most fundamental part of this network is the storage node.  The storage node's role is to store and return data.  Aside from storing data,
 nodes should provide reliable storage space, network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
-for their participation. Nodes are awarded points based on how they do in certain categories. In short, storage nodes are selected to store data based on various criteria:  ping time, latency, throughput, disk space, geographic location, etc...  This means that node selection almost certainly must be an explicit process.
+for their participation. Nodes are awarded points based on how they do in certain categories. In short, storage nodes are selected to store data based on various criteria:  ping time, latency, throughput, disk space, geographic location, etc. Node selection is an explicit process designed to maintain network stability.
 
 \subsubsection{Concrete implementation}
 
@@ -703,6 +703,8 @@ maintaining
 \x{piece storage nodes} a \x{remote segment} was stored on, or the \x{inline
 segment} data directly if applicable.
 
+\todo{maybe add a diagram of how these parts relate to each other?}
+
 \end{description}
 
 \subsubsection{Files as Streams}
@@ -829,7 +831,7 @@ Technical Dive into how Download Works
 In the previous section, we discussed how we will break up files, encode them
 for redundancy, and then store them in the network. Independently of the
 concrete organization and structure of this scheme, there are two types of
-metadata that are important to store for recovery: paths and what
+metadata that are important to store for recovery: paths and which
 storage nodes received pieces (pointers).
 
 Our framework requires a relatively performant system that can store pointers by
@@ -894,7 +896,7 @@ know what time to attack and that the other army has also agreed to this time.
 
 Ultimately, a solution to the two generals' problem with a finite number of
 messages is readily seen to be impossible, so engineering approaches have had
-to brace uncertainty by necessity. Many distributed systems make trade-offs to
+to embrace uncertainty by necessity. Many distributed systems make trade-offs to
 deal with this uncertainty. Some systems embrace {\em consistency}, which means
 that the system will choose downtime over inconsistent answers. Other
 systems embrace {\em availability}, which means that the system chooses
@@ -1450,7 +1452,7 @@ data if the user does not login every 15 days. Others use 30-day contracts.
 Moving forward, the network will not use contracts to manage payments and file
 storage durations.
 
-satellites will pay storage nodes for the data they store long-term, 
+Satellites will pay storage nodes for the data they store long-term, 
 for audits, and for downloads. 
 Storage nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
@@ -1488,9 +1490,9 @@ also tracks file downloads in its database.
 At the end of the month, each satellite
 adds up all bandwidth and storage payments each storage node has earned and 
 makes
-the payments to the appropriate storage node nodes.
+the payments to the appropriate storage nodes.
 
-satellites will track utilized bandwidth through a bandwidth allocation
+Satellites will track utilized bandwidth through a bandwidth allocation
 protocol. To download a file, a console user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The satellite sends a confirmation of this promise 
@@ -1502,10 +1504,10 @@ If a storage node accepts this
 operation, it confirms and retains a copy of this promise to pay, sending the
 client the file piece it needs. Later, the storage node sends the promise to 
 pay to
-the satellite, and the satellite credits that storage node node as having
+the satellite, and the satellite credits that storage node as having
 successfully delivered the file piece.
 
-satellites will also earn revenue from storage nodes for executing audits,
+Satellites will also earn revenue from storage nodes for executing audits,
 repairing files, and storing metadata. Every day, each satellite will execute
 a number of audits across all of its storage nodes on the network. During an 
 audit,
@@ -1521,14 +1523,14 @@ repair.
 
 If a satellite is not executing payments properly, storage nodes can report them
 to the Storj network clearing houses, where all satellites’ reputations are
-tracked. By default, a storage node node will only trust a 
+tracked. By default, a storage node will only trust a 
 whitelist of satellites; 
 however, during the storage node setup phase, the storage node 
 operator can choose
 to work with non-whitelisted satellites. 
 Storage nodes should forgo using satellites with low reputation scores.
 
-Storj Approved satellites are required to have insurance with Storj, 
+Storj-approved satellites are required to have insurance with Storj, 
 which is used to act as proof of stake. 
 This guarantees that if an approved satellite acts maliciously, 
 the proof of stake would
@@ -1639,11 +1641,11 @@ unknown payer, and can use whether or not they get paid for that data
 as input into
 whether or not that payer should be trusted for more data in the future.
 
-Storage node operators will be able to opt in and opt out of working 
+Storage node operators will be able to opt in and out of working 
 with specific payers they already 
 trust or distrust. 
 Storj Labs will ship a list of recommended payers that
-Storj Labs has already vetted for quality control that
+they have already vetted for quality control that
 node operators can elect to use.
 
 \todo{future work - shared reputation}
@@ -1740,7 +1742,7 @@ for
   and coordinates between the other peer classes on behalf of the customer.
 \end{itemize}
 
-We'll dive into more details about each of these components.
+We'll dive into more detail about each of these components.
 
 \subsection{Storage Node}
 
@@ -1775,10 +1777,10 @@ satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
-Storage nodes can choose what satellites to work with. If storage nodes work 
+Storage nodes can choose which satellites to work with. If storage nodes work 
 with
 multiple satellites (the default behavior), then payment may come from
-multiple sources at varying payment schedules.
+multiple sources on varying payment schedules.
 Storage nodes are paid by specific satellites for returning data when 
 requested in
 the form of egress bandwidth payment. Bandwidth payment is made payable after
@@ -1882,7 +1884,7 @@ storage directly. The console is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The console (via libstorj) first encrypts data, then erasure encodes it, then
+The console (via libstorj) first encrypts data, erasure encodes it, then
 streams it out to storage nodes, all while coordinating with a chosen satellite
 for metadata and tracking.
 
@@ -2182,9 +2184,9 @@ nodes trying to communicate with one another at the same time.
 
 \subsection{Distributed Repair}
 
-The system can detect when a files' Reed Solomon erasure encoding pieces fall
+The system can detect when a file's Reed Solomon erasure encoding pieces fall
 below a certain threshold. At that time, the file must be repaired, with 
-the new pieces being stored on new storage node nodes. 
+the new pieces being stored on new storage nodes. 
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt, and the
