@@ -102,7 +102,7 @@ section headings, etc.
 
 \section{Introduction}
 
-Storj is a protocol that creates a distributed network for the reliable storage
+Storj is a protocol that structures a distributed network for the reliable storage
 of data and facilitates payment for successful data storage and transfer
 between peers.
 The Storj protocol enables peers on the network to transfer and receive data,
@@ -116,11 +116,11 @@ these actions with little to no significant human interaction.
 There are a handful of storage-based companies emerging that aim to create vast networks to store data. 
 Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Filecoin, Crashplan, Mozy, HDFS, 
 Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of 
-building large networks is that it increases security in how data is being stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each company. 
+building large networks is that it measurably improves security in how data is stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each organization. 
 
-When designing a distributed storage system, there are multitude of optimizations that can be made: speed, capacity, trustlessness, byzantine fault tolerance,, cost, and etc. . .  Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way of achieving this is having nodes communicate with each other and creating a functional systems that are seamlessly integrated to store and retrieve data. 
+When designing a distributed storage system, there are multitude of optimizations that can be made: speed, capacity, trustlessness, byzantine fault tolerance,, cost, and etc. . .  Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way to achieve this goal is to have nodes communicate with each other - creating a functional, singleton system that is seamlessly integrated to store and retrieve data. 
 
-We propose a framework that will horizontally scale to serve data to hundreds of millions of people across the world. Our system, The Storj Network, is a robust object store that encrypts data, shards it, and sends it to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to be independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
+We propose a framework that will horizontally scale to serve data to hundreds of millions of people across the world. Our system, The Storj Network, is a robust object store that encrypts data, shards it, and distributes it to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to consist of independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
 
 The rest of the paper is divided into 4
 sections. In Section \ref{sec:design_constraints} we discuss the design space
@@ -135,7 +135,7 @@ about how we will deliver this implementation to users. Section
 \section{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
-Before designing a system, it's important to understand its requirements.
+Before designing a system, it's important to first define its requirements.
 We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
@@ -374,7 +374,7 @@ space usage and maximum allowed bandwidth usage over the last rolling 30 days. T
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network will need to communicate via a ubiquitous protocol. The framework requires all 
+All peers on the network communicate via a ubiquitous standard protocol. The framework requires all 
 nodes to fulfill these requirements for communication: 
 
 \begin{itemize}
@@ -487,7 +487,7 @@ replication strategy that makes eight copies of the data. This yields an
 expansion factor of 8x, or 800\%. This data then needs to be stored on the
 network, using bandwidth in the process. Thus, more replication results in more
 bandwidth usage for a fixed amount of data. As discussed in the protocol design
-constraints, high bandwidth usage prevents scaling, so this is an undesireable
+constraints, high bandwidth usage prevents scaling, so this is an undesirable
 strategy for ensuring a high degree of file durability. Instead, {\em erasure
 codes} are a more general and flexible scheme for manipulating data
 durability without tying it to bandwidth usage. Importantly, erasure codes allow
