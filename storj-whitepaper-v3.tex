@@ -21,7 +21,7 @@ Alex Leitner (alex@storj.io),\\ Benjamin Sirb (bens@storj.io), Braydon Fuller
 (braydon@storj.io),\\ Bryan White (bryan@storj.io), Chris Pollard
 (cpollard1001@gmail.com),\\ Dennis Coyle (dennis@storj.io), Dylan Lott
 (dylan@storj.io),\\ Garrett Ransom (garrett@storj.io), Gordon Hall
-(gordonhall@openmailbox.org),\\ James Hagans (jhagans@storj.io), James 
+(gordonhall@openmailbox.org),\\ James Hagans (jhagans@storj.io), James
 Prestwich (james@storj.io),\\ John Gleeson (jg@storj.io), Josh Brandoff
 (josh@brandoff.is), JT Olio (jt@storj.io),\\ Kaloyan Raev (kaloyan@storj.io),
 Kishore Aligeti (kishore@storj.io),\\ Nadine Farah (nadine@storj.io), Natalie
@@ -45,20 +45,20 @@ the efficiency and economics of distributed storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
-security and privacy. At a greater rate than any single entity can afford, it 
-allows market forces to innovate on cheaper ways to provide storage. 
-While there are many ways to build such a system, there are some specific 
-responsibilities any given system should address. 
+security and privacy. At a greater rate than any single entity can afford, it
+allows market forces to innovate on cheaper ways to provide storage.
+While there are many ways to build such a system, there are some specific
+responsibilities any given system should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such a system. Additionally, we describe initial 
-concrete implementations for each responsibility of the framework. 
+responsibilities and building such a system. Additionally, we describe initial
+concrete implementations for each responsibility of the framework.
 \end{abstract}
 
 \todo{
 Remaining big todo items:
 \begin{itemize}
-\item Settle on a choice for what $n,k,r,C,K$ etc. mean in reference to the 
+\item Settle on a choice for what $n,k,r,C,K$ etc. mean in reference to the
 network. (Different variables are being used to represent the same thing.)
 \item Datascience: write an appendix about repair bandwidth based on node
   churn and uptime
@@ -95,14 +95,14 @@ Remaining little todo items:
 \item Eng: Future work section about reputation sharing
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
-\item Once this is all done, look through to ensure no orphaned lines, 
+\item Once this is all done, look through to ensure no orphaned lines,
 section headings, etc.
 \end{itemize}
 }
 
 \section{Introduction}
 
-Storj is a protocol that creates a distributed network for the reliable storage
+Storj is a protocol that structures a distributed network for the reliable storage
 of data and facilitates payment for successful data storage and transfer
 between peers.
 The Storj protocol enables peers on the network to transfer and receive data,
@@ -113,14 +113,14 @@ the goal is for every peer to be an autonomous agent, capable of performing
 these actions with little to no significant human interaction.
 
 
-There are a handful of storage-based companies emerging that aim to create vast networks to store data. 
-Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Filecoin, Crashplan, Mozy, HDFS, 
-Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of 
-building large networks is that it increases security in how data is being stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each company. 
+There are a handful of storage-based companies emerging that aim to create vast networks to store data.
+Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Filecoin, Crashplan, Mozy, HDFS,
+Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of
+building large networks is that it measurably improves security in how data is stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each organization.
 
-When designing a distributed storage system, there are multitude of optimizations to make: speed, capacity, trustlessness, byzantine fault tolerance, cost, etc. Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way of achieving this is having nodes communicate with each other and creating a functional systems that are seamlessly integrated to store and retrieve data. 
+When designing a distributed storage system, there are multitude of optimizations to make: speed, capacity, trustlessness, byzantine fault tolerance, cost, etc. Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way to achieve this goal is to have nodes communicate with each other - creating a functional, singleton system that is seamlessly integrated to store and retrieve data.
 
-We propose a framework that scales horizontally serving hundreds of millions of people across the globe. Our system, the Storj Network, is a robust object store that encrypts, shards, and sends data to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to be independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
+We propose a framework that scales horizontally serving hundreds of millions of people across the globe. Our system, the Storj Network, is a robust object store that encrypts, shards, and distributes data to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to consist of independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
 
 The rest of the paper is divided into 4
 sections. In Section \ref{sec:design_constraints}, we discuss the design space
@@ -135,7 +135,7 @@ about how we will deliver this implementation to users. Section
 \section{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
-Before designing a system, it's important to understand its requirements.
+Before designing a system, it's important to first define its requirements.
 We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
@@ -145,15 +145,15 @@ short. Most cloud storage products provide some form of compatibility with the
 S3 API.
 
 Until a decentralized cloud storage protocol is the {\em lingua franca} of
-storage protocols, we must create a graceful transition from centralized providers. 
-This will alleviate any switching costs for users with data currently stored on 
-a centralized provider.  Our objective is for Storj to compete successfully in the wider cloud storage 
-industry and bring decentralized cloud storage into the mainstream, enabling 
-more people greater security and less centralized control. To achieve this, 
-applications built against S3 should be configurable to work with Storj with 
-minimal friction and changes. Imagine if 90\% of existing application services 
+storage protocols, we must create a graceful transition from centralized providers.
+This will alleviate any switching costs for users with data currently stored on
+a centralized provider.  Our objective is for Storj to compete successfully in the wider cloud storage
+industry and bring decentralized cloud storage into the mainstream, enabling
+more people greater security and less centralized control. To achieve this,
+applications built against S3 should be configurable to work with Storj with
+minimal friction and changes. Imagine if 90\% of existing application services
 could switch to Storj with a
-single configuration change. \todo{maybe talk about s3 market penetration?} 
+single configuration change. \todo{maybe talk about s3 market penetration?}
 This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Device failure and churn}
@@ -190,8 +190,8 @@ function of node churn.
 
 \subsection{Latency}
 
-Decentralized, distributed storage has the potential to capitalize on massive 
-opportunities for parallelism in transfer rates, processing, 
+Decentralized, distributed storage has the potential to capitalize on massive
+opportunities for parallelism in transfer rates, processing,
 and a number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism cannot by itself improve {\em
@@ -203,10 +203,10 @@ latency, both at the individual process scale and at the overall architecture
 scale.
 
 We emphasize an architectural strategy aimed at achieving low latency by
-focusing on eliminating the need to wait for long tails \cite{tail-at-scale}. 
+focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
 The goal is a protocol that allows for every request to be satisfiable by the
-fastest nodes participating in any given transaction, without needing to wait 
-for a slow subset. 
+fastest nodes participating in any given transaction, without needing to wait
+for a slow subset.
 Focusing on operations where the result is only dependent on the fastest
 nodes turns what could be a potential liability (highly variable performance
 from individual actors) into a great source of strength for a distributed
@@ -304,13 +304,13 @@ retrieving data, and maintaining data.
 \begin{description}
 
 \item[Storing data] When data is stored with the network, the client encrypts
-it and breaks it up into multiple little pieces. It then distributes the pieces 
+it and breaks it up into multiple little pieces. It then distributes the pieces
 to peers in the network and generates and stores some metadata about where to find the data
 again.
 
-\item[Retrieving data] When data is retrieved from the network, 
-the client first recovers the metadata about where to find the pieces. 
-Then the pieces are retrieved and the original data is reconstructed 
+\item[Retrieving data] When data is retrieved from the network,
+the client first recovers the metadata about where to find the pieces.
+Then the pieces are retrieved and the original data is reconstructed
 on the client's local machine.
 
 \item[Maintaining data] Data is maintained in the network with nodes replacing
@@ -323,8 +323,8 @@ To make this system feasible while satisfying our design constraints, we will
 need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
 then combine them to form the desired protocol. One benefit from this approach
-is that it makes 
-updating individual components much easier without having to rearchitect the rest 
+is that it makes
+updating individual components much easier without having to rearchitect the rest
 of the network. The individual components are:
 
 \begin{enumerate}
@@ -354,7 +354,7 @@ for their participation. Nodes are awarded points based on how they do in certai
 
 Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. They store {\em pieces} (to be described in more detail
-later \bs{where? reference}). Each method will take a {\em piece ID}, a 
+later \bs{where? reference}). Each method will take a {\em piece ID}, a
 {\em payer ID} and signature
 by the payer, an optional TTL, and the other metadata required by the bandwidth
 allocation protocol (also to be described later \bs{where? add section reference}).
@@ -374,8 +374,8 @@ space usage and maximum allowed bandwidth usage over the last rolling 30 days. T
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network will need to communicate via a ubiquitous protocol. The framework requires all 
-nodes to fulfill these requirements for communication: 
+All peers on the network communicate via a ubiquitous standard protocol. The framework requires all
+nodes to fulfill these requirements for communication:
 
 \begin{itemize}
 \item provides peer reachability, even in the face of firewalls
@@ -445,8 +445,8 @@ node's ID can be resolved to an ephemeral network address for communication.
 The Kademlia DHT serves as a key-value store with a built-in node lookup
 protocol. We utilize this protocol to achieve DNS-like functionality for node
 lookup, while ignoring the storage aspects of the Kademlia protocol due to some
-issues around value republishing and limits to network growth rate, among 
-other things \bs{should we provide a reference here to other potential issues 
+issues around value republishing and limits to network growth rate, among
+other things \bs{should we provide a reference here to other potential issues
 with the Kad protocol?}.
 However, using a DHT will make it difficult to achieve millisecond-level
 response times when multiple DHT lookups must happen for every operation, so
@@ -456,7 +456,7 @@ with 3MB of memory, so the DHT can be sped up with some simple, optional
 caching.
 
 Because a cache of the DHT can be untrusted (and peer-to-peer communication is
-authenticated to avoid man-in-the-middle-attacks anyway \bs{what does this have 
+authenticated to avoid man-in-the-middle-attacks anyway \bs{what does this have
 to do with the fact that a DHT cache can be untrusted?}), some well-known
 community-run DHT caches can be provided that simply attempt to talk to every
 storage node every so often, such as every hour, evicting nodes from their
@@ -487,7 +487,7 @@ replication strategy that makes eight copies of the data. This yields an
 expansion factor of 8x, or 800\%. This data then needs to be stored on the
 network, using bandwidth in the process. Thus, more replication results in more
 bandwidth usage for a fixed amount of data. As discussed in the protocol design
-constraints, high bandwidth usage prevents scaling, so this is an undesireable
+constraints, high bandwidth usage prevents scaling, so this is an undesirable
 strategy for ensuring a high degree of file durability. Instead, {\em erasure
 codes} are a more general and flexible scheme for manipulating data
 durability without tying it to bandwidth usage. Importantly, erasure codes allow
@@ -521,16 +521,16 @@ given by:
 
 
 
-With the simplifying assumption that $p$ is the monthly node 
+With the simplifying assumption that $p$ is the monthly node
 birth/death rate (the proportion that describes the number of nodes
-leaving/joining the network per month), we can model file durability 
-as the CDF of the Poisson distribution with mean $\lambda=pn$, 
-where we expect $\lambda$ pieces of the file to be lost monthly. To estimate 
-durability, we consider the CDF up to $n-k$, 
-looking at the probability that at most $n-k$ pieces 
+leaving/joining the network per month), we can model file durability
+as the CDF of the Poisson distribution with mean $\lambda=pn$,
+where we expect $\lambda$ pieces of the file to be lost monthly. To estimate
+durability, we consider the CDF up to $n-k$,
+looking at the probability that at most $n-k$ pieces
 of the file are lost in a month and the file can still be rebuilt.
 The CDF is given by:
-\begin{equation} 
+\begin{equation}
 P(D) = e^{-\lambda} \sum_{i=0}^{n-k} \frac{\lambda^i}{i!}.
 \label{eq:poiss_cdf}
 \end{equation}
@@ -575,7 +575,7 @@ details. \bs{add reference to the section}
 
 Erasure codes enable an enormous performance benefit, which is the ability to
 avoid waiting for long-tail response times \cite{tail-at-scale}. For uploads, a
-file can be encoded to a higher $(k, n)$ ratio than necessary for desired 
+file can be encoded to a higher $(k, n)$ ratio than necessary for desired
 durability
 guarantees. During an upload, after enough pieces have uploaded to gain required
 redundancy, the remaining additional uploads can be cancelled, allowing the
@@ -615,8 +615,8 @@ files, arbitrarily large amounts of files, and so on. Similarly, our design
 constraints require total security, so any such metadata will be encrypted.
 
 Provided we have an efficient way to store data, we can build many of these
-features on top our desired protocol by means of an {\em injective embedding} 
-(here used in the mathematical sense). 
+features on top our desired protocol by means of an {\em injective embedding}
+(here used in the mathematical sense).
 In other words, adding this functionality can be done by
 building on top of the basic components we have already created without loss of
 generality.
@@ -629,7 +629,7 @@ implementation details, our framework is described in more general terms, while 
 \todo{an introduction before diving into a list of definitions}
 
 \begin{description}
-\item[Client] A user that would like to upload or download data from the network. 
+\item[Client] A user that would like to upload or download data from the network.
 
 \item[Bucket] A \x{bucket} is an unbounded but named
 collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
@@ -695,7 +695,7 @@ segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 \item[Piece Storage Node] A node in the network that is responsible for storing
 \x{piece}s. These are operated by \x{storage node}s.
 
-\item[Storage node] A person or group that is responsible for running and 
+\item[Storage node] A person or group that is responsible for running and
 maintaining
 \x{piece storage nodes}.
 
@@ -723,7 +723,7 @@ one
 
 Because \x{stream}s are used for data (the default \x{stream}) and metadata
 (extended attributes, etc.), \x{stream}s should be designed both for small data
-and large data. 
+and large data.
 A \x{stream} may be small enough so that it consists of only one segment.
 If that \x{segment} is smaller than the metadata required to store it on the network, the \x{segment} will be an \x{inline
 segment} and the data will be stored directly inline with the metadata.
@@ -740,8 +740,8 @@ Standardized sizes help frustrate attempts to determine the content of a given
 
 Segmenting large files like video content, and distributing the \x{segment}s
 across the network separately reduces the impact of content delivery on any
-given node. 
-Bandwidth demands are distributed more evenly across the network. 
+given node.
+Bandwidth demands are distributed more evenly across the network.
 In addition, the end-user can take advantage of parallel transfer, similar to
 BitTorrent or other peer-to-peer networks.
 
@@ -749,9 +749,9 @@ BitTorrent or other peer-to-peer networks.
 
 In many situations it's important to access just a portion of a piece of
 data. Some large file formats such as large video files, disk images, or file
-archives support the concept of seeking, 
-where only a partial subset of the data is needed for correct operation. 
-To support these uses, 
+archives support the concept of seeking,
+where only a partial subset of the data is needed for correct operation.
+To support these uses,
 it's useful to be able to decode and decrypt only parts of a file.
 
 A \x{stripe} is no more than a couple of kilobytes, and encoding a single
@@ -862,23 +862,23 @@ metadata overhead.
 One of our framework's primary focuses is making sure this component -- metadata
 storage -- is interchangeable per user. Specifically, we expect to ship with
 multiple implementations of metadata storage that users will be allowed to
-choose between. 
-Other object store systems have spent an enormous amount of time 
-attempting to solve this problem. 
+choose between.
+Other object store systems have spent an enormous amount of time
+attempting to solve this problem.
 We've concluded that multiple {\em good enough} solutions already
 exist, and propose using them.
 
 Aside from scale requirements, the desired API is straightforward and
 simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
-given a path), 
-\x{List} (paginated, ordered listing of existing paths), 
+given a path),
+\x{List} (paginated, ordered listing of existing paths),
 and \x{Delete} (remove a path).
 
 \subsubsection{Aside about distributed consensus}
 
 A long and challenging area of research has been directed toward getting a
-group of computers to agree on a set of values 
-\bs{what kind of values? principles? or numerical-type values?}, 
+group of computers to agree on a set of values
+\bs{what kind of values? principles? or numerical-type values?},
 with the goal of constructing a
 horizontally-scalable database that works in the face of expected failures
 (crash failures, for example: failures where a server simply shuts down).
@@ -922,13 +922,13 @@ to get computers to even agree on that \cite{no-now}.}
 
 Amazon S3 generally provides {\em read-after-write consistency}, though in some
 cases will provide {\em eventual consistency} instead \cite{s3-consistency}.
-Arguably, there may be some flexibility here which allows for the selection 
+Arguably, there may be some flexibility here which allows for the selection
 of alternate consistency models that suit us better while still broadly
-providing S3 compatibility. 
+providing S3 compatibility.
 Many distributed databases provide eventual consistency by
 default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 
-Linearizability in a distributed system is often much more desirable 
+Linearizability in a distributed system is often much more desirable
 \bs{than what?}, as it is
 useful as a building block for many higher level data structures and operations
 such as distributed locks and other coordination techniques. Initially, early
@@ -947,7 +947,7 @@ common.
 Despite Lamport's claims that Paxos is actually simple \cite{paxos-simple},
 many papers have been published since then
 challenging that assertion. Google's description of their attempts to implement
-Paxos are described in Paxos Made Live \cite{paxos-live}, 
+Paxos are described in Paxos Made Live \cite{paxos-live},
 and Paxos Made Moderately
 Complex \cite{paxos-complex} is an attempt to try and fill in all the details of
 the protocol. The entire basis of the Raft algorithm is rooted in trying to
@@ -1031,7 +1031,7 @@ if the metadata server suffers a catastrophic failure without backups, all of
 the user's data is gone. This is already true with encryption keys, but a
 punt-to-the-user solution increases the risk area from just encryption keys
 considerably. Fortunately, the metadata itself can be periodically backed up
-into the Storj network, 
+into the Storj network,
 such that only needing to keep track of metadata-metadata
 further decreases the amount of critical information that must be stored
 elsewhere.
@@ -1138,10 +1138,10 @@ macaroon's set of caveats.
 
 \subsection{Audits}
 
-Incentivizing storage nodes to accurately store data is of paramount importance 
+Incentivizing storage nodes to accurately store data is of paramount importance
 to
 the viability of this whole system. As such, it is important to be able to
-validate and verify that storage nodes are accurately storing what they have 
+validate and verify that storage nodes are accurately storing what they have
 been
 asked to store.
 
@@ -1221,18 +1221,18 @@ data.
 
 We're taking a huge shortcut with the assumption that
 probabilistic audits are enough for us to estimate the likelihood that a node
-will have the data it should have, because we can use that 
-along with node uptime (which is much more efficient than audits) 
+will have the data it should have, because we can use that
+along with node uptime (which is much more efficient than audits)
 to calculate when a file is at risk.
 We {\em only} consider {\em node} availability and configured repair thresholds
 when determining which {\em files} to repair.
 
 There are many other ways data might get lost in the network besides node churn:
 corruption, malicious behavior, bad hardware, software error, user space
-reclaimation, etc., but these issues are less serious than full node 
-churn (power loss, internet connectivity intermittency, 
+reclaimation, etc., but these issues are less serious than full node
+churn (power loss, internet connectivity intermittency,
 software shutdown or removal).
-Our spot-check-based audits will incentivize storage nodes to reliabily store 
+Our spot-check-based audits will incentivize storage nodes to reliabily store
 data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, and
@@ -1250,20 +1250,20 @@ threshold, the segment should be downloaded and reconstructed, and the missing
 pieces should be regenerated and uploaded to new nodes. Finally, the
 \x{pointer} should be updated to include the new information.
 
-As storage node nodes go offline -- taking their file pieces with them -- 
-it will be 
+As storage node nodes go offline -- taking their file pieces with them --
+it will be
 necessary for the missing pieces to be rebuilt once the entire file's pieces
 fall below a certain, predetermined threshold. If a node goes offline, the
-satellite will mark that nodes' file pieces as missing. 
+satellite will mark that nodes' file pieces as missing.
 Once enough file pieces are lost, the satellite will download the
-remaining file pieces from their corresponding storage nodes, using those 
-pieces 
+remaining file pieces from their corresponding storage nodes, using those
+pieces
 to rebuild the file's missing, encrypted, erasure encoded pieces.
 Once the repair process is complete, the satellite will send the
 recovered pieces to new storage nodes.
 
 Users will choose their desired durability with their chosen metadata service
-(which may impact price, among other things). This desired durability, along 
+(which may impact price, among other things). This desired durability, along
 with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
@@ -1284,7 +1284,7 @@ While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers
 that offer free ingress \todo{should we mention specific hosts?
 (e.g., Google Cloud Platform, Amazon AWS, and Microsoft Azure)}
-make for an especially attractive hosting location for users of this system. We will describe a Distributed Repair method in the Future Works section, that does not rely on the favorable pricing model of current hosting providers. 
+make for an especially attractive hosting location for users of this system. We will describe a Distributed Repair method in the Future Works section, that does not rely on the favorable pricing model of current hosting providers.
 
 \subsubsection{Merkle trees}
 
@@ -1292,10 +1292,10 @@ Repairs are one of the few places latency doesn't matter. The data repair system
 just needs to get through as many files as possible, but it doesn't matter if
 a specific file takes longer. Throughput is much more important than
 latency during repair. Furthermore, repair
-is still a costly operation \bs{why?} impacting a single operator, so 
-repair work should be minimized. 
-As a result, when repairing a segment, 
-only the minimum number of pieces required should be downloaded. 
+is still a costly operation \bs{why?} impacting a single operator, so
+repair work should be minimized.
+As a result, when repairing a segment,
+only the minimum number of pieces required should be downloaded.
 Unfortunately, this means that
 with little redundancy, erasure codes will be less effective at catching errors.
 Further, the fallback safety mechanism that the user has for detecting errors
@@ -1313,13 +1313,13 @@ the full tree) should be stored alongside each \x{piece} on each storage node,
 with the root in the \x{pointer}, such that the only additional central
 metadata storage required is just for the root.
 
-Each repair should validate the tree before the \x{pointer} is updated to 
+Each repair should validate the tree before the \x{pointer} is updated to
 point to new locations.
 
 \subsection{Storage node reputation}
 
-Reputation metrics on decentralized networks are a critical part of 
-enabling reasonable trust \todo{Can we eliminate the word trust here?} between nodes 
+Reputation metrics on decentralized networks are a critical part of
+enabling reasonable trust \todo{Can we eliminate the word trust here?} between nodes
 where there would otherwise be none. Reputation metrics
 are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
@@ -1337,13 +1337,13 @@ without compromising the integrity of the network.
 Every time a file is uploaded, the system will select a small amount of
 unvetted storage nodes to include in the list of target nodes.
 The Reed-Solomon parameters will be chosen such that these unvetted storage
-nodes will not affect the durability of the file, but will allow the network 
-to test the node 
+nodes will not affect the durability of the file, but will allow the network
+to test the node
 with a small fraction of data until we are sure the node is reliable.
 After the storage node has successfully stored enough data for a long enough
-period (potentially months), 
+period (potentially months),
 the system will then start including that storage
-node in the standard selection process used for general uploads. 
+node in the standard selection process used for general uploads.
 Importantly, storage nodes get paid during this
 vetting period, but don't receive as much data.
 
@@ -1361,9 +1361,9 @@ participating.
 Certain actions a storage node can take are disqualifying events, and the
 reputation system will be used to filter these nodes out from future uploads,
 regardless of where the node is in the vetting process.
-Defining which events are disqualifying will 
+Defining which events are disqualifying will
 require careful thought and selection to ensure
-that incentives are correct, 
+that incentives are correct,
 but some events that are likely to be included are failing too many audits,
 failing to return data (with reasonable speed), and failing too many uptime
 checks.
@@ -1432,7 +1432,7 @@ Payments in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand.
 In the Storj network, payments are made by console users who store data on the
 platform to the satellite they utilize.
-The satellite then pays storage nodes for the amount of storage and bandwidth 
+The satellite then pays storage nodes for the amount of storage and bandwidth
 they
 provide on the network.
 
@@ -1452,87 +1452,87 @@ data if the user does not login every 15 days. Others use 30-day contracts.
 Moving forward, the network will not use contracts to manage payments and file
 storage durations.
 
-Satellites will pay storage nodes for the data they store long-term, 
-for audits, and for downloads. 
+Satellites will pay storage nodes for the data they store long-term,
+for audits, and for downloads.
 Storage nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
-period, a satellite will calculate earnings for each of its storage nodes. 
-Provided the storage node node hasn’t been blacklisted, 
-the storage node will be paid by the satellite for the data it has stored 
+period, a satellite will calculate earnings for each of its storage nodes.
+Provided the storage node node hasn’t been blacklisted,
+the storage node will be paid by the satellite for the data it has stored
 over the course of
-the month, per the satellite's records. 
+the month, per the satellite's records.
 If a storage node misses a delete file command due to the node being
-offline, it will be storing more data than the satellite credits it for. 
+offline, it will be storing more data than the satellite credits it for.
 Storage nodes are not paid for storing such file pieces, and they
 would eventually be cleaned up through the garbage collection process.
 
 The payment system is focused on simplicity and efficiency to minimize the
 amount of resources needed to properly execute monthly payments. Because of the
 way delete commands are issued, and because storage nodes are not expected to be
-online at all times, storage nodes may be storing file pieces that were slated 
+online at all times, storage nodes may be storing file pieces that were slated
 for
 deletion. This is factored into
 the storage node payment amounts, meaning storage nodes are paid more than they
 should for the file pieces they store, offsetting the lost revenue due to
-storing garbage data. 
+storing garbage data.
 This means that storage nodes who maintain higher availability
 can maximize their profits by deleting files on request,
 which minimizes the amount
 of garbage data on their nodes.
 
 The satellite maintains a database of all file pieces it is responsible for
-and the storage nodes it believes are storing these pieces. Each day, 
-the satellite adds another day’s worth 
-of credits to each storage node for every file 
+and the storage nodes it believes are storing these pieces. Each day,
+the satellite adds another day’s worth
+of credits to each storage node for every file
 piece
 it should be storing. The satellite
-also tracks file downloads in its database. 
+also tracks file downloads in its database.
 At the end of the month, each satellite
-adds up all bandwidth and storage payments each storage node has earned and 
+adds up all bandwidth and storage payments each storage node has earned and
 makes
 the payments to the appropriate storage nodes.
 
 Satellites will track utilized bandwidth through a bandwidth allocation
 protocol. To download a file, a console user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
-the file download. The satellite sends a confirmation of this promise 
-to the console, along with file piece storage node node locations. 
+the file download. The satellite sends a confirmation of this promise
+to the console, along with file piece storage node node locations.
 The console then sends the promise to pay directly
-to the storage node nodes, along with the details on the file pieces it needs. 
-Each storage node then accepts or rejects this operation. 
+to the storage node nodes, along with the details on the file pieces it needs.
+Each storage node then accepts or rejects this operation.
 If a storage node accepts this
 operation, it confirms and retains a copy of this promise to pay, sending the
-client the file piece it needs. Later, the storage node sends the promise to 
+client the file piece it needs. Later, the storage node sends the promise to
 pay to
 the satellite, and the satellite credits that storage node as having
 successfully delivered the file piece.
 
 Satellites will also earn revenue from storage nodes for executing audits,
 repairing files, and storing metadata. Every day, each satellite will execute
-a number of audits across all of its storage nodes on the network. During an 
+a number of audits across all of its storage nodes on the network. During an
 audit,
-if a storage node does not have the file it should be storing, it will be 
+if a storage node does not have the file it should be storing, it will be
 immediately
-blacklisted and the satellite will flag that storage node’s file pieces for 
+blacklisted and the satellite will flag that storage node’s file pieces for
 repair
-in the system. 
-The satellite will be paid for both completing the audit 
-and for the repair, 
+in the system.
+The satellite will be paid for both completing the audit
+and for the repair,
 once that file falls below the file piece threshold needed for
 repair.
 
 If a satellite is not executing payments properly, storage nodes can report them
 to the Storj network clearing houses, where all satellites’ reputations are
-tracked. By default, a storage node will only trust a 
-whitelist of satellites; 
-however, during the storage node setup phase, the storage node 
+tracked. By default, a storage node will only trust a
+whitelist of satellites;
+however, during the storage node setup phase, the storage node
 operator can choose
-to work with non-whitelisted satellites. 
+to work with non-whitelisted satellites.
 Storage nodes should forgo using satellites with low reputation scores.
 
-Storj-approved satellites are required to have insurance with Storj, 
-which is used to act as proof of stake. 
-This guarantees that if an approved satellite acts maliciously, 
+Storj-approved satellites are required to have insurance with Storj,
+which is used to act as proof of stake.
+This guarantees that if an approved satellite acts maliciously,
 the proof of stake would
 be lost and would help compensate network participants for the missing payments
 and service interruption. The Storj Labs team will always run and maintain a
@@ -1553,9 +1553,9 @@ how storage nodes will know to trust payers.
 
 \subsubsection{Concrete implementation}
 
-Payments to storage nodes will be calculated on a daily basis based on the 
+Payments to storage nodes will be calculated on a daily basis based on the
 bandwidth
-utilized and files stored, and will be paid at the end of each month. 
+utilized and files stored, and will be paid at the end of each month.
 If a storage node acts
 maliciously and does not store files properly or maintain sufficient
 availability, they will not be paid for the services rendered, and the funds
@@ -1567,8 +1567,8 @@ file pieces and to pay new storage nodes for storing the data.
 A core component of our system requires knowing how much bandwidth is used
 between two peers, so we introduce a protocol we call the Bandwidth Allocation
 Protocol for correctly verifying that a certain amount of bandwidth was used
-between two peers with various incentives. 
-We don't measure all peer-to-peer traffic; 
+between two peers with various incentives.
+We don't measure all peer-to-peer traffic;
 some operations are simply considered to be
 the cost of doing business. This bandwidth traffic measurement only applies
 to piece storage operations (storage and retrievals of pieces) and does not
@@ -1577,37 +1577,37 @@ apply to overlay traffic (Kademlia DHT) or other generic maintenance overhead.
 \todo{diagram}
 
 When a client wants to perform an operation for $x$ bytes of bandwidth, it must
-first get authorization from a payer -- typically, a satellite -- 
-that it has enough funds and is authorized to perform that operation. 
+first get authorization from a payer -- typically, a satellite --
+that it has enough funds and is authorized to perform that operation.
 The payer will return an {\em unrestricted
 bandwidth allocation} message. This message will include the identity of the
 payer, the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized, and the direction the bytes will flow
 (whether or not the data will be transfered from or to the client).
-The message will be signed by the payer. 
+The message will be signed by the payer.
 
 %To use a metaphor, the payer is
 %creating a blank check that is authorized up to $x$ in byte value and sending
 %it to the client.
 
 Once the client has an unrestricted bandwidth allocation, the client will then
-create {\em restricted bandwidth allocations}, 
-%or to continue the metaphor, a filled-in check, 
+create {\em restricted bandwidth allocations},
+%or to continue the metaphor, a filled-in check,
 indicating $y$ bytes have been transfered so far. The client
-will start by sending a restricted allocation for some small amount, 
-perhaps only a few kilobytes, 
+will start by sending a restricted allocation for some small amount,
+perhaps only a few kilobytes,
 so the storage node can verify the clients authorization.
 If the allocation is signed correctly, the storage node will
 transfer up to the amount listed in the restricted allocation ($y$ bytes) before
 awaiting another allocation. The client will then send another allocation where
 $y$ is larger, continuing to send allocations for data until $y$ has grown to
-the full $x$ value. 
+the full $x$ value.
 For each transaction, the storage node only sends previously-unsent data,
 so that the storage node only sends $y$ bytes total.
 
-If the request is to terminate at any time -- 
+If the request is to terminate at any time --
 either as planned or unexpectedly --
-the storage node will keep the largest restricted bandwidth allocation it has 
+the storage node will keep the largest restricted bandwidth allocation it has
 seen.
 This largest restricted bandwidth allocation is the signed confirmation
 by the client that the client agreed to bandwidth usage of up to $y$
@@ -1617,11 +1617,11 @@ allocations it has received to appropriate payers, at which point
 payers will pay the storage node for that bandwidth.
 
 If the client can't afford the bandwidth usage, the payer will not sign an
-unrestricted bandwidth allocation, protecting the payer's own reputation. 
-If the client tries to use more bandwidth than allocated, 
-the storage node will shut down the request. 
-The storage node can only get paid for the maximum amount a client has agreed 
-to, 
+unrestricted bandwidth allocation, protecting the payer's own reputation.
+If the client tries to use more bandwidth than allocated,
+the storage node will shut down the request.
+The storage node can only get paid for the maximum amount a client has agreed
+to,
 as it otherwise has no valid bandwidth allocations to return for
 payment.
 
@@ -1634,16 +1634,16 @@ that don't have a good history of paying.
 
 Initially, storage nodes will put payers through a vetting process
 where storage nodes limit their exposure to unknown payers and build up trust
-over time with specific payers that are likely to pay their bills. 
+over time with specific payers that are likely to pay their bills.
 Storage nodes
 will have a configurable maximum amount of data that they will store for an
-unknown payer, and can use whether or not they get paid for that data 
+unknown payer, and can use whether or not they get paid for that data
 as input into
 whether or not that payer should be trusted for more data in the future.
 
-Storage node operators will be able to opt in and out of working 
-with specific payers they already 
-trust or distrust. 
+Storage node operators will be able to opt in and out of working
+with specific payers they already
+trust or distrust.
 Storj Labs will ship a list of recommended payers that
 they have already vetted for quality control that
 node operators can elect to use.
@@ -1663,8 +1663,8 @@ otherwise be entitled to unless a garbage collection system is employed.
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
 leaves no additional garbage, whereas a {\em conservative} garbage collector may
-leave some small proportion of garbage around given some other tradeoffs, 
-often with the aim of improving performance. 
+leave some small proportion of garbage around given some other tradeoffs,
+often with the aim of improving performance.
 As long as a conservative garbage collector is used, it should
 be assumed that the cost of storage owed to a storage node is high enough
 to amortize the cost of storing the garbage.
@@ -1685,8 +1685,8 @@ what pieces a node is expected to continue storing.
 A Bloom filter is a mechanism that can
 answer certain set membership questions, describing whether an element
 {\em isn't contained} or
-{\em maybe contained}, but can not determine whether an element 
-{\em is contained} in the set. 
+{\em maybe contained}, but can not determine whether an element
+{\em is contained} in the set.
 Payers will reject
 requests for these hints that happen too frequently. By returning a data
 structure tailored to each node on a periodic schedule, a payer can give a
@@ -1697,7 +1697,7 @@ configurable, the conservative garbage collector can be tuned to eliminate
 garbage down to an acceptable tolerance, given the tradeoff of additional
 bandwidth for these larger, more exact cleanup messages. Further, each time a
 Bloom filter is generated, it can be generated with a new hashing seed, lowering
-the probability that a specific piece of garbage consistently gets 
+the probability that a specific piece of garbage consistently gets
 missed by the garbage collector.
 
 Because this garbage collection system is not precise, storage nodes have a
@@ -1723,7 +1723,7 @@ upgraded, but for our initial release, these three classes of node on the
 network work together to provide a cohesive product experience.
 
 \begin{itemize}
-\item {\bf Storage Node} - This peer class participates in the DHT, stores data 
+\item {\bf Storage Node} - This peer class participates in the DHT, stores data
 for
   others, and gets paid for storage and bandwidth (via a bandwidth allocation
   protocol).
@@ -1746,15 +1746,15 @@ We'll dive into more detail about each of these components.
 
 \subsection{Storage Node}
 
-The main duty of a storage node is to reliably store and return data. 
+The main duty of a storage node is to reliably store and return data.
 Storage node operators
 are individuals or entities that have excess hard drive space and want to earn
-compensation for lending their space to others. Storage node operators will 
+compensation for lending their space to others. Storage node operators will
 download,
 install, and configure Storj software locally, with no account required
 anywhere. Storage node operators will select what disk space and bandwidth usage
 is allowed during configuration.
-Storage nodes will advertise during DHT communications what hard drive space is 
+Storage nodes will advertise during DHT communications what hard drive space is
 still
 available, how much bandwidth is available, and what their desired STORJ token
 wallet address is.
@@ -1767,34 +1767,34 @@ longer has a restriction on the maximum amount of data a storage node can store.
 Storage nodes also keep track of optional per-\x{piece} time-to-live, or TTL.
 \x{Pieces} may be stored with a specific TTL expiry where data is expected to
 be deleted after the expiration date. If no TTL was provided, data is expected
-to be stored indefinitely. This means storage nodes have a database of 
+to be stored indefinitely. This means storage nodes have a database of
 expiration
 times and must occasionally clear out old data.
 
-Storage nodes must additionally keep track of signed bandwidth allocations to 
+Storage nodes must additionally keep track of signed bandwidth allocations to
 send to
 satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
-Storage nodes can choose which satellites to work with. If storage nodes work 
+Storage nodes can choose which satellites to work with. If storage nodes work
 with
 multiple satellites (the default behavior), then payment may come from
 multiple sources on varying payment schedules.
-Storage nodes are paid by specific satellites for returning data when 
+Storage nodes are paid by specific satellites for returning data when
 requested in
 the form of egress bandwidth payment. Bandwidth payment is made payable after
 the storage node sends in signed bandwidth allocation messages.
 Storage nodes are also paid for data at rest.
-Storage nodes are expected to reliably store all data sent to them and are 
+Storage nodes are expected to reliably store all data sent to them and are
 paid
 with the assumption that they are faithfully doing so.
-Storage nodes that fail random audits will be removed from the pool and will 
+Storage nodes that fail random audits will be removed from the pool and will
 receive
 limited to no future payments.
-Storage nodes are {\em not} paid for the initial transfer of data to store 
+Storage nodes are {\em not} paid for the initial transfer of data to store
 (ingress
-bandwidth). This is to discourage storage nodes from deleting data only to be 
+bandwidth). This is to discourage storage nodes from deleting data only to be
 paid for
 storing more. Storage nodes are not paid for DHT or other maintenance traffic.
 
@@ -1803,7 +1803,7 @@ storing more. Storage nodes are not paid for DHT or other maintenance traffic.
 As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
 nodes cannot be trusted, data owners are responsible for selecting good
-storage nodes, issuing and verifying audits, providing payments, managing file 
+storage nodes, issuing and verifying audits, providing payments, managing file
 state
 and object metadata, etc. Many of these functions require high uptime and
 significant infrastructure, especially for an active set of files. User run
@@ -1830,10 +1830,10 @@ In cases where the cost of delegating trust is not excessively high,
 clients may use third-party satellites. Because satellites do not store
 data and have no access to keys, this is still a large improvement over the
 traditional data-center model. Many of the features satellites provide, like
-storage node selection and reputation, leverage considerable network effects. 
+storage node selection and reputation, leverage considerable network effects.
 Data
 sets grow more useful as they increase in size, indicating that there are
-strong economic incentives to share infrastructure and information 
+strong economic incentives to share infrastructure and information
 in a satellite.
 
 Applications using object stores delegate significant amounts of trust to the
@@ -1858,7 +1858,7 @@ Future framework-conforming releases nonwithstanding, the initial satellite
 is a standard application server that wraps a trusted database such as
 PostgreSQL, Cassandra, or something else. Users sign in to a specific
 satellite with account credentials. The satellite is responsible for
-keeping track of accounts and authorization, storage node contact information 
+keeping track of accounts and authorization, storage node contact information
 and
 reputation, and object metadata. The satellite is also responsible for
 payments and data repair. Data available through one satellite instance is
@@ -1914,7 +1914,7 @@ segment.
 of this first segment. The satellite will:
   \begin{itemize}
   \item Confirm that the console has appropriate authorization and funds for
-    the request. The console must have an account with this 
+    the request. The console must have an account with this
 specific satellite already.
   \item Make a selection of nodes that conform to the bucket's configured
     durability, performance, geographic and reputation requirements that have
@@ -1935,9 +1935,9 @@ specific satellite already.
   cancel the slowest uploads.
 \item The data will continue to transfer until the maximum segment size is hit
   or the stream ends, whichever is sooner.
-\item The storage node will store the largest restricted bandwidth allocation, 
+\item The storage node will store the largest restricted bandwidth allocation,
 the
-  TTL of the segment (if any), and the data itself by the storage node-specific 
+  TTL of the segment (if any), and the data itself by the storage node-specific
   piece
   id (the HMAC of the root piece id and the storage node's id).
 \item If the upload is aborted for any reason, the storage node will keep the
@@ -1978,7 +1978,7 @@ When a user downloads a file:
   \item Validate that the console has access to download the segment pointer
     and funds to pay for its downloading.
   \item Generate an unrestricted bandwidth allocation for the segment.
-  \item Look up the contact information for the storage nodes listed in the 
+  \item Look up the contact information for the storage nodes listed in the
   pointer.
   \item Return the requested segment, the bandwidth allocations, and contact
     info.
@@ -2013,34 +2013,34 @@ When a user deletes a file:
   \item Validate that the console has access to delete the segment pointer.
   \item Generate a signed agreement for the deletion of the segment, so the
     storage node knows the satellite is expecting the delete to proceed.
-  \item Look up the contact information for the storage nodes listed in the 
+  \item Look up the contact information for the storage nodes listed in the
   pointer.
   \item Return the segments, the agreements, and contact info.
   \end{itemize}
 \item For all of the segments that are not inline, the satellite will
   initiate parallel requests to all appropriate storage nodes to signal that the
   pieces are being removed.
-\item The storage nodes will return a signed message saying the storage node 
-received 
+\item The storage nodes will return a signed message saying the storage node
+received
 the
   delete operation and will delete the file and its bookkeeping info.
 \item The console will upload back to the satellite all of the signed
   messages it received from working storage nodes. The satellite will require an
   adjustable percent of the total storage nodes to sign messages successfully
-  to ensure that the console did its part in letting storage nodes know the 
+  to ensure that the console did its part in letting storage nodes know the
   object
   has been deleted.
 \item The satellite will remove the segment pointers and stop charging and
   paying for them.
 \item The console will return success.
 \item Periodically, storage nodes will ask the satellite for generated garbage
-  collection messages that will help storage nodes who were offline during the 
+  collection messages that will help storage nodes who were offline during the
   main
   deletion event.
-  The garbage collection messages will assist the storage node in pruning data 
+  The garbage collection messages will assist the storage node in pruning data
   that is
   no longer live. Initially, these garbage collection messages will be tunable
-  Bloom filters to allow the storage node to probabilistically prune unneeded 
+  Bloom filters to allow the storage node to probabilistically prune unneeded
   data
   without using much bandwidth.
   Satellites will reject requests for garbage collection messages that
@@ -2079,12 +2079,12 @@ The auditing process:
 \item Each satellite has a queue of audits, where an audit will entail
   validating a specific stripe of a segment across a set of storage nodes.
 \item Periodically, satellites will choose a stripe to audit by selecting
-  an object uniformly at random, weighted by the number of bytes it has, 
+  an object uniformly at random, weighted by the number of bytes it has,
 and place that stripe into the audit queue.
 \item Similarly, satellites will choose a stripe to audit by identifying
-  storage nodes that have had fewer recent audits than other storage nodes, and 
+  storage nodes that have had fewer recent audits than other storage nodes, and
   selecting
-  a stripe at random from the data contained by that storage node. That stripe 
+  a stripe at random from the data contained by that storage node. That stripe
   audit
   request will also be placed in the audit queue.
 \item Satellites will process elements from the queue.
@@ -2095,27 +2095,27 @@ and place that stripe into the audit queue.
   storage nodes.
 \item After receiving as many shares as possible within a generous timeout,
   the erasure shares will be analyzed to discover which, if any, are wrong.
-  Satellites will take note of storage nodes that return invalid data, and if 
+  Satellites will take note of storage nodes that return invalid data, and if
   a
-  storage node returns too much invalid data, the storage node will be 
+  storage node returns too much invalid data, the storage node will be
   blacklisted by the
-  satellite and marked as bad. The satellite will not pay the storage 
+  satellite and marked as bad. The satellite will not pay the storage
   node going
   forward, nor will it select it for new data.
 \end{itemize}
 
 \subsubsection{Repair}
 
-The repair process: 
+The repair process:
 
 \begin{itemize}
-\item Each satellite periodically will ping every storage node it knows 
+\item Each satellite periodically will ping every storage node it knows
 about,
   either as part of the audit process, or via standard overlay ping operations.
 \item The satellite will keep track of nodes that fail to respond and mark
   them as down.
 \item When a node is marked down or is marked bad via the audit process, the
-  pointers that point to that storage node will be considered for repair. 
+  pointers that point to that storage node will be considered for repair.
   Pointers
   keep track of their minimum allowable redundancy. If a pointer is not stored
   on enough good and online storage nodes, it will be added to the repair queue.
@@ -2135,19 +2135,19 @@ about,
 
 \subsubsection{Payment}
 
-The payment process: 
+The payment process:
 
 \begin{itemize}
 \item First, a satellite will choose a roll-up period. This is a period of
   time -- defaulting to a day -- that payment for data at rest is calculated.
 \item Each roll-up period, a satellite will consider all of the files it
   believes are currently stored on each storage node. Satellites will keep track
-of payments owed to each storage node for each rollup period, based on 
+of payments owed to each storage node for each rollup period, based on
 the data kept on each storage node.
-\item Periodically, storage nodes will send in bandwidth allocation reports. 
+\item Periodically, storage nodes will send in bandwidth allocation reports.
 When a
   satellite receives these, it calculates the owed funds along with the
-  outstanding data at rest calculations, and sends the funds to the storage 
+  outstanding data at rest calculations, and sends the funds to the storage
   node's requested destination.
 \end{itemize}
 
@@ -2163,12 +2163,12 @@ scale, and many areas of research are still open. }
 
 \subsection{Fast Byzantine Consensus}
 
-Over time, we plan to program the satellite out of the platform. 
-The satellite's role on the network means that the network could be prone 
+Over time, we plan to program the satellite out of the platform.
+The satellite's role on the network means that the network could be prone
 to some
 centralization if others outside of the Storj Labs team do not run their own
 satellites. The biggest challenge is achieving fast byzantine consensus,
-where storage node nodes can interact with one another, share encoded pieces of 
+where storage node nodes can interact with one another, share encoded pieces of
 files,
 and still operate within the performance levels users will expect from a
 platform that is competing with traditional cloud storage providers.
@@ -2179,36 +2179,36 @@ currently is not a way to achieve this without significant investment in time,
 compute, and bandwidth. A practical byzantine fault tolerance algorithm could
 work. They are generally faster and use less disk space than blockchain
 protocols, however there is significant trade off around network usage and
-coordination contention, as there could be problematic overlap with two storage 
+coordination contention, as there could be problematic overlap with two storage
 nodes trying to communicate with one another at the same time.
 
 \subsection{Distributed Repair}
 
 The system can detect when a file's Reed Solomon erasure encoding pieces fall
-below a certain threshold. At that time, the file must be repaired, with 
-the new pieces being stored on new storage nodes. 
+below a certain threshold. At that time, the file must be repaired, with
+the new pieces being stored on new storage nodes.
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt, and the
-previously missing shards are sent to new storage nodes 
+previously missing shards are sent to new storage nodes
 selected by the satellite.
 
 Long term, it would be better to create a technique where file repair takes
-place in a distributed manner on storage nodes, putting their excess CPU 
+place in a distributed manner on storage nodes, putting their excess CPU
 cycles
 to work. This will be a first step to eliminating the satellite. This
 approach would also be more decentralized than file repair on satellites. It
 is also more efficient to execute this operation at the edge of the network.
 
-The system would need more checks and balances to ensure the storage node is 
+The system would need more checks and balances to ensure the storage node is
 correctly
 executing a repair and that the data inside the encrypted file is accurate.
-Merkle tree roots will greatly help with distributed repair. The storage 
+Merkle tree roots will greatly help with distributed repair. The storage
 node
 executing the repair would get approval from the satellite to repair a file,
-the satellite would share its merkle tree root with the storage node and 
+the satellite would share its merkle tree root with the storage node and
 notify
-which storage nodes should store the restored file pieces. The storage node 
+which storage nodes should store the restored file pieces. The storage node
 would then
 download the file pieces needed for the repair from the storage nodes where they
 reside. The repair node would execute the repair and run the shards
@@ -2240,10 +2240,10 @@ the network. }
 \subsection{Sybil}
 
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
-disrupt network operation by hijacking or dropping messages. Kademlia 
+disrupt network operation by hijacking or dropping messages. Kademlia
 is reasonably
 resistant to Sybil attacks, because
-it relies on message redundancy and a concrete distance metric. 
+it relies on message redundancy and a concrete distance metric.
 A node's neighbors in the network are selected by
 Node ID from an evenly distributed pool, and most messages are sent to at least
 three neighbors. If a Sybil attacker controls 50\% of the network, it
@@ -2311,13 +2311,13 @@ eclipse can easily generate a new Node ID, and find a new tunnel. }
 
 \subsection{Hostage Bytes}
 
-The hostage byte attack is a storage-specific attack where malicious storage 
+The hostage byte attack is a storage-specific attack where malicious storage
 nodes
 refuse to transfer shards, or portions of shards, in order to extort additional
 payments from data owners. Data owners should protect themselves against hostage
 byte attacks by storing shards redundantly across multiple nodes (see Section
 2.7). As long as the client keeps the bounds of its erasure encoding a secret,
-the malicious storage node cannot know what the last byte is. Redundant storage 
+the malicious storage node cannot know what the last byte is. Redundant storage
 is not
 a complete solution for this attack, but addresses the vast majority of
 practical applications of this attack. Defeating redundancy requires collusion
@@ -2325,7 +2325,7 @@ across multiple malicious nodes, which is difficult to execute in practice.
 
 \subsection{Cheating Owner}
 
-\todo{ A data owner may attempt to avoid paying a storage node for data storage 
+\todo{ A data owner may attempt to avoid paying a storage node for data storage
 by
 refusing to verify a correct audit. In response the storage node may drop the
 data-owner's shard. This attack primarily poses a problem for any future
@@ -2341,11 +2341,11 @@ reputation system. }
 \todo{ While the farming software is built to require authentication via
 signature and token before serving download requests, it is reasonable to
 imagine a modification of the farming software that will provide shards to any
-paying requestor. In a network dominated by faithless storage nodes, any 
+paying requestor. In a network dominated by faithless storage nodes, any
 third-party
 can aggregate and inspect arbitrary shards present on the network.
 
-However, even should faithless storage nodes dominate the network, data privacy 
+However, even should faithless storage nodes dominate the network, data privacy
 is not
 significantly compromised. Because the location of the shards that comprise a
 given file is held solely by the data owner, it is prohibitively difficult to
@@ -2361,7 +2361,7 @@ the keys are held by the Bridge and the client, respectively. }
 \todo{ A typical Merkle proof verification does not require the verifier to know
 the depth of the tree. Instead the verifier is expected to have the data being
 validated. In the Storj audit tree, if the depth is unknown to the verifier the
-storage node may attack the verification process by sending a Merkle proof for 
+storage node may attack the verification process by sending a Merkle proof for
 any
 hash in the tree. This proof still generates the Merkle root, and is thus a
 valid proof of some node. But, because the verifier does not hold the data used
@@ -2371,12 +2371,12 @@ about the bottom of the tree, such as the depth of the tree, the set of leaves
 nodes, or the set of pre-leaves. Of these, the depth is most compact, and thus
 preferable.
 
-Using the pre-leaf as an intermediary defeats another attack, where the storage 
+Using the pre-leaf as an intermediary defeats another attack, where the storage
 node
 simply guesses which leaf corresponds to the current challenge. While this
-attack is unlikely to succeed, it's trivially defeated by forcing the storage 
+attack is unlikely to succeed, it's trivially defeated by forcing the storage
 node to
-provide the pre-leaf. The storage node cannot know the pre-leaf before the 
+provide the pre-leaf. The storage node cannot know the pre-leaf before the
 challenge
 is issued. Requiring transmission of the pre-leaf also allows the data owner to
 proceed through the challenge set linearly instead of being forced to select
@@ -2412,7 +2412,7 @@ sum([bin(i,h,k) for i in range(3,h)]) \end{lstlisting}
 
 As the number of shards on the network grows, it becomes progressively more
 difficult to locate a given file without prior knowledge of the locations of its
-shards. This implies that even should all storage nodes become faithless, file 
+shards. This implies that even should all storage nodes become faithless, file
 privacy
 is largely preserved.
 
@@ -2440,7 +2440,7 @@ choose(N-k,n-k) / float(choose(N,n)) def prob_success(N,k,n): return hyp(N,k,n)
 
 \subsection{Partial Audit Confidence Levels}
 
-Storage nodes attempting to game the system may rely on data owners to issue 
+Storage nodes attempting to game the system may rely on data owners to issue
 partial
 audits. Partial audits allow false positives, where the data appears intact, but
 in fact has been modified. Data owners may account for this by ascribing
