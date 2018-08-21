@@ -45,14 +45,15 @@ the efficiency and economics of distributed storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
-security and privacy. At a greater rate than any single entity can afford, it
-allows market forces to innovate on cheaper ways to provide storage.
+security and privacy. At a greater rate than any single entity could afford,
+this allows market forces to optimize on cheaper ways to provide storage.
 While there are many ways to build such a system, there are some specific
-responsibilities any given system should address.
+responsibilities any given implementation should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such a system. Additionally, we describe initial
-concrete implementations for each responsibility of the framework.
+responsibilities and building such our distributed storage network.
+Additionally, we describe an initial
+concrete implementation for the entire framework.
 \end{abstract}
 
 \todo{
@@ -102,34 +103,65 @@ section headings, etc.
 
 \section{Introduction}
 
-Storj is a protocol that structures a distributed network for the reliable storage
-of data and facilitates payment for successful data storage and transfer
-between peers.
-The Storj protocol enables peers on the network to transfer and receive data,
-verify the integrity and availability of remote data, and pay other nodes
-for storing data.
-While not all peers in the network have the same responsibilities,
-the goal is for every peer to be an autonomous agent, capable of performing
-these actions with little to no significant human interaction.
+Decentralized storage has emerged as a potential solution to the challenge of
+providing an economical cloud storage solution to address the rapidly expanding
+amount of data for which current solutions are cost-prohibitive.
+With an anticipated 44ZB of data expected to exist by 2020 and a market that is
+growing to \$92B in the same time frame, our point of view is that decentralized
+cloud storage has the potential to address several key segments within that
+market today, particularly related to long term archival storage.
+As the capabilities within decentralized storage mature, decentralized cloud
+storage will be able to address a much wider range of use cases from basic
+object storage the content delivery networks (CDN).
 
+There are a handful of storage-based companies emerging that aim to create vast
+networks to store data.
+Storage products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia,
+Maidsafe, Filecoin, Crashplan, Mozy, Hadoop Distributed File System (HDFS),
+Amazon S3, Google File System (GFS), and others believe that a single computer
+is not as powerful or secure as these networks. One advantage of
+building large networks is that it measurably improves security in how data is
+stored.
+As more people enter the network, it becomes more challenging to steal data.
+While all these companies share a common core of building robust and secure
+networks, they also share common principles of how it can be achieved.
+Companies generate redundancy for data in case of failure, store this
+redundancy in locations with varying degrees of failure isolation, and then
+keep track of where the data was placed.
+However, the technical implementations, designs, and other considerations
+vary greatly with each organization.
 
-There are a handful of storage-based companies emerging that aim to create vast networks to store data.
-Companies such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia, Maidsafe, Filecoin, Crashplan, Mozy, HDFS,
-Storj, S3, GFS,  and others believe that a single computer is not as powerful or secure as these networks. One advantage of
-building large networks is that it measurably improves security in how data is stored. As more people enter the network, it becomes more challenging to steal data.  While all these companies share a common core of building robust and secure networks, they also share common principles of how it can be achieved. Companies generate redundancy for data in case of failure, store this redundancy in locations with varying degrees of failure isolation, and then keep track of where the data was placed. However, the technical implementations, designs, and other considerations greatly vary with each organization.
+Decentralized cloud storage is still rapidly advancing through the maturity
+cycle to address these challenges, but the evolution of decentralized storage
+is subject to a specific set of design constraints.
+These design constraints inform the overall requirements and implementation of
+the network software components. When designing a distributed storage system,
+there are a multitude of optimizations to make: speed, capacity, trustlessness,
+byzantine fault tolerance, cost, etc.
+But unlike optimizing cost or speed, data needs to be persistent throughout
+the network with no loss.
+One way to achieve this goal is to have nodes communicate with each other -
+creating functional systems that are seamlessly integrated to store
+and retrieve data.
 
-When designing a distributed storage system, there are multitude of optimizations to make: speed, capacity, trustlessness, byzantine fault tolerance, cost, etc. Unlike optimizing cost or speed, data needs to be persistent throughout the network with no loss. One way to achieve this goal is to have nodes communicate with each other - creating a functional, singleton system that is seamlessly integrated to store and retrieve data.
+We propose a framework that scales horizontally serving hundreds of millions of
+people across the globe. Our system, the Storj Network, is a robust object store
+that encrypts, shards, and distributes data to our global community for storage.
+Data is served with low latency in a manner purposefully designed to prevent
+breaches that have continuously plagued companies.
+In order to accomplish this task, we've designed our system to be modular,
+consisting of independent components with task-specific jobs.
+We've integrated these components with each other to implement a secure,
+robust, and reliable storage system.
 
-We propose a framework that scales horizontally serving hundreds of millions of people across the globe. Our system, the Storj Network, is a robust object store that encrypts, shards, and distributes data to our global community for storage.  Data is served with low latency and purposefully designed to prevent breaches that have continuously plagued companies. In order to accomplish this task, we've designed our system to consist of independent components with task-specific jobs.  We've integrated these components with each other to perform a secure, robust, and reliable storage system.
-
-The rest of the paper is divided into 4
-sections. In Section \ref{sec:design_constraints}, we discuss the design space
-in which Storj operates in and elaborate on specific design constraints that
-focus what we plan to optimize for.
+The rest of the paper is divided into four
+sections. Section \ref{sec:design_constraints} discusses the design space
+in which Storj operates and elaborates on specific design constraints that
+represent the focus of what we plan to optimize for.
 Section \ref{sec:framework} covers our framework and proposes a simple
-concrete implementation of each component.
+concrete implementation of each component, while
 Section \ref{sec:product_details} covers specific details
-about how we will deliver this implementation to users. Section
+about how we will deliver this implementation to users. Finally, Section
 \ref{sec:future_work} covers future areas of research.
 
 \section{Storj design constraints and
@@ -140,64 +172,73 @@ We will begin with a discussion of Storj's design constraints.
 
 \subsection{S3 compatibility}
 
-The flagship cloud storage product is Amazon's Simple Storage Service, or S3 for
-short. Most cloud storage products provide some form of compatibility with the
-S3 API.
+At the time of publishing this paper, the flagship cloud storage product is
+Amazon's Simple Storage Service, or S3 for
+short. Most other cloud storage products provide some form of compatibility
+with the S3 API.
 
-Until a decentralized cloud storage protocol is the {\em lingua franca} of
-storage protocols, we must create a graceful transition from centralized providers.
+Until a decentralized cloud storage protocol becomes the {\em lingua franca} of
+storage protocols, we must create a graceful transition path from centralized
+providers for our users.
 This will alleviate any switching costs for users with data currently stored on
-a centralized provider.  Our objective is for Storj to compete successfully in the wider cloud storage
+a centralized provider. Our objective is for Storj to compete successfully in
+the wider cloud storage
 industry and bring decentralized cloud storage into the mainstream, enabling
-more people greater security and less centralized control. To achieve this,
+more people to enjoy greater security with less centralized control.
+To achieve this,
 applications built against S3 should be configurable to work with Storj with
 minimal friction and changes. Imagine if 90\% of existing application services
-could switch to Storj with a
+could switch to Storj with only a
 single configuration change. \todo{maybe talk about s3 market penetration?}
 This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Device failure and churn}
 
-For any storage system, but especially a distributed storage system, component
+For all storage systems, but especially distributed ones, component
 failure is a guarantee. All hard drives fail after enough wear
 \cite{backblaze-hd-2018-q1}, and the servers providing network access to
-these hard drives will eventually fail, too. Network links die, power is lost,
-and storage mediums become unreliable. \todo{Maybe add a joke about some ridiculous failure case here}  For data to outlast individual component
-failure, data must be stored with enough redundancy to recover from failure.
-Perhaps more importantly, no data should be assumed to be stationary and all
+these hard drives will eventually fail, too. Network links may die, power
+failures could happen at any time,
+and storage media become unreliable with time.
+\todo{Maybe add a joke about some ridiculous failure case here}
+For data to outlast individual component
+failures, data must be stored with enough redundancy to recover from these
+failure scenarios.
+Perhaps more importantly, no data should be assumed to be stationary as all
 data must eventually be moved. In such an environment, redundancy, data
-maintanance, repair, and replacement of lost redundancy are facts of life, and
-the system must account for these issues.
+maintenance, repair, and replacement of lost redundancy must be considered
+facts of life, and the system must account for these issues.
 
-Decentralized systems are additionally susceptible to high churn rates, where
-potential participants join the network and then leave for various reasons, well
+Furthermore, decentralized systems are susceptible to high churn rates, where
+participants join the network and then leave for various reasons, well
 before their hardware has actually failed. A network with a high churn rate will
-use a large amount of bandwidth just to ensure durability of the data, and such
+use large amounts of bandwidth just to ensure durability of the data, and such
 a network will fail to scale. As a result, a scalable, highly durable storage
-system must prefer stable nodes and endeavor to keep the churn rate as low as
-possible.
+system must give preference to stable nodes and endeavor to keep the churn rate
+as low as possible.
 
-Despite the chance of hardware failure, Maymounkov et al. found that in
-decentralized systems, the probability of a node staying on
-for an additional hour as a member of the network is an {\em increasing}
+Despite the chance of hardware failure, Maymounkov {\em et al}. found that in
+decentralized systems, the probability of a node staying connected to the
+network for an additional hour is an {\em increasing}
 function of uptime \cite{kad}. In other words, the longer a node is a
 participant in the network, the more likely it is to continue
 participating. This gives our system a strong incentive to prefer long-lived,
 stable nodes.
 
-See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth varies as a
-function of node churn.
+See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth
+varies as a function of node churn.
 
 \subsection{Latency}
 
-Decentralized, distributed storage has the potential to capitalize on massive
-opportunities for parallelism in transfer rates, processing,
+A decentralized, distributed storage system has the potential to capitalize on
+massive opportunities for parallelism in transfer rates, processing,
 and a number of other factors. Parallelism by
 itself is a great way to increase overall throughput even when individual
 network links are slow. However, parallelism cannot by itself improve {\em
 latency}. If an individual network link has fixed latency and is a required part
-of an operation, the latency of the overall operation will be bound from below
-by the latency of the required network link. Therefore, a distributed system
+of an operation, the latency of the required network link will be the lower
+bound for the overall operation.
+Therefore, a distributed system
 intended for high performance applications must aggressively optimize for low
 latency, both at the individual process scale and at the overall architecture
 scale.
@@ -206,7 +247,7 @@ We emphasize an architectural strategy aimed at achieving low latency by
 focusing on eliminating the need to wait for long tails \cite{tail-at-scale}.
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without needing to wait
-for a slow subset.
+for a slower subset.
 Focusing on operations where the result is only dependent on the fastest
 nodes turns what could be a potential liability (highly variable performance
 from individual actors) into a great source of strength for a distributed
@@ -215,36 +256,39 @@ storage network.
 \subsection{Bandwidth}
 
 Global bandwidth availability is increasing year over year; however, access to
-high-bandwidth internet connections is unevenly distributed. While users in some
+high-bandwidth internet connections is unevenly distributed in different
+parts of the world.
+While users in some
 countries can easily access symmetric, high-speed, unlimited bandwidth, users in
 other countries may have significant difficulty in obtaining access to the same.
-In the United States, the way many residential internet service providers provide
-internet presents two specific challenges for designers of a
+In the United States, the way many residential internet service providers (ISPs)
+operate presents two specific challenges for designers of a
 decentralized network protocol. The first challenge is that the internet
 connection is often asymmetric. Customers subscribe to internet service
 based on an advertised download speed, but the upload speed is potentially an
 order of magnitude or two slower. The second challenge is that bandwidth is
-sometimes "capped" at a fixed amount of traffic per month. For example, in many
-markets, Comcast poses a one terabyte per month bandwidth cap with stiff fines
-for customers who go over. Such caps impose
+sometimes "capped" by the ISP at a fixed amount of traffic per month.
+For example, in many
+US markets, Comcast imposes a one terabyte per month bandwidth cap with stiff
+fines for customers who go over this limit. Such caps impose
 significant limitations on the bandwidth available at any given moment.
 For example,
 an internet connection with a throughput of 10 MB/s and a cap of 1
-TB/month cannot average more than 385 KB/s over the month without going
-over the monthly bandwidth cap.
+TB/month cannot average more than 385 KB/s over the month without exceeding
+the monthly bandwidth cap.
 
 With device failure and churn guaranteed, any decentralized system will have a
 corresponding amount of repair traffic. It is therefore important to make sure
-there is enough headroom for the bandwidth required by data maintenance, over
+there is enough headroom for the bandwidth required for data maintenance, over
 and above that required for data storage and retrieval. Designing a
-storage system that is careless with bandwidth usage would be to relegate that
-system below storage providers with access to unlimited high-speed bandwidth,
-recentralizing the system to some degree. To keep the storage system as
-decentralized as possible and for it to work in as many environments as
-possible, bandwidth usage must be aggressively minimized.
+storage system that is careless with bandwidth usage would be to give
+preference to storage providers with access to unlimited high-speed bandwidth,
+recentralizing the system to some degree. So, in order to keep the storage
+system as decentralized as possible while working in as many environments
+as possible, bandwidth usage must be aggressively minimized.
 
-Please see Appendix \todo{} for a discussion on how available bandwidth,
-combined with required repair traffic, limits usable space.
+Please see Appendix \todo{} for a discussion on how available bandwidth
+combined with required repair traffic limits usable space.
 
 \subsection{Security and privacy}
 
@@ -252,44 +296,47 @@ combined with required repair traffic, limits usable space.
 
 \subsection{Object size}
 
-Broadly, large storage systems can be classified into two groups by average
-object size. When storing lots of small bits of information, generally a
-database is the preferred route. On the other hand, when storing lots of large
+Large storage systems can broadly be classified into two groups by average
+object size. When storing lots of small bits of information, a
+database is generally the preferred solution.
+On the other hand, when storing lots of large
 files, an object store or filesystem is ideal. We classify a "large" file as a
-few megabytes or greater.
+few megabytes or greater in size.
 
 The initial product offering by Storj Labs is designed to function primarily as
 an object store for larger files. While future improvements may enable
-database-like use cases, the predominant use case described by this paper is
+database-like use cases, the predominant use case described in this paper is
 object storage. Protocol design decisions are made with the assumption that the
-vast majority of objects stored will be a couple of megabytes or more. It is
+vast majority of objects stored will be a couple of megabytes or larger. It is
 worth pointing out that this will not negatively impact use cases that require
-lots of files smaller than a megabyte. Such cases can admit a packing
-strategy, where many small files are aggregated and stored together as one large
-file. As the protocol has streaming support, small files can be retrieved
-without requiring full retrieval of any aggregated object they were packed into.
+lots of files smaller than a megabyte. Such cases can be addressed with a
+packing strategy, where many small files are aggregated and stored together as
+one large file.
+As the protocol supports streaming, small files can even be
+downloaded without requiring full retrieval of the aggregated object they were
+packed into.
 
 \subsection{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
 environment, where individual storage providers are not necessarily assumed to be
-trustworthy. Storj operates over the public internet, and allows anyone to sign
+trustworthy. Storj operates over the public internet, allowing anyone to sign
 up to become a storage provider.
 
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
 {\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
 any reason. Some examples include nodes that are broken, nodes that are
-trying to cheat the suggested protocol to their advantage, or nodes that
+trying to exploit the suggested protocol to their advantage, or nodes that
 are actively trying to sabotage the protocol. In general, a Byzantine node is
 one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
-Inevitable hardware failure aside, {\em Altruistic} nodes
+Inevitable hardware failures aside, {\em Altruistic} nodes
 participate in a proposed protocol even if the rational choice is to deviate.
-{\em Rational} nodes participate exactly when it is in their net benefit to do
-so, and may depart for the same reason.
+{\em Rational} nodes, on the other hand, participate exactly when it is in
+their net best interest to do so, and may depart for the same reason.
 
-Some distributed storage systems (e.g., Amazon S3) operate in an environment
+Some distributed storage systems (e.g. Amazon S3) operate in an environment
 where all nodes are altruistic {\color{red}add citation?}.
 Storj operates in an environment where a
 majority of storage nodes are rational and a minority are byzantine. Storj
