@@ -15,20 +15,11 @@ numberstyle=\tiny, stepnumber=1, numbersep=5pt} \lstset{language=TeX}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
 
-\title{\textbf{Storj\\A Decentralized Cloud Storage Network Framework}}
-\author{\\ \parbox{\linewidth}{\centering\small Alex Bender (bender@storj.io),
-Alex Leitner (alex@storj.io),\\ Benjamin Sirb (bens@storj.io), Braydon Fuller
-(braydon@storj.io),\\ Bryan White (bryan@storj.io), Chris Pollard
-(cpollard1001@gmail.com),\\ Dennis Coyle (dennis@storj.io), Dylan Lott
-(dylan@storj.io),\\ Garrett Ransom (garrett@storj.io), Gordon Hall
-(gordonhall@openmailbox.org),\\ James Hagans (jhagans@storj.io), James
-Prestwich (james@storj.io),\\ John Gleeson (jg@storj.io), Josh Brandoff
-(josh@brandoff.is), JT Olio (jt@storj.io),\\ Kaloyan Raev (kaloyan@storj.io),
-Kishore Aligeti (kishore@storj.io),\\ Nadine Farah (nadine@storj.io), Natalie
-Villasana (nat@storj.io),\\ Patrick Gerbes (patrick@storj.io), Philip Hutchins
-(philip@storj.io),\\ Shawn Wilkinson (shawn@storj.io), Tome Boshevski
-(tome@storj.io)}\\\\\small \url{https://github.com/storj/whitepaper} }\date
-{v3.0, June 24, 2018}
+\title{\textbf{Storj: A Decentralized Cloud Storage Network Framework}}
+\author{\parbox{\linewidth}{\centering\small
+Storj Labs, Inc.}
+\\\small \url{https://github.com/storj/whitepaper} }\date
+{v3.0, August 23, 2018}
 
 \begin{document}
 
@@ -41,17 +32,18 @@ at (current page.center) {DRAFT};
 \end{tikzpicture}
 
 Decentralized Cloud Storage represents a fundamental shift in
-the efficiency and economics of distributed storage.
+the efficiency and economics of large-scale storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 many traditional data failures and outages while simultaneously increasing
-security and privacy. At a greater rate than any single entity could afford,
-this allows market forces to optimize on cheaper ways to provide storage.
+security and privacy.
+Decentralization also allows market forces to optimize on cheaper ways to
+provide storage at a greater rate than any single entity could afford.
 While there are many ways to build such a system, there are some specific
 responsibilities any given implementation should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building such our distributed storage network.
+responsibilities and building our distributed storage network.
 Additionally, we describe an initial
 concrete implementation for the entire framework.
 \end{abstract}
@@ -59,8 +51,6 @@ concrete implementation for the entire framework.
 \todo{
 Remaining big todo items:
 \begin{itemize}
-\item Settle on a choice for what $n,k,r,C,K$ etc. mean in reference to the
-network. (Different variables are being used to represent the same thing.)
 \item Datascience: write an appendix about repair bandwidth based on node
   churn and uptime
 \item Datascience: Write an appendix about how we select RS numbers
@@ -72,9 +62,6 @@ network. (Different variables are being used to represent the same thing.)
 
 Remaining medium todo items:
 \begin{itemize}
-\item Anyone: Make sure this paper explains conclusively why we're doing v3 and
-  why we won't have to do a v4 - difference between framework vs concrete
-  sections
 \item Anyone:
   Clean up distributed consensus positioning in the Metadata section.
 \item JT: Move merkle-tree-based-filesystem idea to future work section
@@ -92,7 +79,6 @@ Remaining little todo items:
 \item Eng: Write a future work section about eliminating TLS handshakes
 \item Anyone: Clean up the pacing for the structured file storage section
 \item Eng: Write about how piece ids are generated
-\item Eng: Describe pointers
 \item Eng: Future work section about reputation sharing
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
@@ -102,6 +88,22 @@ section headings, etc.
 }
 
 \section{Introduction}
+
+\todo{
+Outline of this intro (and the entire paper) should be:
+\begin{itemize}
+\item Decentralized storage solves some big problems.
+\item Decentralized storage addresses a specific market we're interested in.
+\item To best address this market, our product must satisfy specific constraints.
+\item We believe a specific framework is required to best satisfy these
+  constraints. We will not need a v4 as this framework is fairly fundamental
+  to our space.
+\item Our concrete implementation is just one potential solution within our
+  framework. We plan to improve our implementation within the framework over
+  time.
+\item We have made a product out of these concrete framework choices.
+\end{itemize}
+}
 
 Decentralized storage has emerged as a potential solution to the challenge of
 providing an economical cloud storage solution to address the rapidly expanding
@@ -119,10 +121,7 @@ networks to store data.
 Storage products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia,
 Maidsafe, Filecoin, Crashplan, Mozy, Hadoop Distributed File System (HDFS),
 Amazon S3, Google File System (GFS), and others believe that a single computer
-is not as powerful or secure as these networks. One advantage of
-building large networks is that it measurably improves security in how data is
-stored.
-As more people enter the network, it becomes more challenging to steal data.
+is not as powerful or secure as these networks.
 While all these companies share a common core of building robust and secure
 networks, they also share common principles of how it can be achieved.
 Companies generate redundancy for data in case of failure, store this
@@ -154,12 +153,12 @@ consisting of independent components with task-specific jobs.
 We've integrated these components with each other to implement a secure,
 robust, and reliable storage system.
 
-The rest of the paper is divided into four
+The rest of the paper is divided into five
 sections. Section \ref{sec:design_constraints} discusses the design space
 in which Storj operates and elaborates on specific design constraints that
 represent the focus of what we plan to optimize for.
-Section \ref{sec:framework} covers our framework and proposes a simple
-concrete implementation of each component, while
+Section \ref{sec:framework} covers our framework, while \ref{sec:concrete}
+proposes a simple concrete implementation of each component.
 Section \ref{sec:product_details} covers specific details
 about how we will deliver this implementation to users. Finally, Section
 \ref{sec:future_work} covers future areas of research.
@@ -187,9 +186,7 @@ industry and bring decentralized cloud storage into the mainstream, enabling
 more people to enjoy greater security with less centralized control.
 To achieve this,
 applications built against S3 should be configurable to work with Storj with
-minimal friction and changes. Imagine if 90\% of existing application services
-could switch to Storj with only a
-single configuration change. \todo{maybe talk about s3 market penetration?}
+minimal friction and changes.
 This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Device failure and churn}
@@ -200,7 +197,6 @@ failure is a guarantee. All hard drives fail after enough wear
 these hard drives will eventually fail, too. Network links may die, power
 failures could happen at any time,
 and storage media become unreliable with time.
-\todo{Maybe add a joke about some ridiculous failure case here}
 For data to outlast individual component
 failures, data must be stored with enough redundancy to recover from these
 failure scenarios.
@@ -217,13 +213,14 @@ a network will fail to scale. As a result, a scalable, highly durable storage
 system must give preference to stable nodes and endeavor to keep the churn rate
 as low as possible.
 
-Despite the chance of hardware failure, Maymounkov {\em et al}. found that in
+Churn rates affect the network much more than hardware failure. As an
+illustration, Maymounkov {\em et al}. found that in
 decentralized systems, the probability of a node staying connected to the
 network for an additional hour is an {\em increasing}
 function of uptime \cite{kad}. In other words, the longer a node is a
 participant in the network, the more likely it is to continue
 participating. This gives our system a strong incentive to prefer long-lived,
-stable nodes.
+stable nodes to minimize churn.
 
 See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth
 varies as a function of node churn.
@@ -273,9 +270,9 @@ US markets, Comcast imposes a one terabyte per month bandwidth cap with stiff
 fines for customers who go over this limit. Such caps impose
 significant limitations on the bandwidth available at any given moment.
 For example,
-an internet connection with a throughput of 10 MB/s and a cap of 1
-TB/month cannot average more than 385 KB/s over the month without exceeding
-the monthly bandwidth cap.
+an internet connection with a cap of 1 TB/month cannot average more than
+385 KB/s over the month without exceeding the monthly bandwidth cap, even if
+the internet connection advertises speeds of 10 MB/s or higher.
 
 With device failure and churn guaranteed, any decentralized system will have a
 corresponding amount of repair traffic. It is therefore important to make sure
@@ -283,7 +280,7 @@ there is enough headroom for the bandwidth required for data maintenance, over
 and above that required for data storage and retrieval. Designing a
 storage system that is careless with bandwidth usage would be to give
 preference to storage providers with access to unlimited high-speed bandwidth,
-recentralizing the system to some degree. So, in order to keep the storage
+recentralizing the system to some degree. In order to keep the storage
 system as decentralized as possible while working in as many environments
 as possible, bandwidth usage must be aggressively minimized.
 
@@ -312,7 +309,7 @@ worth pointing out that this will not negatively impact use cases that require
 lots of files smaller than a megabyte. Such cases can be addressed with a
 packing strategy, where many small files are aggregated and stored together as
 one large file.
-As the protocol supports streaming, small files can even be
+As the protocol supports seeking and streaming, small files can even be
 downloaded without requiring full retrieval of the aggregated object they were
 packed into.
 
@@ -326,24 +323,33 @@ up to become a storage provider.
 We adopt the BAR (Byzantine, Altruistic, Rational) model \cite{bar} to discuss
 participants in the network.
 {\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
-any reason. Some examples include nodes that are broken, nodes that are
-trying to exploit the suggested protocol to their advantage, or nodes that
+any reason. Some examples include nodes that are broken or nodes that
 are actively trying to sabotage the protocol. In general, a Byzantine node is
 one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
 Inevitable hardware failures aside, {\em Altruistic} nodes
 participate in a proposed protocol even if the rational choice is to deviate.
-{\em Rational} nodes, on the other hand, participate exactly when it is in
-their net best interest to do so, and may depart for the same reason.
+{\em Rational} nodes, on the other hand, participate or deviate only when it
+is in their net best interest to do so.
 
 Some distributed storage systems (e.g. Amazon S3) operate in an environment
-where all nodes are altruistic {\color{red}add citation?}.
-Storj operates in an environment where a
-majority of storage nodes are rational and a minority are byzantine. Storj
-assumes no altruistic nodes. Any
-potential design must account for this distinction.
+where all nodes are altruistic. Amazon owns all of their nodes directly and
+rogue operations engineers are not generally coopting node behavior for their
+own purposes.
+Storj operates in an environment where every node is potentially managed by
+its own independent operator. In this environment we can expect that a majority
+of storage nodes are rational and a minority are byzantine. Storj assumes no
+altruistic nodes. Any potential design must account for this distinction.
 
-\section{Framework and concrete implementation}\label{sec:framework}
+\subsection{Decentralization}
+
+\todo{why even try for decentralization?}
+
+\subsection{Marketplace and economics}
+
+\todo{john g}
+
+\section{Framework}\label{sec:framework}
 
 At a high level, there are three major operations in the system: storing data,
 retrieving data, and maintaining data.
@@ -352,8 +358,8 @@ retrieving data, and maintaining data.
 
 \item[Storing data] When data is stored with the network, the client encrypts
 it and breaks it up into multiple little pieces. It then distributes the pieces
-to peers in the network and generates and stores some metadata about where to find the data
-again.
+to peers in the network and generates and stores some metadata about where to
+find the data again.
 
 \item[Retrieving data] When data is retrieved from the network,
 the client first recovers the metadata about where to find the pieces.
@@ -366,13 +372,54 @@ The data is reconstructed, and the missing pieces are regenerated and replaced.
 
 \end{description}
 
-To make this system feasible while satisfying our design constraints, we will
-need to solve a number of complex challenges. Inspired by Raft \cite{raft}, we
+To make this framework feasible while satisfying our design constraints, we
+will need to solve a number of complex challenges.
+Inspired by Raft \cite{raft}, we
 break up the design into a collection of relatively independent concerns and
-then combine them to form the desired protocol. One benefit from this approach
-is that it makes
-updating individual components much easier without having to rearchitect the rest
-of the network. The individual components are:
+then combine them to form the desired framework.
+One benefit from this approach is that it makes
+updating concrete implementations of components within the framework much
+easier without having to rearchitect the rest of the network. This is how
+we will avoid yet another major rearchitecture.
+
+The individual components are:
+
+\begin{enumerate}
+\item Storage nodes
+\item Peer-to-peer communication
+\item Overlay network
+\item Redundancy
+\item Metadata
+\item Encryption
+\item Payments
+\end{enumerate}
+
+\subsection{Storage nodes}
+
+The most fundamental part of this network is the storage node.
+The storage node's role is to store and return data.
+Aside from storing data, nodes should provide reliable storage space,
+network bandwidth, and appropriate responsiveness.
+In return, nodes are rewarded for their participation via payments.
+
+Storage nodes are selected to store data based on various criteria: ping time,
+latency, throughput, disk space, geographic location, uptime, history of
+responding accurately to audits, etc. Because storage
+nodes are selected via changing variables external to the protocol, node
+selection is an explicit, nondeterministic process in our framework. This means
+that we must keep track of which nodes were selected for each upload via a
+small amount of metadata and can't select nodes for storing data implicitly or
+deterministically as in a system like Kademlia \cite{kademlia}. This decision
+implies the requirement of a separate metadata storage system.
+
+\subsection{Peer-to-peer communication}
+\subsection{Overlay network}
+\subsection{Redundancy}
+\subsection{Metadata}
+\subsection{Encryption}
+\subsection{Payments}
+
+\section{Concrete implementation}\label{sec:concrete}
 
 \begin{enumerate}
 \item Storage nodes
@@ -393,12 +440,6 @@ of the network. The individual components are:
 
 \subsection{Storage nodes}
 
-The most fundamental part of this network is the storage node.  The storage node's role is to store and return data.  Aside from storing data,
-nodes should provide reliable storage space, network bandwidth, and appropriate responsiveness. In return, nodes are rewarded
-for their participation. Nodes are awarded points based on how they do in certain categories. In short, storage nodes are selected to store data based on various criteria:  ping time, latency, throughput, disk space, geographic location, etc. Node selection is an explicit process designed to maintain network stability.
-
-\subsubsection{Concrete implementation}
-
 Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. They store {\em pieces} (to be described in more detail
 later \bs{where? reference}). Each method will take a {\em piece ID}, a
@@ -416,12 +457,14 @@ The {\em payer ID} forms a namespace. An identical {\em piece ID} with a
 different {\em payer ID} refers to a different {\em piece}.
 
 Storage nodes should allow administrators to configure maximum allowed disk
-space usage and maximum allowed bandwidth usage over the last rolling 30 days. They should keep track of how much is remaining of both, and reject operations that do not have a valid signature
- from the appropriate payer.
+space usage and maximum allowed bandwidth usage over the last rolling 30 days.
+They should keep track of how much is remaining of both, and reject operations
+that do not have a valid signature from the appropriate payer.
 
 \subsection{Peer-to-peer communication}
 
-All peers on the network communicate via a ubiquitous standard protocol. The framework requires all
+All peers on the network communicate via a ubiquitous standard protocol. The
+framework requires all
 nodes to fulfill these requirements for communication:
 
 \begin{itemize}
@@ -669,7 +712,8 @@ building on top of the basic components we have already created without loss of
 generality.
 
 Because so much here depends on concrete
-implementation details, our framework is described in more general terms, while our concrete implementation has significant detail.
+implementation details, our framework is described in more general terms, while
+our concrete implementation has significant detail.
 
 \subsubsection{Concrete implementation}
 
@@ -772,8 +816,9 @@ Because \x{stream}s are used for data (the default \x{stream}) and metadata
 (extended attributes, etc.), \x{stream}s should be designed both for small data
 and large data.
 A \x{stream} may be small enough so that it consists of only one segment.
-If that \x{segment} is smaller than the metadata required to store it on the network, the \x{segment} will be an \x{inline
-segment} and the data will be stored directly inline with the metadata.
+If that \x{segment} is smaller than the metadata required to store it on the
+network, the \x{segment} will be an \x{inline segment} and the data will be
+stored directly inline with the metadata.
 
 For larger \x{stream}s -- \x{stream}s past a certain size -- the data will be broken into
 multiple large \x{remote segment}s. Segmenting in this manner has a number of
@@ -836,10 +881,13 @@ For example, let's say a \x{stripe} is broken into 40 \x{erasure share}s
 ($n=40$), where any 20 ($k=20$) are needed to reconstruct the \x{stripe}. Each
 of the 40 \x{erasure share}s will be $\frac{1}{20}$th the size of the original
 \x{stripe}. All $n$ \x{erasure share}s have a well defined index associated
-with them. More specifically, for any given $n$, the $i$th share of an erasure code will always be the same.
+with them. More specifically, for any given $n$, the $i$th share of an erasure
+code will always be the same.
 
 Because peers generally rely on independent hardware and infrastructure, data
-failure between nodes is not correlated. This implies that erasure codes are an extremely effective method of securing availability. Availability is proportional to the number of nodes storing the data.
+failure between nodes is not correlated. This implies that erasure codes are an
+extremely effective method of securing availability. Availability is
+proportional to the number of nodes storing the data.
 
 See section \todo{} for a breakdown of how varying the erasure code parameters
 affects availability and redundancy.
@@ -1331,7 +1379,9 @@ While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers
 that offer free ingress \todo{should we mention specific hosts?
 (e.g., Google Cloud Platform, Amazon AWS, and Microsoft Azure)}
-make for an especially attractive hosting location for users of this system. We will describe a Distributed Repair method in the Future Works section, that does not rely on the favorable pricing model of current hosting providers.
+make for an especially attractive hosting location for users of this system.
+We will describe a Distributed Repair method in the Future Works section, that
+does not rely on the favorable pricing model of current hosting providers.
 
 \subsubsection{Merkle trees}
 
@@ -2198,6 +2248,8 @@ When a
   node's requested destination.
 \end{itemize}
 
+\subsection{Reliability}
+
 \section{Future Areas of Research}\label{sec:future_work}
 
 \todo{ Storj is a work in progress, and many features are planned for future
@@ -2264,6 +2316,48 @@ repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
 
 \todo{}
+
+\section{Contributors}
+
+This paper took the combined contributions of many individuals. Contributors
+at Storj Labs, Inc. include but are not limited to:
+Alex Bender,
+Alex Leitner,
+Benjamin Sirb,
+Brandon Iglesias,
+Bryan White,
+Cameron Ayer,
+Dan Sorenson,
+Dennis Coyle,
+Dylan Lott,
+Garrett Ransom,
+James Hagans,
+Jennifer Johnson,
+Jens Heimbürge,
+John Gleeson,
+Jon Sanderson,
+JT Olio,
+Kaloyan Raev,
+Kishore Aligeti,
+Matt Robinson,
+Moby von Briesen,
+Nadine Farah,
+Natalie Villasana,
+Patrick Gerbes,
+Philip Hutchins,
+and Shawn Wilkinson.
+
+We'd like to especially thank the other authors of the previous Storj v2 paper:
+Braydon Fuller,
+Chris Pollard,
+Gordon Hall,
+James Prestwich,
+Josh Brandoff,
+and Tome Boshevski.
+
+We'd like to extend a huge thank you to everyone we talked to during the
+design and architecture of this system for your valuable thoughts, feedback,
+input, and suggestions.
 
 \newpage \appendix
 
@@ -2520,17 +2614,11 @@ audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
 of the contract value. Thus it stands to reason that partially deleting shards
 to increase perceived storage capcity is not a viable economic strategy.
 
+\section{Selected use cases}
 
 \input{RS-appendix-files/model.tex}
 \input{RS-appendix-files/numexp.tex}
 \input{RS-appendix-files/conc.tex}
-
-
-
-
-
-
-
 
 \newpage \bibliographystyle{unsrt} \begingroup \raggedright
 \bibliography{biblio} \endgroup
