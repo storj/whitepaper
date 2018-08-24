@@ -82,6 +82,7 @@ Remaining little todo items:
 \item Eng: Future work section about reputation sharing
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
+\item Eng: section about identity leaf key rotation
 \item Once this is all done, look through to ensure no orphaned lines,
 section headings, etc.
 \end{itemize}
@@ -413,55 +414,6 @@ deterministically as in a system like Kademlia \cite{kademlia}. This decision
 implies the requirement of a separate metadata storage system.
 
 \subsection{Peer-to-peer communication}
-\subsection{Overlay network}
-\subsection{Redundancy}
-\subsection{Metadata}
-\subsection{Encryption}
-\subsection{Payments}
-
-\section{Concrete implementation}\label{sec:concrete}
-
-\begin{enumerate}
-\item Storage nodes
-\item Peer-to-peer communication
-\item Overlay network
-\item Redundancy
-\item Structured file storage
-\item Metadata
-\item Encryption
-\item Authorization
-\item Audits
-\item Data repair
-\item Storage node reputation
-\item Payments
-\item Payer reputation
-\item Garbage collection
-\end{enumerate}
-
-\subsection{Storage nodes}
-
-Storage nodes will support three methods: \code{get}, \code{put}, and
-\code{delete}. They store {\em pieces} (to be described in more detail
-later \bs{where? reference}). Each method will take a {\em piece ID}, a
-{\em payer ID} and signature
-by the payer, an optional TTL, and the other metadata required by the bandwidth
-allocation protocol (also to be described later \bs{where? add section reference}).
-
-The \code{put} operation will take a stream of bytes and store the bytes such
-that any subrange of bytes can be retrieved again via a \code{get} operation.
-\code{get} operations are expected to work until the TTL expires (if a TTL was
-provided), or until a \code{delete} operation is received, whichever comes
-first.
-
-The {\em payer ID} forms a namespace. An identical {\em piece ID} with a
-different {\em payer ID} refers to a different {\em piece}.
-
-Storage nodes should allow administrators to configure maximum allowed disk
-space usage and maximum allowed bandwidth usage over the last rolling 30 days.
-They should keep track of how much is remaining of both, and reject operations
-that do not have a valid signature from the appropriate payer.
-
-\subsection{Peer-to-peer communication}
 
 All peers on the network communicate via a ubiquitous standard protocol. The
 framework requires all
@@ -476,91 +428,13 @@ exactly the identity of the peer with whom they are speaking.
 know what transfers between them.
 \end{itemize}
 
-\subsubsection{Concrete implementation}
-
-Initially, we'll be using gRPC \cite{grpc} on top of TLS on top of $\mu$TP
-\cite{utp} with added STUN functionality. Over time, we'll be replacing TLS to
-reduce round trips due to connection handshakes in situations where the data is
-already encrypted and forward secrecy isn't necessary. \todo{} See the Future
-Work section for more details. Gateways will be provided that allow for more
-standard protocols such as HTTPS.
-
-As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a public key
-and will serve as a proof of work for joining the network. Unlike Bitcoin proof
-of work \cite{bitcoin}, the work will be dependent on how many {\em trailing}
-zero bits one can find in the hash output. This means that the node ID will
-still be usable in a balanced Kademlia \cite{kad} tree.
-
-Each node will operate its own certificate authority, which requires a
-public/private keypair and a self-signed certificate. The certificate authority
-should ideally be kept in cold storage to prevent key loss.
-
-Each node will also have revokable leaf key pair and certificate, signed by
-the node's certificate authority. Nodes will use this leaf keypair for actual
-communication. Should the leaf become compromised, the node can issue a new
-leaf and a new entry in a certificate revocation list.
-
-The {\em node ID} will be determined from the certificate authority
-by hashing the DER-encoded public key Pu.
-
-\begin{equation}
-\text{NodeID} = \text{SHA256}(\text{Pu})
-\end{equation}
-
-It's important that the certificate authority private key be managed with good
-operational security as key rotation for the certificate authority will require
-a brand new node ID.
-
-\todo {Equation for PoW on public key, and more explanation.}
-
-When using TLS, every peer can ascertain the ID of the node with which it is
-speaking by validating the certificate chain and hashing its peer's
-certificate authority's public key. It can then be estimated how much work went
-into constructing the node ID by considering the number of 0 bits at the end of
-the ID.
-
-For the few cases where a node cannot achieve a successful hole punch through a
-NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
-intervention and port forwarding will be required.
-
 \subsection{Overlay network}
+
 The framework requires a way to look up peer network addresses by node ID
 so that, given a peer's network address, any other peer can connect to it.
 An {\em overlay network} can be built on top of our peer-to-peer
 communication component that provides functionality similar to DNS, where a
 node's ID can be resolved to an ephemeral network address for communication.
-
-\subsubsection{Concrete implementation}
-
-The Kademlia DHT serves as a key-value store with a built-in node lookup
-protocol. We utilize this protocol to achieve DNS-like functionality for node
-lookup, while ignoring the storage aspects of the Kademlia protocol due to some
-issues around value republishing and limits to network growth rate, among
-other things \bs{should we provide a reference here to other potential issues
-with the Kad protocol?}.
-However, using a DHT will make it difficult to achieve millisecond-level
-response times when multiple DHT lookups must happen for every operation, so
-more work is necessary to achieve our performance goals. Fortunately, caching
-address information for an entire network of 80k nodes (for example) can be done
-with 3MB of memory, so the DHT can be sped up with some simple, optional
-caching.
-
-Because a cache of the DHT can be untrusted (and peer-to-peer communication is
-authenticated to avoid man-in-the-middle-attacks anyway \bs{what does this have
-to do with the fact that a DHT cache can be untrusted?}), some well-known
-community-run DHT caches can be provided that simply attempt to talk to every
-storage node every so often, such as every hour, evicting nodes from their
-cache that have not been seen recently.
-Since nodes are expected to be long lived with good uptime, they
-are expected to have stable addresses that don't change often on the order of
-more than once an hour. \todo{How do we handle dynamic ips in general?} Thus, such a cache will add a massive performance boost, even when slightly stale.
-In addition, the protocol will be resilient against an expected degree of node
-churn, so having a small number of stale addresses in a DHT cache will not alter
-the expected performance of the network. Furthermore, we avoid a number of known
-attacks by using the S/Kademlia extensions. \cite{skad}
-
-\todo{talk about how we're using kademlia to advertise disk space and bandwidth
-availability, and then storing that information in the cache}
 
 \subsection{Redundancy}
 
@@ -609,8 +483,6 @@ given by:
 \end{equation}
 \end{comment}
 
-
-
 With the simplifying assumption that $p$ is the monthly node
 birth/death rate (the proportion that describes the number of nodes
 leaving/joining the network per month), we can model file durability
@@ -650,7 +522,6 @@ $k$ & $n$ & Exp. factor & P(D) \\
 \label{fig:durability}
 \end{figure}
 
-
 \subsubsection{Streaming}
 
 Erasure codes are used in many streaming contexts such as audio CDs and
@@ -674,7 +545,231 @@ slowest nodes. Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
 
-\subsubsection{Concrete implementation}
+\subsection{Metadata}
+
+In the previous section, we discussed how we will break up files, encode them
+for redundancy, and then store them in the network. Independently of the
+concrete organization and structure of this scheme, there are two types of
+metadata that are important to store for recovery: paths and which
+storage nodes received pieces (pointers).
+
+Our framework requires a relatively performant system that can store pointers by
+path in a way that supports ordered iteration over those paths. Every time an
+object is added, edited, or removed, one or more entries in this metadata
+storage system will need to be adjusted. As a result, there could be heavy churn
+in this metadata system, and across the entire userbase the metadata itself
+could end up being sizeable.
+
+To provide some examples, suppose in
+a few years this system stores 1 total exabyte of data, where the average object
+size is 50MB and our erasure code is such that $n=40$. Each object will use just
+one segment, and thus have one pointer each. The pointer will contain
+information about the segment encoding, including which $n$ nodes the segment
+pieces are stored on. 1 exabyte of 50MB objects is 20 billion objects. If
+each pointer is roughly 40*64+192 bytes (info for each node plus the path and
+some general overhead), there are over 55 terabytes of metadata to keep track of
+\bs{\{}
+(which is still 18,181 times less data to keep track of than an exabyte)
+\bs{\}}
+\bs{is this aside necessary?}.
+Fortunately, this metadata can be heavily partitioned by user. A user storing a
+100 terabytes of 50MB objects will only incur an overhead of 5.5 gigabytes, once
+again 18,181 times less data. It's worth pointing out that these numbers vary
+heavily with average object size: the larger the object size, the less the
+metadata overhead.
+
+One of our framework's primary focuses is making sure this component -- metadata
+storage -- is interchangeable per user. Specifically, we expect to ship with
+multiple implementations of metadata storage that users will be allowed to
+choose between.
+Other object store systems have spent an enormous amount of time
+attempting to solve this problem.
+We've concluded that multiple {\em good enough} solutions already
+exist, and propose using them.
+
+Aside from scale requirements, the desired API is straightforward and
+simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
+given a path),
+\x{List} (paginated, ordered listing of existing paths),
+and \x{Delete} (remove a path).
+
+\subsection{Encryption}
+
+Data should be encrypted as early as possible in the data storage pipeline,
+ideally before the data ever leaves the source computer. This means that the
+S3-compatible console or appropriate similar client library should run
+colocated on the same computer as the user's application.
+
+Ideally encryption uses a pluggable mechanism that allows users to choose their
+desired encryption scheme as well as store metadata about that encryption
+scheme to allow them to recover their data using the appropriate decryption
+mechanism.
+
+To support rich access management features, the same encryption key should not
+be used for every file, as having access to one file would result in access
+to decryption keys for all files. Instead, each file should be encrypted with
+a unique key, such that users can share access to certain selected files
+without giving up encryption details for others.
+
+Because each file should be encrypted differently with different keys and
+potentially different algorithms, the metadata about that encryption must
+be stored somewhere in a way that is secure and reliable. This metadata will
+be stored in appropriate \x{pointers}, itself encrypted by a deterministic,
+hierarchical encryption scheme. A hierarchical encryption scheme similar to
+BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
+parents, and will allow some files to be shared without sharing other files.
+
+Like all other metadata, paths themselves can be encrypted using a hierarchical
+encryption scheme.
+
+\subsection{Payments}
+
+Payments in decentralized networks are a critical part of maintaining a healthy
+ecosystem of both supply and demand.
+In the Storj network, payments are made by console users who store data on the
+platform to the satellite they utilize.
+The satellite then pays storage nodes for the amount of storage and bandwidth
+they
+provide on the network.
+
+The Storj network is payment agnostic.
+Neither the protocol nor the contract requires a specific payment type.
+The network assumes STORJ as the default payment medium, but many other payment
+types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
+transfer of live goats.
+Currently, the platform supports STORJ as payment (providing a discount for
+using this method), Bitcoin, Ether, and credit card.
+
+Previous distributed systems have handled payments as hard-coded contracts.
+For example, the previous Storj network utilized 90-day contracts to maintain
+data on the network. After that period of time, the file would be deleted.
+Other distributed storage platforms use 15-day renewable contracts that delete
+data if the user does not login every 15 days. Others use 30-day contracts.
+Moving forward, the network will not use contracts to manage payments and file
+storage durations.
+
+\section{Concrete implementations}\label{sec:concrete}
+
+\begin{enumerate}
+\item Storage nodes
+\item Peer-to-peer communication
+\item Overlay network
+\item Redundancy
+\item Structured file storage
+\item Metadata
+\item Encryption
+\item Authorization
+\item Audits
+\item Data repair
+\item Storage node reputation
+\item Payments
+\item Payer reputation
+\item Garbage collection
+\end{enumerate}
+
+\subsection{Storage nodes}
+
+Storage nodes will support three methods: \code{get}, \code{put}, and
+\code{delete}. They store {\em pieces} (to be described in more detail
+later \bs{where? reference}). Each method will take a {\em piece ID}, a
+{\em payer ID} and signature
+by the payer, an optional TTL, and the other metadata required by the bandwidth
+allocation protocol (also to be described later \bs{where? add section reference}).
+
+The \code{put} operation will take a stream of bytes and store the bytes such
+that any subrange of bytes can be retrieved again via a \code{get} operation.
+\code{get} operations are expected to work until the TTL expires (if a TTL was
+provided), or until a \code{delete} operation is received, whichever comes
+first.
+
+The {\em payer ID} forms a namespace. An identical {\em piece ID} with a
+different {\em payer ID} refers to a different {\em piece}.
+
+Storage nodes should allow administrators to configure maximum allowed disk
+space usage and maximum allowed bandwidth usage over the last rolling 30 days.
+They should keep track of how much is remaining of both, and reject operations
+that do not have a valid signature from the appropriate payer.
+
+\subsection{Peer-to-peer communication}
+
+Initially, we'll be using gRPC \cite{grpc} on top of TLS on top of $\mu$TP
+\cite{utp} with added STUN functionality. Over time, we'll be replacing TLS to
+reduce round trips due to connection handshakes in situations where the data is
+already encrypted and forward secrecy isn't necessary. \todo{} See the Future
+Work section for more details. Gateways will be provided that allow for more
+standard protocols such as HTTPS.
+
+As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a public key
+and will serve as a proof of work for joining the network. Unlike Bitcoin proof
+of work \cite{bitcoin}, the work will be dependent on how many {\em trailing}
+zero bits one can find in the hash output. This means that the node ID will
+still be usable in a balanced Kademlia \cite{kad} tree.
+
+Each node will operate its own certificate authority, which requires a
+public/private keypair and a self-signed certificate. The certificate authority
+should ideally be kept in cold storage to prevent key loss.
+
+Each node will also have revokable leaf key pair and certificate, signed by
+the node's certificate authority. Nodes will use this leaf keypair for actual
+communication. Should the leaf become compromised, the node can issue a new
+leaf and a new entry in a certificate revocation list.
+
+The {\em node ID} will be determined from the certificate authority
+by hashing the DER-encoded public key Pu.
+
+\begin{equation}
+\text{NodeID} = \text{SHA256}(\text{Pu})
+\end{equation}
+
+It's important that the certificate authority private key be managed with good
+operational security as key rotation for the certificate authority will require
+a brand new node ID.
+
+\todo {Equation for PoW on public key, and more explanation.}
+
+When using TLS, every peer can ascertain the ID of the node with which it is
+speaking by validating the certificate chain and hashing its peer's
+certificate authority's public key. It can then be estimated how much work went
+into constructing the node ID by considering the number of 0 bits at the end of
+the ID.
+
+For the few cases where a node cannot achieve a successful hole punch through a
+NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
+intervention and port forwarding will be required.
+
+\subsection{Overlay network}
+
+The Kademlia DHT serves as a key-value store with a built-in node lookup
+protocol. We utilize this protocol to achieve DNS-like functionality for node
+lookup, while ignoring the storage aspects of the Kademlia protocol due to some
+issues around value republishing and limits to network growth rate, among
+other things \bs{should we provide a reference here to other potential issues
+with the Kad protocol?}.
+However, using a DHT will make it difficult to achieve millisecond-level
+response times when multiple DHT lookups must happen for every operation, so
+more work is necessary to achieve our performance goals. Fortunately, caching
+address information for an entire network of 80k nodes (for example) can be done
+with 3MB of memory, so the DHT can be sped up with some simple, optional
+caching.
+
+Because a cache of the DHT can be untrusted (and peer-to-peer communication is
+authenticated to avoid man-in-the-middle-attacks anyway \bs{what does this have
+to do with the fact that a DHT cache can be untrusted?}), some well-known
+community-run DHT caches can be provided that simply attempt to talk to every
+storage node every so often, such as every hour, evicting nodes from their
+cache that have not been seen recently.
+Since nodes are expected to be long lived with good uptime, they
+are expected to have stable addresses that don't change often on the order of
+more than once an hour. \todo{How do we handle dynamic ips in general?} Thus, such a cache will add a massive performance boost, even when slightly stale.
+In addition, the protocol will be resilient against an expected degree of node
+churn, so having a small number of stale addresses in a DHT cache will not alter
+the expected performance of the network. Furthermore, we avoid a number of known
+attacks by using the S/Kademlia extensions. \cite{skad}
+
+\todo{talk about how we're using kademlia to advertise disk space and bandwidth
+availability, and then storing that information in the cache}
+
+\subsection{Redundancy}
 
 We use the Reed-Solomon erasure code \cite{rs}. For each object that we store
 we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
@@ -714,8 +809,6 @@ generality.
 Because so much here depends on concrete
 implementation details, our framework is described in more general terms, while
 our concrete implementation has significant detail.
-
-\subsubsection{Concrete implementation}
 
 \todo{an introduction before diving into a list of definitions}
 
@@ -917,57 +1010,7 @@ exponentially more difficult to locate any given \x{piece} set without prior
 knowledge of their locations (see Section 6.3). This implies that security of
 the \x{remote segment} is proportional to the square of the size of the network.
 
-
-Technical Dive into how Download Works
-\todo{}
-
 \subsection{Metadata}
-
-In the previous section, we discussed how we will break up files, encode them
-for redundancy, and then store them in the network. Independently of the
-concrete organization and structure of this scheme, there are two types of
-metadata that are important to store for recovery: paths and which
-storage nodes received pieces (pointers).
-
-Our framework requires a relatively performant system that can store pointers by
-path in a way that supports ordered iteration over those paths. Every time an
-object is added, edited, or removed, one or more entries in this metadata
-storage system will need to be adjusted. As a result, there could be heavy churn
-in this metadata system, and across the entire userbase the metadata itself
-could end up being sizeable.
-
-To provide some examples, suppose in
-a few years this system stores 1 total exabyte of data, where the average object
-size is 50MB and our erasure code is such that $n=40$. Each object will use just
-one segment, and thus have one pointer each. The pointer will contain
-information about the segment encoding, including which $n$ nodes the segment
-pieces are stored on. 1 exabyte of 50MB objects is 20 billion objects. If
-each pointer is roughly 40*64+192 bytes (info for each node plus the path and
-some general overhead), there are over 55 terabytes of metadata to keep track of
-\bs{\{}
-(which is still 18,181 times less data to keep track of than an exabyte)
-\bs{\}}
-\bs{is this aside necessary?}.
-Fortunately, this metadata can be heavily partitioned by user. A user storing a
-100 terabytes of 50MB objects will only incur an overhead of 5.5 gigabytes, once
-again 18,181 times less data. It's worth pointing out that these numbers vary
-heavily with average object size: the larger the object size, the less the
-metadata overhead.
-
-One of our framework's primary focuses is making sure this component -- metadata
-storage -- is interchangeable per user. Specifically, we expect to ship with
-multiple implementations of metadata storage that users will be allowed to
-choose between.
-Other object store systems have spent an enormous amount of time
-attempting to solve this problem.
-We've concluded that multiple {\em good enough} solutions already
-exist, and propose using them.
-
-Aside from scale requirements, the desired API is straightforward and
-simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
-given a path),
-\x{List} (paginated, ordered listing of existing paths),
-and \x{Delete} (remove a path).
 
 \subsubsection{Aside about distributed consensus}
 
@@ -1151,35 +1194,6 @@ specifically in this component of our framework.
 
 \subsection{Encryption}
 
-Data should be encrypted as early as possible in the data storage pipeline,
-ideally before the data ever leaves the source computer. This means that the
-S3-compatible console or appropriate similar client library should run
-colocated on the same computer as the user's application.
-
-Ideally encryption uses a pluggable mechanism that allows users to choose their
-desired encryption scheme as well as store metadata about that encryption
-scheme to allow them to recover their data using the appropriate decryption
-mechanism.
-
-To support rich access management features, the same encryption key should not
-be used for every file, as having access to one file would result in access
-to decryption keys for all files. Instead, each file should be encrypted with
-a unique key, such that users can share access to certain selected files
-without giving up encryption details for others.
-
-Because each file should be encrypted differently with different keys and
-potentially different algorithms, the metadata about that encryption must
-be stored somewhere in a way that is secure and reliable. This metadata will
-be stored in appropriate \x{pointers}, itself encrypted by a deterministic,
-hierarchical encryption scheme. A hierarchical encryption scheme similar to
-BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
-parents, and will allow some files to be shared without sharing other files.
-
-Like all other metadata, paths themselves can be encrypted using a hierarchical
-encryption scheme.
-
-\subsubsection{Concrete implementation}
-
 Encryption is authenticated encryption, with support for the AES-GCM cipher
 and the Salsa20 and Poly1305 combination NaCl calls "Secretbox"
 \cite{nacl-crypto}. Authenticated encryption is used so that the user can know
@@ -1206,6 +1220,8 @@ objects are sorted by their encrypted path name, which is relatively unhelpful
 when interested in unencrypted paths. For this reason, users can opt in to
 disabling path encryption. When path encryption is disabled, unencrypted paths
 are only revealed to the user's chosen metadata storage system.
+
+Order-preserving path encryption is left for future work.
 
 \subsection{Authorization}
 
@@ -1525,30 +1541,6 @@ reputation would then be determined globally.
 
 \subsection{Payments}
 
-Payments in decentralized networks are a critical part of maintaining a healthy
-ecosystem of both supply and demand.
-In the Storj network, payments are made by console users who store data on the
-platform to the satellite they utilize.
-The satellite then pays storage nodes for the amount of storage and bandwidth
-they
-provide on the network.
-
-The Storj network is payment agnostic.
-Neither the protocol nor the contract requires a specific payment type.
-The network assumes STORJ as the default payment medium, but many other payment
-types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
-transfer of live goats.
-Currently, the platform supports STORJ as payment (providing a discount for
-using this method), Bitcoin, Ether, and credit card.
-
-Previous distributed systems have handled payments as hard-coded contracts.
-For example, the previous Storj network utilized 90-day contracts to maintain
-data on the network. After that period of time, the file would be deleted.
-Other distributed storage platforms use 15-day renewable contracts that delete
-data if the user does not login every 15 days. Others use 30-day contracts.
-Moving forward, the network will not use contracts to manage payments and file
-storage durations.
-
 Satellites will pay storage nodes for the data they store long-term,
 for audits, and for downloads.
 Storage nodes will not be paid for the initial storage of data, but they
@@ -1831,7 +1823,7 @@ for
   will elect to avoid the operational complexity and create an account on
   another satellite hosted by a trusted party like a friend, group, or
   workplace.
-\item {\bf Console} - This peer class represents any application or
+\item {\bf Uplink} - This peer class represents any application or
   service that wants to store data. Applications can store data via the
   S3-compatible console, or through our libstorj C-bindings. This peer class
   is not expected to remain online like the other two classes and is otherwise
@@ -1973,22 +1965,23 @@ The satellite is made up of components discussed earlier:
 \item A data audit and data repair service
 \end{itemize}
 
-\subsection{Console}
+\subsection{Uplink}
 
-The console provides an S3-compatible drop-in interface for applications that
+The uplink provides an S3-compatible drop-in interface for applications that
 need to store data but don't want to bother with the complexities of distributed
-storage directly. The console is a simple service layer on top of libstorj,
+storage directly. The uplink is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The console (via libstorj) first encrypts data, erasure encodes it, then
+The uplink (via libstorj) first encrypts data, erasure encodes it, then
 streams it out to storage nodes, all while coordinating with a chosen satellite
 for metadata and tracking.
 
-The console should run co-located with wherever data is generated, and will
+The uplink should run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \subsection{Quality control and branding}
+\subsection{Durability}
 
 \todo{discuss quality control and branding}
 \todo{insurance}
@@ -2166,7 +2159,7 @@ deterministic order. If a customer wants sorted paths and doesn't mind the
 satellite operator having access to unencrypted paths, the customer can opt
 into unencrypted (and thus lexicographically sorted) paths.
 
-\todo{future work section about lexicographic sort on encrypted paths}
+\todo{future work section about order-preserving encryption}
 
 \subsubsection{Audits}
 
@@ -2315,6 +2308,8 @@ through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
 
+\subsection{Order-preserving encryption}
+
 \todo{}
 
 \section{Contributors}
@@ -2367,17 +2362,6 @@ As with any distributed system, a variety of attack vectors exist. Many of these
 are common to all distributed systems. Some are storage-specific and will apply
 to any distributed storage system.
 
-\subsection{Spartacus}
-
-\todo{ Spartacus attacks, or identity hijacking, are possible on Kademlia. Any
-node may assume the identity of another node and receive some fraction of
-messages intended for that node by simply copying its Node ID. This allows for
-targeted attacks against specific nodes and data. This is addressed by
-implementing Node IDs as ECDSA public key hashes and requiring messages be
-signed. A Spartacus attacker in this system would be unable to generate the
-corresponding private key, and thus unable to sign messages and participate in
-the network. }
-
 \subsection{Sybil}
 
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
@@ -2392,16 +2376,7 @@ successfully isolates only 12.5\% of honest nodes. While reliability and
 performance will degrade, the network will still be functional unless a large
 portion of the network consists of colluding Sybil nodes.
 
-\subsubsection{Google}
-
-The Google attack, or nation-state attack, is a hypothetical variant of the
-Sybil attack carried out by an entity with extreme resources. Google attacks are
-hard to address, as it is difficult to predict the actions of an organization
-with orders of magnitude more resources than the sum of the resources of network
-participants. The only reliable defence against a Google attack is to create a
-network whose resources are on the same order of magnitude as the attacker's. At
-that scale, any attack against the network would represent an unsustainable
-commitment of resources for any such organization.
+\todo{discuss vetting period}
 
 \subsubsection{Honest Geppetto}
 
@@ -2419,8 +2394,6 @@ shards across as many unrelated nodes as possible.
 
 \subsection{Eclipse}
 
-\todo{mention S/Kademlia
-
 An eclipse attack attempts to isolate a node or set of node in the network
 graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
 attacks can be hard to identify, as malicious nodes can be made to function
@@ -2437,18 +2410,10 @@ It follows that the best way to defend against eclipse attacks is to increase
 the number of nodes in the network. For large networks it becomes prohibitively
 expensive to perform an eclipse attack (see Section 6.2). Furthermore, any node
 that suspects it has been eclipsed may trivially generate a new keypair and node
-ID, thus restarting the proof-of-work challenge. }
+ID, thus restarting the proof-of-work challenge.
 
-\subsubsection{Tunnel Eclipse}
-
-\todo{ Because tunneled connections rely on the tunnel provider, it is trivial
-for a tunnel provider to eclipse nodes for which it provides tunneled
-connections. This attack cannot affect publicly addressable nodes, so it can be
-trivially defeated with proper configuration. This attack can be mitigated by
-encrypting messages intended for tunneled nodes, thus removing the malicious
-tunnel provider's ability to inspect and censor incoming messages. Like a
-typical eclipse attack, any node that suspects it is the victim of a tunnel
-eclipse can easily generate a new Node ID, and find a new tunnel. }
+S/Kademlia additionally assists in preventing eclipse attacks by ensuring
+multiple concurrent disjoint lookup paths through the network.
 
 \subsection{Hostage Bytes}
 
@@ -2463,156 +2428,6 @@ is not
 a complete solution for this attack, but addresses the vast majority of
 practical applications of this attack. Defeating redundancy requires collusion
 across multiple malicious nodes, which is difficult to execute in practice.
-
-\subsection{Cheating Owner}
-
-\todo{ A data owner may attempt to avoid paying a storage node for data storage
-by
-refusing to verify a correct audit. In response the storage node may drop the
-data-owner's shard. This attack primarily poses a problem for any future
-distributed reputation system, as it is difficult for outside observers to
-verify the claims of either party. There is no known practical publicly
-verifiable proof of storage, and no known scheme for independently verifying
-that a privately verifiable audit was issued or answered as claimed. This
-indicates that a cheating client attack is a large unsolved problem for any
-reputation system. }
-
-\subsection{Faithless storage node}
-
-\todo{ While the farming software is built to require authentication via
-signature and token before serving download requests, it is reasonable to
-imagine a modification of the farming software that will provide shards to any
-paying requestor. In a network dominated by faithless storage nodes, any
-third-party
-can aggregate and inspect arbitrary shards present on the network.
-
-However, even should faithless storage nodes dominate the network, data privacy
-is not
-significantly compromised. Because the location of the shards that comprise a
-given file is held solely by the data owner, it is prohibitively difficult to
-locate a target file without compromising the owner (see Section 6.3). Storj is
-not designed to protect against compromised data owners. In addition, should a
-third-party gather all shards, strong client-side encryption protects the
-contents of the file from inspection. The pointers and the encryption key may be
-secured separately. In the current implementation of Bridge, the pointers and
-the keys are held by the Bridge and the client, respectively. }
-
-\subsection{Defeated Audit Attacks}
-
-\todo{ A typical Merkle proof verification does not require the verifier to know
-the depth of the tree. Instead the verifier is expected to have the data being
-validated. In the Storj audit tree, if the depth is unknown to the verifier the
-storage node may attack the verification process by sending a Merkle proof for
-any
-hash in the tree. This proof still generates the Merkle root, and is thus a
-valid proof of some node. But, because the verifier does not hold the data used
-to generate the tree, it has no way to verify that the proof is for the specific
-leaf that corresponds to the challenge. The verifier must store some information
-about the bottom of the tree, such as the depth of the tree, the set of leaves
-nodes, or the set of pre-leaves. Of these, the depth is most compact, and thus
-preferable.
-
-Using the pre-leaf as an intermediary defeats another attack, where the storage
-node
-simply guesses which leaf corresponds to the current challenge. While this
-attack is unlikely to succeed, it's trivially defeated by forcing the storage
-node to
-provide the pre-leaf. The storage node cannot know the pre-leaf before the
-challenge
-is issued. Requiring transmission of the pre-leaf also allows the data owner to
-proceed through the challenge set linearly instead of being forced to select
-randomly. This is desireable because it allows the data owner to maintain less
-state information per tree. }
-
-\section{Selected Calculations}
-
-The following are several interesting calculations related to the operation of
-the network.
-
-\subsection{Difficulty of Eclipsing a Target Node}
-
-The probability of eclipsing a targeted node in the a network with $ k $ nodes
-in $ h $ hashes is modeled by a similar binomial distribution:
-
-{\centering $\Pr_{success}(h, k) = \displaystyle \sum_{i=3}^{h-1}
-k^{-i}(1-\frac{1}{k})^{h-i}{h \choose i}$ \\}
-
-\begin{table}[hbt!] \begin{center} \begin{tabular}{l l r} h & i &
-$\Pr_{success}{h,i}$\\ \hline  100 & 100 & 7.937e-02\\ \hline  100 & 500 &
-1.120e-03\\ \hline  100 & 900 & 2.046e-04\\ \hline  500 & 100 & 8.766e-01\\
-\hline  500 & 500 & 8.012e-02\\ \hline  500 & 900 & 1.888e-02\\ \hline  900 &
-100 & 9.939e-01\\ \hline  900 & 500 & 2.693e-01\\ \hline  900 & 900 &
-8.020e-02\\ \end{tabular} \end{center} \end{table}
-
-Code: \begin{lstlisting} def fac(k): return 1 if k==0 else k * fac(k-1) def
-choose(h,k): return fac(h) / fac(k) / fac(h-k) def bin(i,h,k): return
-choose(h,i) * k ** -i * (1-(1.0/k)) ** (h-i) def prob_succ(h,k): return
-sum([bin(i,h,k) for i in range(3,h)]) \end{lstlisting}
-
-\subsection{Beach Size}
-
-As the number of shards on the network grows, it becomes progressively more
-difficult to locate a given file without prior knowledge of the locations of its
-shards. This implies that even should all storage nodes become faithless, file
-privacy
-is largely preserved.
-
-The probability of locating a targeted file consisting of $ k $ shards by $ n $
-random draws from a network containing $ N $ shards is modeled as a
-hypergeometric distribution with $ K = k $:
-
-{\centering $Pr_{Success}(N,k,n) = \displaystyle \frac{{N-k \choose n-k}}{{N
-\choose n}}$ \\}
-
-\begin{table}[hbt!] \begin{center} \begin{tabular}{r r l r} N & k & n &
-$\Pr_{success}{N,k,n}$\\ \hline 100 & 10 & 10  & 5.777e-14\\ \hline 100 & 10 &
-50  & 5.934e-04\\ \hline 100 & 10 & 90  & 3.305e-01\\ \hline 100 & 50 & 50  &
-9.912e-30\\ \hline 100 & 50 & 90  & 5.493e-04\\ \hline 500 & 50 & 200 &
-1.961e-22\\ \hline 500 & 50 & 400 & 7.361e-06\\ \hline 900 & 10 & 200 &
-2.457e-07\\ \hline 900 & 10 & 400 & 2.823e-04\\ \hline 900 & 10 & 800 &
-3.060e-01\\ \hline 900 & 50 & 200 & 1.072e-35\\ \hline 900 & 50 & 400 &
-4.023e-19\\ \hline 900 & 50 & 800 & 2.320e-03\\ \end{tabular} \end{center}
-\end{table}
-
-Code: \begin{lstlisting} def fac(k): return 1 if k==0 else k * fac(k-1) def
-choose(h,k): return fac(h) / fac(k) / fac(h-k) def hyp(N,k,n): return
-choose(N-k,n-k) / float(choose(N,n)) def prob_success(N,k,n): return hyp(N,k,n)
-\end{lstlisting}
-
-\subsection{Partial Audit Confidence Levels}
-
-Storage nodes attempting to game the system may rely on data owners to issue
-partial
-audits. Partial audits allow false positives, where the data appears intact, but
-in fact has been modified. Data owners may account for this by ascribing
-confidence values to each partial audit, based on the likelihood of a false
-positive. Partial audit results then update prior confidence of availability.
-Data owners may adjust audit parameters to provide desired confidence levels.
-
-The probability of a false positive on a parital audit of $ n $ bytes of an $ N
-$ byte shard, with $ K $ bytes modified adversarially by the storage node is a
-hypergeometric distribution with $ k = 0 $:
-
-{\centering $Pr_{false positive}(N,K,n) = \displaystyle \frac{{N-K \choose n}}
-{{N \choose n}}$ \\}
-
-\begin{table}[hbt!] \begin{center} \begin{tabular}{r r l r} N & K & n &
-$\Pr_{falsepositive}{N,K,n}$\\ \hline 8192 & 512  & 512 & 1.466e-15\\ \hline
-8192 & 1024 & 512 & 1.867e-31\\ \hline 8192 & 2048 & 512 & 3.989e-67\\ \hline
-8192 & 3072 & 512 & 1.228e-109\\ \hline 8192 & 4096 & 512 & 2.952e-162\\
-\end{tabular} \end{center} \end{table}
-
-Code: \begin{lstlisting} def fac(k): return 1 if k==0 else k * fac(k-1) def
-choose(h,k): return fac(h) / fac(k) / fac(h-k) def hyp(N,K,n): return
-float(choose(N-K, n) / choose(N,n) def prob_false_pos(N,K,n): return hyp(N,K,n)
-\end{lstlisting}
-
-As demonstrated, the chance of false positives on even small partial audits
-becomes vanishingly small. Storage nodes failing audits risk losing payouts from
-current contracts, as well as potential future contracts as a result of failed
-audits. Dropping 10\% of a shard virtually guarantees a loss greater than 10\%
-of the contract value. Thus it stands to reason that partially deleting shards
-to increase perceived storage capcity is not a viable economic strategy.
 
 \section{Selected use cases}
 
