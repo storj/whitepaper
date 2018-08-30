@@ -1,52 +1,57 @@
-\documentclass[a4paper,10pt]{article} \usepackage[utf8]{inputenc}
+\documentclass[11pt,fleqn,openany]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry}
+\usepackage{xcolor}
+\definecolor{ocre}{RGB}{52,117,201} % highlight color: TODO: change?
+\usepackage{avant}
+\usepackage{mathptmx}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
-\usepackage{graphicx} \usepackage[english]{babel} \usepackage{listings}
-\usepackage{cite} \usepackage{tikz}
-\usepackage[labelfont=it,
-textfont={it},singlelinecheck=on,justification=centering]{caption}
-\usepackage{amsmath} \usepackage{float} \usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[labelfont=it,textfont={it},singlelinecheck=on,justification=centering]{caption}
+\usepackage{amsmath}
+\usepackage{float}
 \usepackage{comment}
+\usepackage{cite}
 
-\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true} \lstset{numbers=left,
-numberstyle=\tiny, stepnumber=1, numbersep=5pt} \lstset{language=TeX}
-\setlength{\parskip}{1em} \renewcommand{\baselinestretch}{1.2}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true}
+\lstset{numbers=left,numberstyle=\tiny, stepnumber=1, numbersep=5pt}
+\lstset{language=TeX}
+\setlength{\parskip}{1em}
+
+\renewcommand{\baselinestretch}{1.2}
+\renewcommand{\thesection}{\arabic{section}} % get rid of chapter number
+
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
 
-\title{\textbf{Storj: A Decentralized Cloud Storage Network Framework}}
-\author{\parbox{\linewidth}{\centering\small
-Storj Labs, Inc.}
-\\\small \url{https://github.com/storj/whitepaper} }\date
-{v3.0, August 23, 2018}
+\title{\textbf{\sffamily Storj: A Decentralized Cloud Storage Network Framework}}
+\author{\small\sffamily
+Storj Labs, Inc., August 23, 2018\\
+\small\url{https://github.com/storj/whitepaper} \sffamily (v3)}
+\date{}
+
+\input{structure}
 
 \begin{document}
 
+\thispagestyle{fancy}
+\chapterimage{head1.png}
+\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=1.25]{esahubble}}}
+
 \maketitle
 
-\begin{abstract}
 \begin{tikzpicture}[remember picture,overlay]
 \node[rotate=45,scale=15,text opacity=0.1]
 at (current page.center) {DRAFT};
 \end{tikzpicture}
-
-Decentralized Cloud Storage represents a fundamental shift in
-the efficiency and economics of large-scale storage.
-Eliminating central control allows users to store and share data
-without reliance on a third-party storage provider. Decentralization mitigates
-many traditional data failures and outages while simultaneously increasing
-security and privacy.
-Decentralization also allows market forces to optimize on cheaper ways to
-provide storage at a greater rate than any single entity could afford.
-While there are many ways to build such a system, there are some specific
-responsibilities any given implementation should address.
-Based on our experience with petabyte-scale
-storage systems, we introduce a modular framework for considering these
-responsibilities and building our distributed storage network.
-Additionally, we describe an initial
-concrete implementation for the entire framework.
-\end{abstract}
 
 \todo{
 Remaining big todo items:
@@ -82,7 +87,23 @@ Remaining little todo items:
 \end{itemize}
 }
 
-\section{Introduction}
+\chapter{Introduction}
+
+Decentralized Cloud Storage represents a fundamental shift in
+the efficiency and economics of large-scale storage.
+Eliminating central control allows users to store and share data
+without reliance on a third-party storage provider. Decentralization mitigates
+many traditional data failures and outages while simultaneously increasing
+security and privacy.
+Decentralization also allows market forces to optimize on cheaper ways to
+provide storage at a greater rate than any single entity could afford.
+While there are many ways to build such a system, there are some specific
+responsibilities any given implementation should address.
+Based on our experience with petabyte-scale
+storage systems, we introduce a modular framework for considering these
+responsibilities and building our distributed storage network.
+Additionally, we describe an initial
+concrete implementation for the entire framework.
 
 \todo{
 Outline of this intro (and the entire paper) should be:
@@ -160,7 +181,7 @@ Section \ref{sec:product_details} covers specific details
 about how we will deliver this implementation to users. Finally, Section
 \ref{sec:future_work} covers future areas of research.
 
-\section{Storj design constraints and
+\chapter{Storj design constraints and
 considerations}\label{sec:design_constraints}
 
 Before designing a system, it's important to first define its requirements.
@@ -172,7 +193,7 @@ market fit goals.
 By carefully considering each requirement, we can make sure that the framework
 we choose is as universal as possible given its constraints.
 
-\subsection{S3 compatibility}
+\section{S3 compatibility}
 
 At the time of publishing this paper, the flagship cloud storage product is
 Amazon's Simple Storage Service, or S3 for
@@ -192,7 +213,7 @@ applications previously built against S3 be adjusted to work with Storj with
 minimal friction or changes.
 This adds strong requirements on feature set, performance, and durability.
 
-\subsection{Device failure and churn}
+\section{Device failure and churn}
 
 For all storage systems, but especially distributed ones, component
 failure is a guarantee. All hard drives fail after enough wear
@@ -228,7 +249,7 @@ stable nodes to minimize churn.
 See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth
 varies as a function of node churn.
 
-\subsection{Latency}
+\section{Latency}
 
 A decentralized, distributed storage system has the potential to capitalize on
 massive opportunities for parallelism in transfer rates, processing,
@@ -254,7 +275,7 @@ nodes turns what could be a potential liability (highly variable performance
 from individual actors) into a great source of strength for a distributed
 storage network.
 
-\subsection{Bandwidth}
+\section{Bandwidth}
 
 Global bandwidth availability is increasing year over year; however, access to
 high-bandwidth internet connections is unevenly distributed in different
@@ -292,7 +313,7 @@ as possible, bandwidth usage must be aggressively minimized.
 Please see Appendix \todo{} for a discussion on how available bandwidth
 combined with required repair traffic limits usable space.
 
-\subsection{Security and privacy}
+\section{Security and privacy}
 One of the primary focuses of the Storj network is to ensure that its users data privacy is protected. This is not addressed as an after thought but is built into the design of the clients, network and other related services.
 
 Any object storage platform must ensure both the privacy and security of data
@@ -312,7 +333,7 @@ include storage of data without providing access to the underlying data and its
 metadata by Storj Labs, third-party operators of system components,
 or malicious actors.
 
-\subsection{Object size}
+\section{Object size}
 
 Large storage systems can broadly be classified into two groups by average
 object size. When storing a large amount of small pieces of information, a
@@ -335,11 +356,11 @@ As the protocol supports seeking and streaming, small files can even be
 downloaded without requiring full retrieval of the aggregated object they were
 packed into.
 
-\subsection{Decentralization}
+\section{Decentralization}
 
 \todo{why even try for decentralization?}
 
-\subsection{Byzantine Fault Tolerance}
+\section{Byzantine Fault Tolerance}
 
 Unlike datacenter-based solutions like Amazon S3, Storj operates in an untrusted
 environment, where individual storage providers are not necessarily assumed to be
@@ -368,18 +389,18 @@ In this environment we can expect that a majority
 of storage nodes are rational and a minority are byzantine. Storj assumes no
 altruistic nodes. Any potential implementation must account for this distinction.
 
-\subsection{Coordination contention}
+\section{Coordination contention}
 
 \todo{explain why avoiding coordination is good, coordination contention
 is bad, and reference calm conjecture
 \cite{calm1, calm2}, i-confluence \cite{i-confluence}, hat \cite{hat}, and
 anna \cite{anna}}
 
-\subsection{Marketplace and economics}
+\section{Marketplace and economics}
 
 \todo{john g}
 
-\section{Framework}\label{sec:framework}
+\chapter{Framework}\label{sec:framework}
 
 After having considered our design constraints, the next goal is to design
 a framework consisting of relatively fundamental components.
@@ -392,7 +413,7 @@ this framework will obviate the need for future rearchitectures entirely, as
 independent components will be able to replaced without affecting other
 components.
 
-\subsection{Framework overview}
+\section{Framework overview}
 
 At a high level, every design within our framework will do the following
 things:
@@ -437,7 +458,7 @@ The individual components are:
 \item Payments
 \end{enumerate}
 
-\subsection{Storage nodes}
+\section{Storage nodes}
 
 The most fundamental part of this network is the storage node.
 The storage node's role is to store and return data.
@@ -458,7 +479,7 @@ deterministically as in a system like Dynamo \cite{dynamo}. This decision
 implies the requirement of a separate metadata storage system to keep track
 of selected nodes.
 
-\subsection{Peer-to-peer communication and discovery}
+\section{Peer-to-peer communication and discovery}
 
 All peers on the network communicate via a ubiquitous standard protocol. The
 framework requires that this protocol:
@@ -481,7 +502,7 @@ ephemeral connection address. To achieve this, a network overlay can be
 built on top of our peer-to-peer communication protocol that provides this
 functionality. See Section \todo{ref} for implementation details.
 
-\subsection{Redundancy}
+\section{Redundancy}
 
 At any moment, any storage node could go offline permanently. Our redundancy
 strategy must store data in a way that provides access to the data with high
@@ -561,7 +582,7 @@ $k$ & $n$ & Exp. factor & P(D) \\
 
 }
 
-\subsubsection{Erasure codes' effect on streaming}
+\subsection{Erasure codes' effect on streaming}
 
 Erasure codes are used in many streaming contexts such as audio CDs and
 satellite communications, so it's important to point out that using erasure
@@ -571,7 +592,7 @@ added on top by encoding small portions at a time, instead of attempting to
 encode a file all at once. See the structured file storage section for more
 details. \bs{add reference to the section}
 
-\subsubsection{Erasure codes' effect on Long tails}
+\subsection{Erasure codes' effect on Long tails}
 
 Erasure codes enable an enormous performance benefit, which is the ability to
 avoid waiting for long-tail response times \cite{tail-at-scale}. For uploads, a
@@ -585,7 +606,7 @@ Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
 
-\subsection{Metadata}
+\section{Metadata}
 
 Once we split an object up and selected storage nodes on which to store the
 new pieces, we now must keep track of which storage nodes we selected.
@@ -630,7 +651,7 @@ storage -- to be interchangeable per user. Specifically, we expect to ship with
 multiple implementations of metadata storage that users will be allowed to
 choose between. \todo{reference i-confluence and coordination minimization}
 
-\subsection{Encryption}
+\section{Encryption}
 
 Regardless of storage system, our design constraints require total security,
 so any such metadata will be encrypted.
@@ -662,7 +683,7 @@ parents, and will allow some files to be shared without sharing other files.
 Like all other metadata, paths themselves can be encrypted using a hierarchical
 encryption scheme. \todo{ref to hd scheme section}
 
-\subsection{Audits and Reputation}
+\section{Audits and Reputation}
 
 Incentivizing storage nodes to accurately store data is of paramount importance
 to
@@ -697,7 +718,7 @@ to range across all files.
 
 \todo{discuss reputation}
 
-\subsection{Data repair}
+\section{Data repair}
 
 An ever-present risk in any distributed storage system is file loss. While there
 are many potential causes for file loss, storage node churn is the leading
@@ -730,7 +751,7 @@ we expect to account for varying
 amounts of other issues by configuring Reed-Solomon erasure code
 parameters according to differing network conditions.
 
-\subsection{Payments}
+\section{Payments}
 
 Payments in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand. Of course, decentralized payment systems
@@ -759,7 +780,7 @@ The network assumes STORJ as the default payment medium, but many other payment
 types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
 transfer of live goats.
 
-\section{Concrete implementations}\label{sec:concrete}
+\chapter{Concrete implementations}\label{sec:concrete}
 
 The framework we've described above we believe to be relatively fundamental
 given our design constraints. However, within the framework there remains a
@@ -773,7 +794,7 @@ framework.
 As with our previous network, we will publish changes to this concrete
 architectures through our Storj Improvement Proposal process \cite{sips}.
 
-\subsection{Definitions}
+\section{Definitions}
 
 \begin{description}
 \item[Client] A user that would like to upload or download data from the network.
@@ -867,7 +888,7 @@ segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 segment} data directly if applicable.
 \end{description}
 
-\subsection{Storage Node}
+\section{Storage Node}
 
 The main duty of a storage node is to reliably store and return data.
 Storage node operators
@@ -942,7 +963,7 @@ space usage and maximum allowed bandwidth usage over the last rolling 30 days.
 They should keep track of how much is remaining of both, and reject operations
 that do not have a valid signature from the appropriate payer.
 
-\subsection{Satellite}
+\section{Satellite}
 
 As should be apparent, the data owner has to shoulder significant burdens
 to maintain availability and integrity of data on the Storj network. Because
@@ -1020,7 +1041,7 @@ The satellite is made up of components discussed earlier:
 \item A data audit and data repair service
 \end{itemize}
 
-\subsection{Uplink}
+\section{Uplink}
 
 The uplink provides an S3-compatible drop-in interface for applications that
 need to store data but don't want to bother with the complexities of distributed
@@ -1035,7 +1056,7 @@ for metadata and tracking.
 The uplink should run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
-\subsection{Peer-to-peer communication}
+\section{Peer-to-peer communication}
 
 Initially, we'll be using the gRPC \cite{grpc} protocol on top of of the
 Transport Layer Security protocol (TLS) on top of the $\mu$TP
@@ -1088,7 +1109,7 @@ to punch a port through their firewalls may rely on traffic proxying from
 other, more available nodes, for a fee. See the bandwidth allocation protocol
 \todo{ref} for a description of how fees work.
 
-\subsection{Node discovery}
+\section{Node discovery}
 
 At this point, we have storage nodes and we have a means to communicate with
 them if we know their address. We must account for the fact that storage nodes
@@ -1142,7 +1163,7 @@ more highly than performance by certain customer classes.
 \todo{talk about how we're using kademlia to advertise disk space and bandwidth
 availability, and then storing that information in the cache}
 
-\subsection{Redundancy}
+\section{Redundancy}
 
 We use the Reed-Solomon erasure code \cite{rs}. For each object that we store
 we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
@@ -1169,9 +1190,9 @@ See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
 \todo{future work: better erasure code algorithm than rs}
 
-\subsection{Structured file storage}
+\section{Structured file storage}
 
-\subsubsection{Files}
+\subsection{Files}
 
 Many applications benefit from being able to keep metadata alongside files. For
 example, NTFS supports "alternate data streams" for each file, HFS supports
@@ -1181,7 +1202,7 @@ able to support arbitrarily named sets of keys/values dramatically improves
 compatibility with other storage platforms. Every \x{file} will support a
 limited set of arbitrary key/value metadata to support object metadata.
 
-\subsubsection{Files as Segments}
+\subsection{Files as Segments}
 
 \x{Files} should be designed both for small data and large data.
 A \x{file} may be small enough it consists of only one segment.
@@ -1209,7 +1230,7 @@ allows for more uniform storage node filling--a node must only have enough
 space to store a segment to participate in the network, and clients don't have
 to find nodes that have enough space for their specific large file.
 
-\subsubsection{Segments as Stripes}
+\subsection{Segments as Stripes}
 
 In many situations it's important to access just a portion of a piece of
 data. Some large file formats such as large video files, disk images, or file
@@ -1224,7 +1245,7 @@ without retrieving the entire \x{segment}, allows us to stream data into the
 network without staging it beforehand, and enables a number of other useful
 features.
 
-\subsubsection{Stripes as Erasure Shares}
+\subsection{Stripes as Erasure Shares}
 
 Erasure encoding gives us the chance to control network durability in the face
 of unreliable \x{piece storage node}s. Erasure encoding schemes often are
@@ -1244,7 +1265,7 @@ code will always be the same.
 See section \todo{} for a breakdown of how varying the erasure code parameters
 affects availability and redundancy.
 
-\subsubsection{Erasure Shares as Pieces}
+\subsection{Erasure Shares as Pieces}
 
 Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
@@ -1260,7 +1281,7 @@ index $i$. As a result, where each \x{erasure share} is $1/k$th of a
 \todo{piece ids are generated as the hmac of a root piece id and the storing
 node id}
 
-\subsubsection{Pointers}
+\subsection{Pointers}
 
 The data owner will need knowledge of how a \x{remote segment} is broken up and
 where in the network the \x{piece}s are located to recover it. This is contained
@@ -1269,11 +1290,11 @@ they wish.
 
 \todo{code-based pointer definition. protobuf?}
 
-\subsubsection{Paths}
+\subsection{Paths}
 
 \todo{}
 
-\subsection{Metadata}
+\section{Metadata}
 
 The most trivial implementation for the metadata storage functionality we
 require would be to simply have each user use their preferred trusted database
@@ -1328,7 +1349,7 @@ Please see Appendix \todo{} about why we've chosen to avoid trying to solve
 the problem of Byzantine distributed consensus for now. See Future work
 \todo{} for a discussion of medium to long term plans.
 
-\subsection{Encryption}
+\section{Encryption}
 
 Our encryption is authenticated encryption, with support for either the
 AES-GCM cipher and the Salsa20 and Poly1305 combination NaCl calls "Secretbox"
@@ -1366,7 +1387,7 @@ are only revealed to the user's chosen metadata storage system.
 
 Order-preserving path encryption is left for future work.
 
-\subsection{Authorization}
+\section{Authorization}
 
 Encryption protects the privacy of data while allowing for the identification
 of tampering, but authorization allows for the prevention of tampering by
@@ -1390,7 +1411,7 @@ signature. A storage node should reject operations not signed by the appropriate
 payer ID. The client must retrieve valid signatures from the metadata service
 prior to operations with storage nodes.
 
-\subsection{Audits}
+\section{Audits}
 
 Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
@@ -1428,7 +1449,7 @@ Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
 system. Audits should happen uniformly at random by byte with replacement.
 
-\subsection{Data repair}\label{sec:data_repair}
+\section{Data repair}\label{sec:data_repair}
 
 The node discovery system already has caches in place that have accurate and
 up-to-date information about which storage nodes have been online recently.
@@ -1476,7 +1497,7 @@ We will describe a Distributed Repair method in the Future Works section
 \todo{ref} that
 does not rely on the favorable pricing model of current hosting providers.
 
-\subsubsection{Merkle trees}
+\subsection{Merkle trees}
 
 Repairs are one of the few places latency doesn't matter. The data repair system
 just needs to get through as many files as possible, but it doesn't matter if
@@ -1506,7 +1527,7 @@ metadata storage required is just for the root.
 Each repair should validate the tree before the \x{pointer} is updated to
 point to new locations.
 
-\subsection{Storage node reputation}
+\section{Storage node reputation}
 
 Reputation metrics on decentralized networks are a critical part of
 enabling reasonable trust \todo{Can we eliminate the word trust here?} between nodes
@@ -1612,7 +1633,7 @@ reputation would then be determined globally.
 
 \todo{future work section about reputation sharing}
 
-\subsection{Payments}
+\section{Payments}
 
 In the Storj network, payments are made by uplink users who store data on the
 platform to the satellite they utilize.
@@ -1718,7 +1739,7 @@ availability, they will not be paid for the services rendered, and the funds
 allocated to it will instead be used to repair any missing
 file pieces and to pay new storage nodes for storing the data.
 
-\subsubsection{Bandwidth allocation protocol}
+\subsection{Bandwidth allocation protocol}
 
 A core component of our system requires knowing how much bandwidth is used
 between two peers, so we introduce a protocol we call the Bandwidth Allocation
@@ -1781,7 +1802,7 @@ to,
 as it otherwise has no valid bandwidth allocations to return for
 payment.
 
-\subsection{Satellite reputation}
+\section{Satellite reputation}
 
 Storage nodes have a strong incentive to avoid accepting data assigned to
 satellites that don't have a good history of paying.
@@ -1808,7 +1829,7 @@ nodes on the satellite operator's behalf if the satellite goes down.
 
 \todo{future work - shared reputation}
 
-\subsection{Garbage collection}
+\section{Garbage collection}
 
 When data is moved or deleted, it's important to inform impacted storage nodes
 that they are no longer required to store that data. Unfortunately, sometimes
@@ -1871,17 +1892,17 @@ the case of bugs or mistaken file removal.}
 
 \todo{future work: is a bloom filter the best data structure?}
 
-\section{Product details}\label{sec:product_details}
+\chapter{Product details}\label{sec:product_details}
 
-\subsection{Quality control and branding}
-\subsection{Durability}
+\section{Quality control and branding}
+\section{Durability}
 
 \todo{discuss quality control and branding}
 \todo{insurance}
 
-\subsection{Detailed walkthroughs}
+\section{Detailed walkthroughs}
 
-\subsubsection{Uploads}
+\subsection{Uploads}
 
 When a user uploads a file:
 
@@ -1945,7 +1966,7 @@ the
   satellite for later payment.
 \end{itemize}
 
-\subsubsection{Download}
+\subsection{Download}
 
 When a user downloads a file:
 
@@ -1984,7 +2005,7 @@ When a user downloads a file:
   satellite for later payment.
 \end{itemize}
 
-\subsubsection{Delete}
+\subsection{Delete}
 
 When a user deletes a file:
 
@@ -2030,7 +2051,7 @@ the
   happen too frequently.
 \end{itemize}
 
-\subsubsection{List}
+\subsection{List}
 
 When a user wants to receive many files:
 
@@ -2054,7 +2075,7 @@ into unencrypted (and thus lexicographically sorted) paths.
 
 \todo{future work section about order-preserving encryption}
 
-\subsubsection{Audits}
+\subsection{Audits}
 
 The auditing process:
 
@@ -2087,7 +2108,7 @@ and place that stripe into the audit queue.
   forward, nor will it select it for new data.
 \end{itemize}
 
-\subsubsection{Repair}
+\subsection{Repair}
 
 The repair process:
 
@@ -2116,7 +2137,7 @@ about,
 \item The satellite updates the pointer's metadata.
 \end{itemize}
 
-\subsubsection{Payment}
+\subsection{Payment}
 
 The payment process:
 
@@ -2134,19 +2155,19 @@ When a
   node's requested destination.
 \end{itemize}
 
-\subsection{Reliability}
+\section{Reliability}
 
-\section{Future Areas of Research}\label{sec:future_work}
+\chapter{Future Areas of Research}\label{sec:future_work}
 
 \todo{ Storj is a work in progress, and many features are planned for future
 versions. There are relatively few examples of functional distributed systems at
 scale, and many areas of research are still open. }
 
-\subsection{Improving user experience around metadata}
+\section{Improving user experience around metadata}
 
 \todo{automatic exports, backups, distributed consensus}
 
-\subsection{Fast Byzantine Consensus}
+\section{Fast Byzantine Consensus}
 
 Over time, we plan to program the satellite out of the platform.
 The satellite's role on the network means that the network could be prone
@@ -2167,7 +2188,7 @@ protocols, however there is significant trade off around network usage and
 coordination contention, as there could be problematic overlap with two storage
 nodes trying to communicate with one another at the same time.
 
-\subsection{Distributed Repair}
+\section{Distributed Repair}
 
 The system can detect when a file's Reed Solomon erasure encoding pieces fall
 below a certain threshold. At that time, the file must be repaired, with
@@ -2201,11 +2222,11 @@ through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
 
-\subsection{Order-preserving encryption}
+\section{Order-preserving encryption}
 
 \todo{}
 
-\section{Contributors}
+\chapter{Contributors}
 
 This paper took the combined contributions of many individuals. Contributors
 at Storj Labs, Inc. include but are not limited to:
@@ -2249,13 +2270,13 @@ input, and suggestions.
 
 \newpage \appendix
 
-\section{Attacks}
+\chapter{Attacks}
 
 As with any distributed system, a variety of attack vectors exist. Many of these
 are common to all distributed systems. Some are storage-specific and will apply
 to any distributed storage system.
 
-\subsection{Sybil}
+\section{Sybil}
 
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
 disrupt network operation by hijacking or dropping messages. Kademlia
@@ -2271,7 +2292,7 @@ portion of the network consists of colluding Sybil nodes.
 
 \todo{discuss vetting period}
 
-\subsubsection{Honest Geppetto}
+\subsection{Honest Geppetto}
 
 The Honest Geppetto attack is a storage-specific variant of the Google attack.
 The attacker operates a large number of 'puppet' nodes on the network,
@@ -2285,7 +2306,7 @@ attributes can be used to assess the likelihood that two nodes are operated by
 the same organization, and data owners can and should attempt to distribute
 shards across as many unrelated nodes as possible.
 
-\subsection{Eclipse}
+\section{Eclipse}
 
 An eclipse attack attempts to isolate a node or set of node in the network
 graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
@@ -2308,7 +2329,7 @@ ID, thus restarting the proof-of-work challenge.
 S/Kademlia additionally assists in preventing eclipse attacks by ensuring
 multiple concurrent disjoint lookup paths through the network.
 
-\subsection{Hostage Bytes}
+\section{Hostage Bytes}
 
 The hostage byte attack is a storage-specific attack where malicious storage
 nodes
@@ -2322,17 +2343,17 @@ a complete solution for this attack, but addresses the vast majority of
 practical applications of this attack. Defeating redundancy requires collusion
 across multiple malicious nodes, which is difficult to execute in practice.
 
-\section{Selected use cases}
+\chapter{Selected use cases}
 
 \input{RS-appendix-files/model.tex}
 \input{RS-appendix-files/numexp.tex}
 \input{RS-appendix-files/conc.tex}
 
-\section{Distributed consensus}
+\chapter{Distributed consensus}
 
-\subsection{Non-byzantine}
+\section{Non-byzantine}
 
-\subsubsection{Aside about distributed consensus}
+\subsection{Aside about distributed consensus}
 
 A long and challenging area of research has been directed toward getting a
 group of computers to agree on a set of values
@@ -2424,7 +2445,7 @@ multiple Paxos groups.
 Reliable distributed consensus algorithms have been game-changing for many
 applications requiring fault-tolerant storage.
 
-\subsection{Byzantine}
+\section{Byzantine}
 
 As mentioned in our design constraints, we expect most nodes to be {\em
 rational} and some to be {\em byzantine}, but few-to-none to be {\em
@@ -2457,7 +2478,11 @@ solutions).
 they struggle with conflict resolution due to the lack of crdt-like options for
 file systems}
 
-\newpage \bibliographystyle{unsrt} \begingroup \raggedright
-\bibliography{biblio} \endgroup
+\newpage
+\bibliographystyle{unsrt}
+\begingroup
+\raggedright
+\bibliography{biblio}
+\endgroup
 
 \end{document}

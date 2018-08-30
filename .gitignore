@@ -20,6 +20,7 @@
 *.pdf
 *.epub
 *.mobi
+*.ptc
 
 ## htlatex
 *.4ct
