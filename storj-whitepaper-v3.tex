@@ -297,8 +297,13 @@ Please see Appendix \todo{} for a discussion on how available bandwidth
 combined with required repair traffic limits usable space.
 
 \subsection{Security and privacy}
+One of the primary focuses of the Storj network is to ensure that its users data privacy is protected. This is not addressed as an after thought but is built into the design of the clients, network and other related services.
 
-\todo{we want to make sure users' data privacy is protected}
+To address security concerns, files are always encrypted prior to leaving the data owners computer. The encryption used is widely used and proven secure. The libraries that are used are open-source, written by experts, and thoroughly audited.
+
+\todo {Potentially add something about splitting up files in to pieces and spreading them out to Storage Nodes which increases privacy and security}
+
+Privacy is achieved in a number of ways. First, all of the metadata associated with a file is encrypted so that any details about the data being uploaded is just as secure as the data itself. In addition, the sizes of data are standardized such that it is not viable to determine anything about data on the network by its size.
 
 \subsection{Object size}
 
