@@ -107,15 +107,16 @@ Outline of this intro (and the entire paper) should be:
 }
 
 Decentralized storage has emerged as a potential solution to the challenge of
-providing an economical cloud storage solution to address the rapidly expanding
-amount of data for which current solutions are cost-prohibitive.
-With an anticipated 44ZB of data expected to exist by 2020 and a market that is
-growing to \$92B in the same time frame, our point of view is that decentralized
-cloud storage has the potential to address several key segments within that
-market today, particularly related to long term archival storage.
+providing an economical cloud storage solution. It can address the rapidly
+expanding amount of data for which current solutions are cost-prohibitive.
+With an anticipated 44 zettabytes of data expected to exist by 2020 and a
+market that will grow to \$92 billion USD in the same time frame, we are
+convinced that decentralized cloud storage has the potential to address several
+key segments within that market today, particularly related to long term
+archival storage.
 As the capabilities within decentralized storage mature, decentralized cloud
 storage will be able to address a much wider range of use cases from basic
-object storage the content delivery networks (CDN).
+object storage to content delivery networks (CDN).
 
 There are a handful of storage-based companies emerging that aim to create vast
 networks to store data.
@@ -123,20 +124,21 @@ Storage products such as Wuala, Allmydata, Tahoe-LAFS, Space Monkey, Sia,
 Maidsafe, Filecoin, Crashplan, Mozy, Hadoop Distributed File System (HDFS),
 Amazon S3, Google File System (GFS), and others believe that a single computer
 is not as powerful or secure as these networks.
-While all these companies share a common core of building robust and secure
-networks, they also share common principles of how it can be achieved.
-Companies generate redundancy for data in case of failure, store this
+While all the above mentioned companies share a common goal of building robust
+and secure networks, they also share common principles of how this can be
+achieved.
+Companies generate redundancy for data in case of system failures, store this
 redundancy in locations with varying degrees of failure isolation, and then
 keep track of where the data was placed.
 However, the technical implementations, designs, and other considerations
 vary greatly with each organization.
 
 Decentralized cloud storage is still rapidly advancing through the maturity
-cycle to address these challenges, but the evolution of decentralized storage
-is subject to a specific set of design constraints.
-These design constraints inform the overall requirements and implementation of
+cycle to address these challenges, but its evolution
+is subject to a specific set of design constraints which
+define the overall requirements and implementation of
 the network software components. When designing a distributed storage system,
-there are a multitude of optimizations to make: speed, capacity, trustlessness,
+there are many parameters to be optimized: speed, capacity, trustlessness,
 byzantine fault tolerance, cost, etc.
 But unlike optimizing cost or speed, data needs to be persistent throughout
 the network with no loss.
@@ -145,19 +147,19 @@ creating functional systems that are seamlessly integrated to store
 and retrieve data.
 
 We propose a framework that scales horizontally serving hundreds of millions of
-people across the globe. Our system, the Storj Network, is a robust object store
+people across the globe. Our system--the Storj Network--is a robust object store
 that encrypts, shards, and distributes data to our global community for storage.
 Data is served with low latency in a manner purposefully designed to prevent
-breaches that have continuously plagued companies.
+breaches that have continuously plagued many companies.
 In order to accomplish this task, we've designed our system to be modular,
 consisting of independent components with task-specific jobs.
 We've integrated these components with each other to implement a secure,
 robust, and reliable storage system.
 
-The rest of the paper is divided into five
+We organized the rest of this paper into five
 sections. Section \ref{sec:design_constraints} discusses the design space
-in which Storj operates and elaborates on specific design constraints that
-represent the focus of what we plan to optimize for.
+in which Storj operates and elaborates on specific design constraints which
+we are focusing our optimization efforts on.
 Section \ref{sec:framework} covers our framework, while \ref{sec:concrete}
 proposes a simple concrete implementation of each component.
 Section \ref{sec:product_details} covers specific details
@@ -180,8 +182,8 @@ we choose is as universal as possible given its constraints.
 
 At the time of publishing this paper, the flagship cloud storage product is
 Amazon's Simple Storage Service, or S3 for
-short. Most other cloud storage products provide some form of compatibility
-with the S3 API.
+short. Most other currently availablecloud storage products provide some form
+of compatibility with the S3 API.
 
 Until a decentralized cloud storage protocol becomes the {\em lingua franca} of
 storage protocols, we should create a graceful transition path from centralized
@@ -191,18 +193,18 @@ a centralized provider. Our objective is for Storj to compete successfully in
 the wider cloud storage
 industry and bring decentralized cloud storage into the mainstream, enabling
 more people to enjoy greater security with less centralized control.
-To achieve this,
-applications built against S3 should be configurable to work with Storj with
-minimal friction and changes.
+To achieve this, the Storj implementation should allow
+applications previously built against S3 be adjusted to work with Storj with
+minimal friction or changes.
 This adds strong requirements on feature set, performance, and durability.
 
 \subsection{Device failure and churn}
 
 For all storage systems, but especially distributed ones, component
 failure is a guarantee. All hard drives fail after enough wear
-\cite{backblaze-hd-2018-q1}, and the servers providing network access to
+\cite{backblaze-hd-2018-q1}, and servers providing network access to
 these hard drives will eventually fail, too. Network links may die, power
-failures could happen sporadically,
+failures could cause havoc sporadically,
 and storage media become unreliable with time.
 For data to outlast individual component
 failures, data must be stored with enough redundancy to recover from these
@@ -299,11 +301,22 @@ combined with required repair traffic limits usable space.
 \subsection{Security and privacy}
 One of the primary focuses of the Storj network is to ensure that its users data privacy is protected. This is not addressed as an after thought but is built into the design of the clients, network and other related services.
 
-To address security concerns, files are always encrypted prior to leaving the data owners computer. The encryption used is widely used and proven secure. The libraries that are used are open-source, written by experts, and thoroughly audited.
+Any object storage platform must ensure both the privacy and security of data
+stored. Distributed storage platforms include an additional layer of
+complexity and risk associated with the storage of data on inherently
+untrusted nodes.
 
-\todo {Potentially add something about splitting up files in to pieces and spreading them out to Storage Nodes which increases privacy and security}
+First and foremost, the object storage platform must address the security of
+the data stored. Data security encompasses a wide range of concerns including
+identity and access management, prevention of tampering or unauthorized
+modification, prevention of ransomware attacks, system vulnerabilities, and
+malicious insiders.
 
-Privacy is achieved in a number of ways. First, all of the metadata associated with a file is encrypted so that any details about the data being uploaded is just as secure as the data itself. In addition, the sizes of data are standardized such that it is not viable to determine anything about data on the network by its size.
+Separate but related from security issues are privacy concerns.
+Privacy-related issues considered for purposed of the design constraints
+include storage of data without providing access to the underlying data and its
+metadata by Storj Labs, third-party operators of system components,
+or malicious actors.
 
 \subsection{Object size}
 
