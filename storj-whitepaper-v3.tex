@@ -314,7 +314,9 @@ Please see Appendix \todo{} for a discussion on how available bandwidth
 combined with required repair traffic limits usable space.
 
 \section{Security and privacy}
-One of the primary focuses of the Storj network is to ensure that its users data privacy is protected. This is not addressed as an after thought but is built into the design of the clients, network and other related services.
+One of the primary focuses of the Storj network is to ensure that its users
+data privacy is protected. This is not addressed as an after thought but is
+built into the design of the clients, network and other related services.
 
 Any object storage platform must ensure both the privacy and security of data
 stored. Distributed storage platforms include an additional layer of
@@ -332,6 +334,20 @@ Privacy-related issues considered for purposed of the design constraints
 include storage of data without providing access to the underlying data and its
 metadata by Storj Labs, third-party operators of system components,
 or malicious actors.
+
+Beyond the value to end users of protecting privacy and security of data stored
+on the network, certain categories of data are subject to specific regulatory
+compliance. In addition to a baseline level of security and privacy concerns,
+decentralized storage must also address issues of regulatory compliance that
+specify conditions for the location, governance or control of data such as
+HIPAA or GDPR.
+
+In order to achieve the level of privacy and security required, an additional
+design requirement is that the software be open source. Open source software
+provides the level of transparency and assurance needed that the behaviors of
+the system are as advertised and programmatically resistant to established
+attack vectors, manipulation, and censorship in addition to the lack of a
+centralized point of attack or failure.
 
 \section{Object size}
 
@@ -358,7 +374,34 @@ packed into.
 
 \section{Decentralization}
 
-\todo{why even try for decentralization?}
+Decentralization as a design constraint introduces a significant number of
+benefits across multiple dimensions of the cloud storage function from
+reliability and resilience, to performance and scale.
+It also introduces a set of challenges for security and privacy.
+By definition, a decentralized application is a way to create a service that
+no single entity operates, and for which no single entity is responsible for
+the cost associated with the infrastructure on which the service operates.
+
+Decentralization as an architectural and design constraint is driven in part
+by the economic consideration of the cost to instantiate and manage
+infrastructure, or pay for utilities and bandwidth.
+Operating a decentralized network requires node operators to contribute
+resources--network bandwidth, compute, storage, energy--in exchange for
+compensation--the opportunity to earn cryptocurrency.
+In most instances, increase in demand for a decentralized service drives
+increase in adoption and proliferation of nodes.
+This effectively increases the available capacity while at the same time
+driving cost down.
+There is no need to build expensive data centers or pay for unused resources.
+
+We adopt a decentralized architecture because on the whole, it addresses the
+limitations faced by centralized cloud storage.
+Decentralization results in a single globally distributed network that can
+serve a wide range of storage use case from archival to CDN, whereas
+centralized storage systems require different architectures, implementations
+and infrastructure to address each of those same use cases.
+With decentralized architecture, Storj could cease operating and the data
+would continue to be available.
 
 \section{Byzantine Fault Tolerance}
 
@@ -398,7 +441,103 @@ anna \cite{anna}}
 
 \section{Marketplace and economics}
 
-\todo{john g}
+Designing a decentralized storage network in furtherance of creating and
+operating a business as a going concern presents additional design constraints
+than when pursuing an ideological goal of a purely decentralized application
+for the sake of decentralization.
+As a business entity, Storj Labs develops software to aggregate and resell
+unused storage space on devices owned and operated by unaffiliated third
+parties. This impacts design in a number of ways.
+
+One significant design implication of the marketplace for and economics of
+cloud storage is the separation of the function of storing data on the network
+(demand) from the function of sharing space and bandwidth on the network
+(supply).
+This design decision addresses the market condition that the overwhelming
+majority of potential partners and customers who will pay to store data on the
+network do not also have a corresponding supply of storage space to share.
+
+Another factor is that individuals providing the supply of unused storage must
+be fairly compensated.
+This includes aligning the economic incentives of the network to ensure that
+the rational nodes on the network conform to the behavior of altruistic nodes
+and to eliminate incentives for byzantine nodes to deviate from the
+behavior of altruistic nodes.
+
+Additionally, creating incentives for demand-side partners or customers to
+bring data to the network means that the price charged for storage and
+bandwidth, combined with the other benefits of decentralized storage must be
+more compelling and economically beneficial than alternative storage solutions
+in the market.
+
+Beyond the raw economics of the cost and price of storage and bandwidth,
+decentralized storage also requires the processing of a large volume of
+transactions in a marketplace consisting of potentially millions of demand-side
+partners, customers and end users storing billions of pieces of encrypted and
+encoded files on tens of millions of storage nodes and devices operated by
+millions of supply-side partners or individuals, all via dozens, hundreds, or
+even thousands of heavy clients. \todo{we haven't introduced the concept
+of heavy clients yet}
+The network must be able to accurately account for billions of storage and
+bandwidth utilization transactions, then appropriately bill and pay for the
+aggregated utilization of resources.
+
+The network must be able to account for ensuring efficient and timely billing
+and payment and regulatory compliance for tax and other reporting.
+Decentralized application architecture typically mandates the incorporation of
+a cryptocurrency for use in the transmission of value in exchange for
+utilization of shared resources on the network.
+In this case, Storj has implemented the STORJ utility token.
+This presents the additional requirement that the network be able to process
+an extremely large volume of cryptocurrency transactions.
+
+The open-source approach of the software project presents additional design
+constraints.
+The network must account for the operation of servers by unaffiliated third
+parties and must be able to coordinate payment, as well as aggregate reputation
+data among and between storage nodes and heavy clients \todo{} in order for
+heavy clients and storage nodes to determine with which entities on the
+network they will transact business.
+Building a network of contributors will increase the ability to bring new
+capabilities to market faster.
+
+In addition to the delivery of specific capabilities of the software components
+of the network, Storj will also need to build and maintain a large network of
+demand and supply.
+The network must achieve a minimum scale and distribution of storage nodes to
+deliver an acceptable level of storage durability while maintaining an
+acceptably low amount of file repair.
+The scale of the network is also required to create a network effect to
+disincentivize use of the open source software to directly compete with the
+network.
+
+\todo{this section is a combination of a problem statement and a solution.
+some of this should be put into the concrete implementation section}
+
+As the network scales and unaffiliated third parties operate heavy clients,
+Storj must be able to maintain a registry of reliable heavy clients and derive
+value from the operation of those heavy clients.
+
+Storj will need to differentiate the software from the network as well as the
+supply side from the demand side. Storj will brand the two aspects separately:
+\begin{description}
+\item[Storj.io] - the brand for supply-side storage node operators contributing
+storage and bandwidth to the network in exchange for compensation.
+\item[Tardigrade.io] - the brand for demand-side partners and customers who
+purchase storage and bandwidth on the network with the expectation of high
+durability, resilience, reliability and backed by an industry-leading SLA.
+\end{description}
+
+Due to the global network of supply and demand for storage and bandwidth, the
+network must be able to transact in virtually any form of value whether that it
+be fiat currency, cryptocurrency or some other form of barter.
+
+Finally, the Storj roadmap will be aligned to the economic drivers of the
+network.
+New feature additions and changes to the concrete implementations of framework
+components will be driven by applicability to specific object storage use cases
+and the relationship between features and performance to the price of storage
+and bandwidth relative to those use cases.
 
 \chapter{Framework}\label{sec:framework}
 
@@ -1530,7 +1669,8 @@ point to new locations.
 \section{Storage node reputation}
 
 Reputation metrics on decentralized networks are a critical part of
-enabling reasonable trust \todo{Can we eliminate the word trust here?} between nodes
+enabling reasonable trust \todo{Can we eliminate the word trust here?}
+between nodes
 where there would otherwise be none. Reputation metrics
 are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
@@ -1827,7 +1967,7 @@ satellite included on the Storj-provided inclusion list, the satellite operator
 may be required to pay Storj for insurance such that Storj can pay storage
 nodes on the satellite operator's behalf if the satellite goes down.
 
-\todo{future work - shared reputation}
+\todo{future work - shared reputation, satellite reputation}
 
 \section{Garbage collection}
 
@@ -2365,7 +2505,8 @@ Fortunately, this research has led to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
 can be lost. How this impacts decision making is succinctly described by the
-``Two Generals' Problem" \cite{two-generals} \footnote{earlier described as a problem
+``Two Generals' Problem" \cite{two-generals}
+\footnote{earlier described as a problem
 between groups of gangsters \cite{two-gangsters}}, in which two armies try to
 communicate in the face of potentially lost messages. Both armies have already
 agreed to attack a shared enemy, but have yet to decide on a time. Both armies
