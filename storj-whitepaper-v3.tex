@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry}
 \usepackage{xcolor}
-\definecolor{ocre}{RGB}{52,117,201} % highlight color: TODO: change?
+\definecolor{ocre}{RGB}{38,131,255}
 \usepackage{avant}
 \usepackage{mathptmx}
 \usepackage{microtype}
@@ -26,25 +26,26 @@
 \setlength{\parskip}{1em}
 
 \renewcommand{\baselinestretch}{1.2}
-\renewcommand{\thesection}{\arabic{section}} % get rid of chapter number
 
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
 
-\title{\textbf{\sffamily Storj: A Decentralized Cloud Storage Network Framework}}
-\author{\small\sffamily
-Storj Labs, Inc., August 23, 2018\\
-\small\url{https://github.com/storj/whitepaper} \sffamily (v3)}
-\date{}
+\title{\textbf{\sffamily\color{white} \
+Storj: A Decentralized Cloud Storage Network Framework}}
+\author{\small\sffamily\color{white}
+Storj Labs, Inc.}
+\date{\small\sffamily\color{white} v3.0, August 23, 2018\\
+\small\color{white}\url{https://github.com/storj/whitepaper}
+}
 
 \input{structure}
 
 \begin{document}
 
 \thispagestyle{fancy}
-\chapterimage{head1.png}
-\AddToShipoutPicture*{\put(0,0){\includegraphics[scale=1.25]{esahubble}}}
+\chapterimage{images/header.eps}
+\AddToShipoutPicture*{\put(0,0){\includegraphics[width=\paperwidth]{images/front.eps}}}
 
 \maketitle
 
@@ -84,10 +85,13 @@ Remaining little todo items:
 \item Eng: Future work section about reputation sharing
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
+\item Figure out latex theme licensing
 \end{itemize}
 }
 
-\chapter{Introduction}
+\newpage
+
+\section{Abstract}
 
 Decentralized Cloud Storage represents a fundamental shift in
 the efficiency and economics of large-scale storage.
@@ -104,6 +108,50 @@ storage systems, we introduce a modular framework for considering these
 responsibilities and building our distributed storage network.
 Additionally, we describe an initial
 concrete implementation for the entire framework.
+
+\section{Contributors}
+
+This paper took the combined contributions of many individuals. Contributors
+at Storj Labs, Inc. include but are not limited to:
+Alex Bender,
+Alex Leitner,
+Benjamin Sirb,
+Brandon Iglesias,
+Bryan White,
+Cameron Ayer,
+Dan Sorenson,
+Dennis Coyle,
+Dylan Lott,
+Garrett Ransom,
+James Hagans,
+Jennifer Johnson,
+Jens Heimbürge,
+John Gleeson,
+Jon Sanderson,
+JT Olio,
+Kaloyan Raev,
+Kishore Aligeti,
+Matt Robinson,
+Moby von Briesen,
+Nadine Farah,
+Natalie Villasana,
+Patrick Gerbes,
+Philip Hutchins,
+and Shawn Wilkinson.
+
+We'd like to especially thank the other authors of the previous Storj v2 paper:
+Braydon Fuller,
+Chris Pollard,
+Gordon Hall,
+James Prestwich,
+Josh Brandoff,
+and Tome Boshevski.
+
+We'd like to extend a huge thank you to everyone we talked to during the
+design and architecture of this system for your valuable thoughts, feedback,
+input, and suggestions.
+
+\chapter{Introduction}
 
 \todo{
 Outline of this intro (and the entire paper) should be:
@@ -128,7 +176,7 @@ With an anticipated 44 zettabytes of data expected to exist by 2020 and a
 market that will grow to \$92 billion USD in the same time frame, we are
 convinced that decentralized cloud storage has the potential to address several
 key segments within that market today, particularly related to long term
-archival storage.
+archival storage. \todo{citations for stats}
 As the capabilities within decentralized storage mature, decentralized cloud
 storage will be able to address a much wider range of use cases from basic
 object storage to content delivery networks (CDN).
@@ -181,8 +229,7 @@ Section \ref{sec:product_details} covers specific details
 about how we will deliver this implementation to users. Finally, Section
 \ref{sec:future_work} covers future areas of research.
 
-\chapter{Storj design constraints and
-considerations}\label{sec:design_constraints}
+\chapter{Storj design constraints}\label{sec:design_constraints}
 
 Before designing a system, it's important to first define its requirements.
 There are many different ways to design a decentralized storage system, but
@@ -2365,48 +2412,6 @@ data format will support merkle tree repair in the future.
 \section{Order-preserving encryption}
 
 \todo{}
-
-\chapter{Contributors}
-
-This paper took the combined contributions of many individuals. Contributors
-at Storj Labs, Inc. include but are not limited to:
-Alex Bender,
-Alex Leitner,
-Benjamin Sirb,
-Brandon Iglesias,
-Bryan White,
-Cameron Ayer,
-Dan Sorenson,
-Dennis Coyle,
-Dylan Lott,
-Garrett Ransom,
-James Hagans,
-Jennifer Johnson,
-Jens Heimbürge,
-John Gleeson,
-Jon Sanderson,
-JT Olio,
-Kaloyan Raev,
-Kishore Aligeti,
-Matt Robinson,
-Moby von Briesen,
-Nadine Farah,
-Natalie Villasana,
-Patrick Gerbes,
-Philip Hutchins,
-and Shawn Wilkinson.
-
-We'd like to especially thank the other authors of the previous Storj v2 paper:
-Braydon Fuller,
-Chris Pollard,
-Gordon Hall,
-James Prestwich,
-Josh Brandoff,
-and Tome Boshevski.
-
-We'd like to extend a huge thank you to everyone we talked to during the
-design and architecture of this system for your valuable thoughts, feedback,
-input, and suggestions.
 
 \newpage \appendix
 
