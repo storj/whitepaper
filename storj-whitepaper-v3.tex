@@ -3,16 +3,20 @@
 \usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry}
 \usepackage{xcolor}
 \definecolor{ocre}{RGB}{38,131,255}
+\definecolor{ForestGreen}{RGB}{34,139,34}
 \usepackage{avant}
 \usepackage{mathptmx}
 \usepackage{microtype}
 \usepackage[T1]{fontenc}
+\usepackage{inconsolata}
 
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{listings}
+\usepackage{listings-golang}
+\usepackage{color}
 \usepackage{tikz}
 \usepackage[labelfont=it,textfont={it},singlelinecheck=on,justification=centering]{caption}
 \usepackage{amsmath}
@@ -30,6 +34,18 @@
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
+
+\lstset{ % add your own preferences
+    basicstyle=\footnotesize\tt,
+    keywordstyle=\color{blue},
+    numbers=left,
+    numbersep=5pt,
+    showstringspaces=false,
+    stringstyle=\color{red},
+    commentstyle=\color{ForestGreen},
+    tabsize=2,
+    language=Golang
+}
 
 \title{\textbf{\sffamily\color{white} \
 Storj: A Decentralized Cloud Storage Network Framework}}
@@ -64,6 +80,9 @@ Remaining big todo items:
   plan to ensure satellite quality by quality control evaluations, formal
   partnerships, relationships, and not letting poor quality satellites
   use the brand.
+\item i-Confluence
+\item tie framework back to design constraints
+\item tie concrete implementation back to framework
 \end{itemize}
 
 Remaining medium todo items:
@@ -90,6 +109,8 @@ Remaining little todo items:
 }
 
 \newpage
+
+\tableofcontents\newpage
 
 \section{Abstract}
 
@@ -123,6 +144,7 @@ Dan Sorenson,
 Dennis Coyle,
 Dylan Lott,
 Garrett Ransom,
+Helene Unland,
 James Hagans,
 Jennifer Johnson,
 Jens Heimbürge,
@@ -244,27 +266,50 @@ we choose is as universal as possible given its constraints.
 
 At the time of publishing this paper, the flagship cloud storage product is
 Amazon's Simple Storage Service, or S3 for
-short. Most other currently availablecloud storage products provide some form
+short. Most other currently available cloud storage products provide some form
 of compatibility with the S3 API.
 
+Our objective is for Storj to compete successfully in the wider cloud storage
+industry and bring decentralized cloud storage into the mainstream, enabling
+more people to enjoy greater security with less centralized control.
 Until a decentralized cloud storage protocol becomes the {\em lingua franca} of
 storage protocols, we should create a graceful transition path from centralized
 providers for our users.
 This will alleviate any switching costs for users with data currently stored on
-a centralized provider. Our objective is for Storj to compete successfully in
-the wider cloud storage
-industry and bring decentralized cloud storage into the mainstream, enabling
-more people to enjoy greater security with less centralized control.
+a centralized provider.
 To achieve this, the Storj implementation should allow
 applications previously built against S3 be adjusted to work with Storj with
 minimal friction or changes.
 This adds strong requirements on feature set, performance, and durability.
 
+At bare minimum, this requires methods such as those roughly sketched out in
+Figure \ref{fig:s3-api-code}.
+
+\begin{figure}
+\begin{lstlisting}
+  // Bucket operations
+	CreateBucket(bucketName string)
+	DeleteBucket(bucketName string)
+	ListBuckets() []BucketInfo
+
+  // Object operations
+	GetObject(bucketName, objectPath string, offset, length int64) (
+	    ObjectData, ObjectInfo)
+	PutObject(bucketName, objectPath string, data ObjectData,
+	    metadata map[string]string) ObjectInfo
+	DeleteObject(bucketName, objectPath string)
+	ListObjects(bucketName, prefix, startKey string,
+	    limit int, recursive bool) ([]ObjectInfo, more bool)
+\end{lstlisting}
+\caption{Minimum S3 API}
+\label{fig:s3-api-code}
+\end{figure}
+
 \section{Device failure and churn}
 
 For all storage systems, but especially distributed ones, component
 failure is a guarantee. All hard drives fail after enough wear
-\cite{backblaze-hd-2018-q1}, and servers providing network access to
+\cite{backblaze-hd-2018-q1} and servers providing network access to
 these hard drives will eventually fail, too. Network links may die, power
 failures could cause havoc sporadically,
 and storage media become unreliable with time.
@@ -285,13 +330,24 @@ system must give preference to stable nodes and endeavor to keep the churn rate
 as low as possible.
 
 Churn rates affect the network much more than hardware failure. As an
-illustration, Maymounkov {\em et al}. found that in
+illustration, Maymounkov {\em et al.} found \cite{kad} that in
 decentralized systems, the probability of a node staying connected to the
 network for an additional hour is an {\em increasing}
-function of uptime \cite{kad}. In other words, the longer a node is a
+function of uptime (figure \ref{fig:kad-uptime}).
+In other words, the longer a node is a
 participant in the network, the more likely it is to continue
 participating. This gives our system a strong incentive to prefer long-lived,
 stable nodes to minimize churn.
+
+\begin{figure}
+\centering
+\includegraphics[width=.6\textwidth]{images/uptime.png}
+\caption{Probability of remaining online another hour as a function of uptime.
+The $x$ axis represents minutes. The $y$ axis shows the fraction of nodes
+that stayed online at least $x$ minutes that also stayed online at least
+$x+60$ minutes. Source: Maymounkov {\em et al.} \cite{kad}}
+\label{fig:kad-uptime}
+\end{figure}
 
 See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth
 varies as a function of node churn.
@@ -310,17 +366,6 @@ Therefore, a distributed system
 intended for high performance applications must aggressively optimize for low
 latency, both at the individual process scale and at the overall architecture
 scale.
-
-In addition, we emphasize an architectural strategy aimed at achieving low
-latency by focusing on eliminating the need to wait for long tails
-\cite{tail-at-scale}.
-The goal is a protocol that allows for every request to be satisfiable by the
-fastest nodes participating in any given transaction, without needing to wait
-for a slower subset.
-Focusing on operations where the result is only dependent on the fastest
-nodes turns what could be a potential liability (highly variable performance
-from individual actors) into a great source of strength for a distributed
-storage network.
 
 \section{Bandwidth}
 
@@ -361,39 +406,38 @@ Please see Appendix \todo{} for a discussion on how available bandwidth
 combined with required repair traffic limits usable space.
 
 \section{Security and privacy}
-One of the primary focuses of the Storj network is to ensure that its users
-data privacy is protected. This is not addressed as an after thought but is
-built into the design of the clients, network and other related services.
 
-Any object storage platform must ensure both the privacy and security of data
-stored. Distributed storage platforms include an additional layer of
+One of the primary focuses of the Storj network is to ensure that its users'
+data privacy is protected. This is not addressed as an afterthought but is
+built into the design of the clients, network, and other related services.
+
+Any object storage platform in our market should ensure both the privacy and
+security of data stored; however,
+decentralized storage platforms include an additional layer of
 complexity and risk associated with the storage of data on inherently
-untrusted nodes.
+untrusted nodes. Because decentralized storage platforms cannot take many
+of the same shortcuts datacenter-based approaches can (e.g. firewalls, DMZs,
+etc.), decentralized storage must be designed from the ground up to support
+enhanced security and privacy at all levels of the system.
 
-First and foremost, the object storage platform must address the security of
-the data stored. Data security encompasses a wide range of concerns including
+Data security encompasses a wide range of concerns including
 identity and access management, prevention of tampering or unauthorized
 modification, prevention of ransomware attacks, system vulnerabilities, and
-malicious insiders.
+malicious insiders. Data privacy, on the other hand, includes storage of data
+without providing access to the underlying data and its metadata by
+Storj Labs, third-party operators of system components, or malicious actors.
 
-Separate but related from security issues are privacy concerns.
-Privacy-related issues considered for purposed of the design constraints
-include storage of data without providing access to the underlying data and its
-metadata by Storj Labs, third-party operators of system components,
-or malicious actors.
-
-Beyond the value to end users of protecting privacy and security of data stored
-on the network, certain categories of data are subject to specific regulatory
-compliance. In addition to a baseline level of security and privacy concerns,
-decentralized storage must also address issues of regulatory compliance that
-specify conditions for the location, governance or control of data such as
+Certain categories of data are subject to specific regulatory compliance.
+In addition to a baseline level of security and privacy concerns,
+cloud storage should also address issues of regulatory compliance that
+specify conditions for the location, governance, or control of data such as
 HIPAA or GDPR.
 
-In order to achieve the level of privacy and security required, an additional
-design requirement is that the software be open source. Open source software
-provides the level of transparency and assurance needed that the behaviors of
-the system are as advertised and programmatically resistant to established
-attack vectors, manipulation, and censorship in addition to the lack of a
+One last constraint is that our solution be open source. Open source software
+provides the level of transparency and assurance needed to prove that the
+behaviors of the system are as advertised. Customers should be able to evaluate
+that our solution is programmatically resistant to established
+attack vectors, manipulation, and censorship, in addition to having a lack of a
 centralized point of attack or failure.
 
 \section{Object size}
@@ -421,25 +465,43 @@ packed into.
 
 \section{Decentralization}
 
-Decentralization as a design constraint introduces a significant number of
-benefits across multiple dimensions of the cloud storage function from
-reliability and resilience, to performance and scale.
-It also introduces a set of challenges for security and privacy.
-By definition, a decentralized application is a way to create a service that
-no single entity operates, and for which no single entity is responsible for
-the cost associated with the infrastructure on which the service operates.
+A decentralized application in our view is a service that no single entity
+operates. Further, no single entity should be solely responsible for the cost
+associated with running the service.
 
 Decentralization as an architectural and design constraint is driven in part
 by the economic consideration of the cost to instantiate and manage
-infrastructure, or pay for utilities and bandwidth.
+infrastructure or pay for utilities and bandwidth. We believe that there
+are significant underutilized resources at the edge of the network and at
+the margin for many smaller operators. We believe there is a long tail of
+resources that are presently unused or underused that could provide affordable
+but geographically distributed cloud storage. Perhaps some small operator
+has access to cheaper electricity than standard data centers or another small
+operator has access to cheaper cooling. Many of these small operator
+environments are not substantial enough to run an entire datacenter-like
+storage system, but we believe that in aggregate, enough small operator
+environments exist that their combination over the internet constitute
+significant opportunity and advantage for cheaper and faster storage.
+
 Operating a decentralized network requires node operators to contribute
-resources--network bandwidth, compute, storage, energy--in exchange for
-compensation--the opportunity to earn cryptocurrency.
+resources (e.g. network bandwidth, compute, storage, and energy) in exchange
+for compensation (i.e. the opportunity to earn cryptocurrency).
 In most instances, increase in demand for a decentralized service drives
-increase in adoption and proliferation of nodes.
+increase in adoption and proliferation of storage nodes.
 This effectively increases the available capacity while at the same time
-driving cost down.
+driving costs down.
 There is no need to build expensive data centers or pay for unused resources.
+
+Our decentralization goals are also driven by our desire to detangle
+fundamental infrastructure (storage) from the hands of a few major entities.
+We believe that there exists inherent risk in trusting a single entity,
+company, or organization with a significant fraction of the world's data.
+Many possible unfavorable outcomes may result from trusting a single entity,
+such as the company's roadmap changes and the product changes to be less
+useful, the company's position on data collection changes and begins to sell
+your metadata to advertisers, or perhaps the company goes out of business or
+fails to keep your data safe. By creating an equivalent or better system,
+many users worried about single-entity risk will have a viable alternative.
 
 We adopt a decentralized architecture because on the whole, it addresses the
 limitations faced by centralized cloud storage.
@@ -488,75 +550,62 @@ anna \cite{anna}}
 
 \section{Marketplace and economics}
 
-Designing a decentralized storage network in furtherance of creating and
-operating a business as a going concern presents additional design constraints
-than when pursuing an ideological goal of a purely decentralized application
+Designing a decentralized storage network in pursuit of creating and
+operating a business presents additional design constraints than when only
+pursuing an ideological goal of a purely decentralized application
 for the sake of decentralization.
 As a business entity, Storj Labs develops software to aggregate and resell
 unused storage space on devices owned and operated by unaffiliated third
 parties. This impacts design in a number of ways.
 
-One significant design implication of the marketplace for and economics of
-cloud storage is the separation of the function of storing data on the network
-(demand) from the function of sharing space and bandwidth on the network
-(supply).
-This design decision addresses the market condition that the overwhelming
-majority of potential partners and customers who will pay to store data on the
+First, it is important to separate of the function of storing data on
+the network (demand) from the function of sharing space and bandwidth
+on the network (supply). This is because
+the overwhelming majority of potential partners and customers who will
+pay to store data on the
 network do not also have a corresponding supply of storage space to share.
 
-Another factor is that individuals providing the supply of unused storage must
-be fairly compensated.
-This includes aligning the economic incentives of the network to ensure that
-the rational nodes on the network conform to the behavior of altruistic nodes
-and to eliminate incentives for byzantine nodes to deviate from the
-behavior of altruistic nodes.
+Second, individuals providing the supply of unused storage must
+be compensated fairly.
+This includes aligning the economic incentives of the network to ensure
+that the rational nodes on the network (the majority of operators) behave
+as similarly as possible to the expected behavior of altrustic nodes.
+Opportunities should likewise be eliminated that elicit any byzantine behavior.
 
-Additionally, creating incentives for demand-side partners or customers to
-bring data to the network means that the price charged for storage and
-bandwidth, combined with the other benefits of decentralized storage must be
+Third, to drive network growth and adoption, we must have a price-competitive
+product and attractive
+opportunities available for demand-side partners. To create additional
+incentives for partners or customers to bring data to the network,
+the price charged for storage and bandwidth--combined with the other
+benefits of decentralized storage--must be
 more compelling and economically beneficial than alternative storage solutions
 in the market.
 
-Beyond the raw economics of the cost and price of storage and bandwidth,
-decentralized storage also requires the processing of a large volume of
-transactions in a marketplace consisting of potentially millions of demand-side
-partners, customers and end users storing billions of pieces of encrypted and
-encoded files on tens of millions of storage nodes and devices operated by
-millions of supply-side partners or individuals, all via dozens, hundreds, or
-even thousands of heavy clients. \todo{we haven't introduced the concept
-of heavy clients yet}
+Decentralized storage requires the processing of a large volume of
+transactions. A marketplace consisting of potentially millions of
+demand-side partners, customers, and end users storing billions of pieces of
+encrypted and encoded files on tens of millions of storage nodes and devices
+operated by millions of supply-side partners or individuals can drive a lot
+of traffic.
 The network must be able to accurately account for billions of storage and
 bandwidth utilization transactions, then appropriately bill and pay for the
 aggregated utilization of resources.
 
 The network must be able to account for ensuring efficient and timely billing
 and payment and regulatory compliance for tax and other reporting.
-Decentralized application architecture typically mandates the incorporation of
-a cryptocurrency for use in the transmission of value in exchange for
-utilization of shared resources on the network.
+Decentralized application architectures have seen growing adoption of the
+incorporation of a cryptocurrency for use in the transmission of value in
+exchange for utilization of shared resources on the network.
 In this case, Storj has implemented the STORJ utility token.
 This presents the additional requirement that the network be able to process
 an extremely large volume of cryptocurrency transactions.
 
-The open-source approach of the software project presents additional design
-constraints.
-The network must account for the operation of servers by unaffiliated third
-parties and must be able to coordinate payment, as well as aggregate reputation
-data among and between storage nodes and heavy clients \todo{} in order for
-heavy clients and storage nodes to determine with which entities on the
-network they will transact business.
+Because Storj is open source, the network must account for the operation of
+servers by unaffiliated third parties and must be able to coordinate payment
+as well as aggregate reputation data among and between components of the
+network.
 Building a network of contributors will increase the ability to bring new
 capabilities to market faster.
-
-In addition to the delivery of specific capabilities of the software components
-of the network, Storj will also need to build and maintain a large network of
-demand and supply.
-The network must achieve a minimum scale and distribution of storage nodes to
-deliver an acceptable level of storage durability while maintaining an
-acceptably low amount of file repair.
-The scale of the network is also required to create a network effect to
-disincentivize use of the open source software to directly compete with the
-network.
 
 \todo{this section is a combination of a problem statement and a solution.
 some of this should be put into the concrete implementation section}
@@ -781,16 +830,24 @@ details. \bs{add reference to the section}
 \subsection{Erasure codes' effect on Long tails}
 
 Erasure codes enable an enormous performance benefit, which is the ability to
-avoid waiting for long-tail response times \cite{tail-at-scale}. For uploads, a
-file can be encoded to a higher $(k, n)$ ratio than necessary for desired
-durability
-guarantees. During an upload, after enough pieces have uploaded to gain required
+avoid waiting for "long-tail" response times \cite{tail-at-scale}. For uploads,
+a file can be encoded to a higher $(k, n)$ ratio than necessary for desired
+durability guarantees.
+During an upload, after enough pieces have uploaded to gain required
 redundancy, the remaining additional uploads can be cancelled, allowing the
 upload to continue as fast as the fastest nodes in a set, instead of waiting
 for the slowest nodes.
 Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
+
+The goal is a protocol that allows for every request to be satisfiable by the
+fastest nodes participating in any given transaction, without needing to wait
+for a slower subset.
+Focusing on operations where the result is only dependent on the fastest
+nodes turns what could be a potential liability (highly variable performance
+from individual actors) into a great source of strength for a distributed
+storage network.
 
 \section{Metadata}
 
@@ -839,14 +896,14 @@ choose between. \todo{reference i-confluence and coordination minimization}
 
 \section{Encryption}
 
-Regardless of storage system, our design constraints require total security,
-so any such metadata will be encrypted.
+Regardless of storage system, our design constraints require total security
+and privacy, so any such metadata will be encrypted.
 Data should be encrypted as early as possible in the data storage pipeline,
 ideally before the data ever leaves the source computer. This means that an
 S3-compatible interface or appropriate similar client library should run
 colocated on the same computer as the user's application.
 
-Ideally encryption uses a pluggable mechanism that allows users to choose their
+Encryption should use a pluggable mechanism that allows users to choose their
 desired encryption scheme as well as store metadata about that encryption
 scheme to allow them to recover their data using the appropriate decryption
 mechanism.
@@ -879,7 +936,12 @@ been
 asked to store.
 
 Many storage systems use audits as a way of determining when to do repair and
-which files to repair. Our storage system does not. In our storage system,
+which files to repair. Our storage system does not.
+Instead, we are extending the probabilistic nature of
+common per-file {\em proofs of retrievability} \cite{proof-of-retrievability}
+to range across all files.
+
+In our storage system,
 audits are simply a mechanism by which a node's degree of stability is
 determined. Failed audits will result in marking a storage node as bad, which
 could result in shuffling data to new nodes and avoiding that node altogether
@@ -898,9 +960,6 @@ deleted. Fortunately, the probability of a false positive on an individual
 partial audit is easily calculable (see Section \todo{}). When applied
 iteratively to a storage node as a whole, detection of unexpected behavior
 becomes certain to within a known and modifiable error threshold.
-We are extending the probabilistic nature of
-common per-file {\em proofs of retrievability} \cite{proof-of-retrievability}
-to range across all files.
 
 \todo{discuss reputation}
 
@@ -913,12 +972,12 @@ availability is an increasing function of uptime \cite{kad}. Storage nodes
 may go offline due to hardware failure, intermittent internet connectivity, or
 operator choices.
 Because audits are validating that conforming nodes store data correctly, all
-that remains is to detect when a storage node goes offline or bad and repair
-at-risk data.
+that remains is to detect when a storage node goes offline or becomes bad and
+repair at-risk data.
 
 We're taking a huge shortcut with the assumption that
 probabilistic audits are enough for us to estimate the likelihood that a node
-will have the data it should have; we can use that
+will have the data it should have; we can use the audits
 along with node uptime (which is much more efficient than audits)
 to calculate when a file is at risk.
 We {\em only} consider {\em node} availability and configured repair thresholds
@@ -929,7 +988,7 @@ corruption, malicious behavior, bad hardware, software error, user space
 reclaimation, etc., but these issues are less serious than full node
 churn (power loss, internet connectivity intermittency,
 software shutdown or removal).
-Our spot-check-based audits will incentivize storage nodes to reliabily store
+Our spot-check based audits will incentivize storage nodes to reliabily store
 data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, and
@@ -966,7 +1025,7 @@ The network assumes STORJ as the default payment medium, but many other payment
 types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
 transfer of live goats.
 
-\chapter{Concrete implementations}\label{sec:concrete}
+\chapter{Concrete implementation}\label{sec:concrete}
 
 The framework we've described above we believe to be relatively fundamental
 given our design constraints. However, within the framework there remains a
@@ -978,7 +1037,7 @@ details outlined here are viable and support a working implementation of our
 framework.
 
 As with our previous network, we will publish changes to this concrete
-architectures through our Storj Improvement Proposal process \cite{sips}.
+architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \section{Definitions}
 
@@ -990,16 +1049,16 @@ architectures through our Storj Improvement Proposal process \cite{sips}.
   services in our network: storage nodes, satellites, and uplinks. Peer classes
   tend to be run separately by different operators.
 
+\item[Storage Node] This peer class participates in the DHT, stores data for
+  others, and gets paid for storage and bandwidth (via a bandwidth allocation
+  protocol).
+
 \item[Uplink] This peer class represents any application or
   service that wants to store data. Applications can store data via the
   S3-compatible API, or through our libstorj C-bindings. This peer class
   is not expected to remain online like the other two classes and is otherwise
   relatively lightweight. This peer class performs encryption, erasure encoding,
   and coordinates between the other peer classes on behalf of the customer.
-
-\item[Storage Node] This peer class participates in the DHT, stores data for
-  others, and gets paid for storage and bandwidth (via a bandwidth allocation
-  protocol).
 
 \item[Satellite] This peer class participates in the DHT, caches
   DHT lookups, stores per-object metadata, keeps storage node reputation, pays
@@ -1148,99 +1207,6 @@ Storage nodes should allow administrators to configure maximum allowed disk
 space usage and maximum allowed bandwidth usage over the last rolling 30 days.
 They should keep track of how much is remaining of both, and reject operations
 that do not have a valid signature from the appropriate payer.
-
-\section{Satellite}
-
-As should be apparent, the data owner has to shoulder significant burdens
-to maintain availability and integrity of data on the Storj network. Because
-nodes cannot be trusted, data owners are responsible for selecting good
-storage nodes, issuing and verifying audits, providing payments, managing file
-state
-and object metadata, etc. Many of these functions require high uptime and
-significant infrastructure, especially for an active set of files. User run
-applications, like a file syncing application, cannot be expected to efficiently
-manage files on the network.
-
-To enable simple access to the network from the widest possible array of client
-applications, Storj implements a thin-client model that delegates trust to a
-dedicated server that manages data ownership. The burdens of the
-data owner can be split across the client and the server in a variety of ways.
-This sort of dedicated server, called the satellite, has been developed and
-released as Free Software. Any individual or organization can run their own
-satellite to facilitate network access.
-
-With respect to customer data, the satellite is designed to store only
-metadata. It is never given data unencrypted and does not hold encryption keys.
-The only knowledge of an object that the satellite is able to share with
-third parties is metadata such as access patterns. This system protects the
-client's privacy and gives the client complete control over access to the data,
-while delegating the responsibility of keeping files available on the network
-to the satellite.
-
-In cases where the cost of delegating trust is not excessively high,
-clients may use third-party satellites. Because satellites do not store
-data and have no access to keys, this is still a large improvement over the
-traditional data-center model. Many of the features satellites provide, like
-storage node selection and reputation, leverage considerable network effects.
-Data
-sets grow more useful as they increase in size, indicating that there are
-strong economic incentives to share infrastructure and information
-in a satellite.
-
-Applications using object stores delegate significant amounts of trust to the
-storage providers. Providers may choose to operate public satellites as a
-service.
-Application developers then delegate trust to a specific satellite, as they
-would to a traditional object store, but to a lesser degree. Future updates
-will allow for various distributions of responsibilities (and thus levels of
-trust) between customer applications and satellites. This shifts significant
-operational burdens from the application developer to the service-provider.
-This would also allow developers to pay for storage with standard payment
-mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
-Storj Labs Inc. currently provides this service.
-
-A specific satellite {\em instance} does not necessarily constitute one
-server. A satellite may be run by a collection of servers and be backed by
-a horizontally scalable trusted database for higher uptime.
-
-The satellite is, at its core, one of the most complex and yet
-straightforward components of our initial release that fulfills our framework.
-Future framework-conforming releases nonwithstanding, the initial satellite
-is a standard application server that wraps a trusted database such as
-PostgreSQL, Cassandra, or something else. Users sign in to a specific
-satellite with account credentials. The satellite is responsible for
-keeping track of accounts and authorization, storage node contact information
-and
-reputation, and object metadata. The satellite is also responsible for
-payments and data repair. Data available through one satellite instance is
-not available through another satellite instance, though various levels of
-export and import are planned.
-
-The satellite is made up of components discussed earlier:
-
-\begin{itemize}
-\item A full DHT cache.
-\item An account management and authorization system
-\item A per-object metadata database indexed by encrypted path
-\item A reputation and storage node statistics database
-\item A storage node payment service
-\item A data audit and data repair service
-\end{itemize}
-
-\section{Uplink}
-
-The uplink provides an S3-compatible drop-in interface for applications that
-need to store data but don't want to bother with the complexities of distributed
-storage directly. The uplink is a simple service layer on top of libstorj,
-which is a library that provides access to storing and retrieving data in the
-Storj network.
-
-The uplink (via libstorj) first encrypts data, erasure encodes it, then
-streams it out to storage nodes, all while coordinating with a chosen satellite
-for metadata and tracking.
-
-The uplink should run co-located with wherever data is generated, and will
-communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \section{Peer-to-peer communication}
 
@@ -1534,6 +1500,84 @@ specifically in this component of our framework.
 Please see Appendix \todo{} about why we've chosen to avoid trying to solve
 the problem of Byzantine distributed consensus for now. See Future work
 \todo{} for a discussion of medium to long term plans.
+
+\section{Satellite}
+
+As should be apparent, the data owner has to shoulder significant burdens
+to maintain availability and integrity of data on the Storj network. Because
+nodes cannot be trusted, data owners are responsible for selecting good
+storage nodes, issuing and verifying audits, providing payments, managing file
+state
+and object metadata, etc. Many of these functions require high uptime and
+significant infrastructure, especially for an active set of files. User run
+applications, like a file syncing application, cannot be expected to efficiently
+manage files on the network.
+
+To enable simple access to the network from the widest possible array of client
+applications, Storj implements a thin-client model that delegates trust to a
+dedicated server that manages data ownership. The burdens of the
+data owner can be split across the client and the server in a variety of ways.
+This sort of dedicated server, called the satellite, has been developed and
+released as Free Software. Any individual or organization can run their own
+satellite to facilitate network access.
+
+With respect to customer data, the satellite is designed to store only
+metadata. It is never given data unencrypted and does not hold encryption keys.
+The only knowledge of an object that the satellite is able to share with
+third parties is metadata such as access patterns. This system protects the
+client's privacy and gives the client complete control over access to the data,
+while delegating the responsibility of keeping files available on the network
+to the satellite.
+
+In cases where the cost of delegating trust is not excessively high,
+clients may use third-party satellites. Because satellites do not store
+data and have no access to keys, this is still a large improvement over the
+traditional data-center model. Many of the features satellites provide, like
+storage node selection and reputation, leverage considerable network effects.
+Data
+sets grow more useful as they increase in size, indicating that there are
+strong economic incentives to share infrastructure and information
+in a satellite.
+
+Applications using object stores delegate significant amounts of trust to the
+storage providers. Providers may choose to operate public satellites as a
+service.
+Application developers then delegate trust to a specific satellite, as they
+would to a traditional object store, but to a lesser degree. Future updates
+will allow for various distributions of responsibilities (and thus levels of
+trust) between customer applications and satellites. This shifts significant
+operational burdens from the application developer to the service-provider.
+This would also allow developers to pay for storage with standard payment
+mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
+Storj Labs Inc. currently provides this service.
+
+A specific satellite {\em instance} does not necessarily constitute one
+server. A satellite may be run by a collection of servers and be backed by
+a horizontally scalable trusted database for higher uptime.
+
+The satellite is, at its core, one of the most complex and yet
+straightforward components of our initial release that fulfills our framework.
+Future framework-conforming releases nonwithstanding, the initial satellite
+is a standard application server that wraps a trusted database such as
+PostgreSQL, Cassandra, or something else. Users sign in to a specific
+satellite with account credentials. The satellite is responsible for
+keeping track of accounts and authorization, storage node contact information
+and
+reputation, and object metadata. The satellite is also responsible for
+payments and data repair. Data available through one satellite instance is
+not available through another satellite instance, though various levels of
+export and import are planned.
+
+The satellite is made up of components discussed earlier:
+
+\begin{itemize}
+\item A full DHT cache.
+\item An account management and authorization system
+\item A per-object metadata database indexed by encrypted path
+\item A reputation and storage node statistics database
+\item A storage node payment service
+\item A data audit and data repair service
+\end{itemize}
 
 \section{Encryption}
 
@@ -2078,6 +2122,21 @@ will be efficient and small.
 the case of bugs or mistaken file removal.}
 
 \todo{future work: is a bloom filter the best data structure?}
+
+\section{Uplink}
+
+The uplink provides an S3-compatible drop-in interface for applications that
+need to store data but don't want to bother with the complexities of distributed
+storage directly. The uplink is a simple service layer on top of libstorj,
+which is a library that provides access to storing and retrieving data in the
+Storj network.
+
+The uplink (via libstorj) first encrypts data, erasure encodes it, then
+streams it out to storage nodes, all while coordinating with a chosen satellite
+for metadata and tracking.
+
+The uplink should run co-located with wherever data is generated, and will
+communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 \chapter{Product details}\label{sec:product_details}
 
