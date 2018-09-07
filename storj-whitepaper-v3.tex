@@ -92,7 +92,8 @@ Remaining medium todo items:
 \item Eng: General data repair framework description
 \item Eng: more macaroon details
 \item Eng: future work section about hot files
-\item get a better latex theme
+\item make point about why rs is better than replication more clear,
+  contrasting with other approaches
 \end{itemize}
 
 Remaining little todo items:
@@ -542,7 +543,7 @@ In this environment we can expect that a majority
 of storage nodes are rational and a minority are byzantine. Storj assumes no
 altruistic nodes. Any potential implementation must account for this distinction.
 
-\section{Coordination avoidance}
+\section{Coordination avoidance}\label{sec:coordination-avoidance}
 
 A growing body of distributed database system research shows that systems that
 avoid coordination wherever possible perform far better than systems where
@@ -918,7 +919,8 @@ given a path),
 One of our framework's focuses is enabling this component -- metadata
 storage -- to be interchangeable per user. Specifically, we expect to ship with
 multiple implementations of metadata storage that users will be allowed to
-choose between. \todo{reference i-confluence and coordination minimization}
+choose between. This greatly assists with our design goal of coordination
+avoidance between users (\ref{sec:coordination-avoidance}).
 
 \section{Encryption}
 
@@ -1033,7 +1035,7 @@ avoid naively placing a blockchain-based solution in the storage hotpath.
 By this we mean that an adequately performant storage system cannot afford to
 wait for blockchain operations. When operations should be measured in
 milliseconds, waiting for a cluster of nodes to probabilistically come to
-agreement is a non-starter. \todo{i-confluence}
+agreement is a non-starter (\ref{sec:coordination-avoidance}).
 
 Our framework instead emphasizes game theoretic models to ensure
 that participants in the network are properly incentivized to remain in the
@@ -1077,7 +1079,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \item[Storage Node] This peer class participates in the node discovery
   system, stores data for others, and gets paid for storage and bandwidth
-  (via the bandwidth allocation protocol \ref{bap}).
+  (via the bandwidth allocation protocol in section \ref{bap}).
 
 \item[Uplink] This peer class represents any application or
   service that wants to store data. Applications can store data via an
@@ -1222,8 +1224,8 @@ Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. They store {\em pieces}.
 Each method will take a {\em piece ID}, a {\em satellite ID} (the ID of the
 associated Satellite instance) and signature, an optional TTL,
-and the other metadata required by the bandwidth allocation protocol
-\todo{clean up the list of arguments, add ref to bap}.
+and the other metadata required by the bandwidth allocation protocol (\ref{bap})
+\todo{clean up the list of arguments}.
 
 The \code{put} operation will take a stream of bytes and store the bytes such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
@@ -1295,7 +1297,7 @@ NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
 intervention and port forwarding will be required. In the future, nodes unable
 to punch a port through their firewalls may rely on traffic proxying from
 other, more available nodes, for a fee. See the bandwidth allocation protocol
-\todo{ref} for a description of how fees work.
+(\ref{bap}) for a description of how fees work.
 
 \todo{node-introductions}
 
@@ -1983,8 +1985,7 @@ operation, it confirms and retains a copy of this promise to pay, sending the
 client the file piece it needs. Later, the storage node sends the promise to
 pay to
 the satellite, and the satellite credits that storage node as having
-successfully delivered the file piece.
-\todo{ref to bandwidth allocation protocol section}
+successfully delivered the file piece. See section \ref{bap} for more details.
 
 Satellites will also earn revenue from account holders for executing audits,
 repairing files, and storing metadata. Every day, each satellite will execute
@@ -2235,7 +2236,8 @@ specific satellite already.
     id.
   \end{itemize}
 \item The console will take this information and begin parallel connections to
-  all of the chosen storage nodes via the bandwidth allocation protocol.
+  all of the chosen storage nodes via the bandwidth allocation protocol
+  (\ref{bap}).
 \item The console will begin breaking the segment into stripes and then
   erasure encode each stripe.
 \item The generated erasure shares will be concatenated into \x{pieces} as they
@@ -2298,8 +2300,8 @@ When a user downloads a file:
   data request it received, requesting the remaining segment pointers if so.
 \item Once all necessary segment pointers have been returned, if the requested
   segments are not inline, the satellite will initiate parallel requests
-  via the bandwidth allocation protocol to all appropriate storage nodes for the
-  appropriate erasure share ranges inside of each stored piece.
+  via the bandwidth allocation protocol (\ref{bap}) to all appropriate storage
+  nodes for the appropriate erasure share ranges inside of each stored piece.
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
   be gained by allowing the console to cancel the slowest downloads.
