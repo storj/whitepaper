@@ -31,7 +31,7 @@
 
 \renewcommand{\baselinestretch}{1.2}
 
-\newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\tt #1}}
+\newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\em #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
 
@@ -80,7 +80,6 @@ Remaining big todo items:
   plan to ensure satellite quality by quality control evaluations, formal
   partnerships, relationships, and not letting poor quality satellites
   use the brand.
-\item i-Confluence
 \item tie framework back to design constraints
 \item tie concrete implementation back to framework
 \end{itemize}
@@ -90,7 +89,6 @@ Remaining medium todo items:
 \item Anyone:
   Clean up distributed consensus positioning in the Metadata section.
 \item Eng: Describe how path encryption works
-\item Eng: Describe payer (satellite) ids and why they're needed
 \item Eng: General data repair framework description
 \item Eng: more macaroon details
 \item Eng: future work section about hot files
@@ -143,6 +141,7 @@ Cameron Ayer,
 Dan Sorenson,
 Dennis Coyle,
 Dylan Lott,
+Egon Elbre,
 Garrett Ransom,
 Helene Unland,
 James Hagans,
@@ -242,16 +241,16 @@ We've integrated these components with each other to implement a secure,
 robust, and reliable storage system.
 
 We organized the rest of this paper into five
-sections. Section \ref{sec:design_constraints} discusses the design space
+sections. Chapter \ref{chap:design-constraints} discusses the design space
 in which Storj operates and elaborates on specific design constraints which
 we are focusing our optimization efforts on.
-Section \ref{sec:framework} covers our framework, while \ref{sec:concrete}
+Chapter \ref{chap:framework} covers our framework, while \ref{chap:concrete}
 proposes a simple concrete implementation of each component.
-Section \ref{sec:product_details} covers specific details
-about how we will deliver this implementation to users. Finally, Section
-\ref{sec:future_work} covers future areas of research.
+Chapter \ref{chap:walkthroughs} explains detailed descriptions of what happens
+during each operation in the network. Finally, Chapter
+\ref{chap:future-work} covers future areas of research.
 
-\chapter{Storj design constraints}\label{sec:design_constraints}
+\chapter{Storj design constraints}\label{chap:design-constraints}
 
 Before designing a system, it's important to first define its requirements.
 There are many different ways to design a decentralized storage system, but
@@ -366,6 +365,8 @@ Therefore, a distributed system
 intended for high performance applications must aggressively optimize for low
 latency, both at the individual process scale and at the overall architecture
 scale.
+
+\todo{diagram}
 
 \section{Bandwidth}
 
@@ -541,12 +542,54 @@ In this environment we can expect that a majority
 of storage nodes are rational and a minority are byzantine. Storj assumes no
 altruistic nodes. Any potential implementation must account for this distinction.
 
-\section{Coordination contention}
+\section{Coordination avoidance}
 
-\todo{explain why avoiding coordination is good, coordination contention
-is bad, and reference calm conjecture
-\cite{calm1, calm2}, i-confluence \cite{i-confluence}, hat \cite{hat}, and
-anna \cite{anna}}
+A growing body of distributed database system research shows that systems that
+avoid coordination wherever possible perform far better than systems where
+subcomponents are forced to coordinate to achieve correctness
+\cite{cap1, cap2, consistency-vs-latency, hat, i-confluence, anna,
+calm1, calm2}.
+By coordination, we continue using Bailis {\em et al.}'s informal definition
+that coordination is the requirement that concurrently executing operations
+synchronously communicate or otherwise stall in order to complete
+\cite{i-confluence}.
+This observation applies not only to distributed networks but also to
+concurrent threads of execution coordinating within the same computer.
+As soon as coordination is needed, actors in the system will need to wait for
+other actors, and waiting due to coordination issues can be significantly
+costly.
+
+While many types of operations in a network may require coordination
+(e.g., operations that require linearizability
+\cite{jepsen-consistency, hat, vv-consistency}), choosing strategies that
+avoid coordination (such as Highly Available Transactions \cite{hat}) can offer
+performance gains of two to three orders of magnitude over wide area networks.
+In fact, by carefully avoiding coordination as much as possible, the Anna
+database is able to be 10 times faster than both Cassandra and Redis in their
+corresponding environments, and 700 to 800 times faster than
+performance-focused in-memory databases such as Masstree or TBB
+\cite{anna, anna-announce}.
+Not all coordination can be avoided, but new frameworks such as Invariant
+Confluence \cite{i-confluence} allow system architects to understand when
+coordination is required for consistency and correctness. As evidenced
+by Anna's performance successes, it is worth it to avoid coordination where
+possible.
+
+Systems that avoid too much coordination are much better at scaling from small
+to large workloads. Adding more resources to a coordination-avoidant system
+will directly increase throughput and performance. On the other hand,
+adding more resources to a coordination-dependent system
+(such as Bitcoin \cite{bitcoin} or even Raft \cite{raft}) will not result in
+additional throughput or overall performance.
+
+To get to exabyte scale, we believe that avoiding coordination where possible
+is one of the key components of any successful strategy.
+Surprisingly, many decentralized storage platforms are working towards
+architectures that require significant amounts of coordination,
+where most if not all operations must be accounted for by a single global
+ledger. For us to achieve exabyte scale, we think it is a fundamental
+requirement to limit hotpath coordination domains to small spheres,
+entirely controllable by each user.
 
 \section{Marketplace and economics}
 
@@ -607,23 +650,6 @@ network.
 Building a network of contributors will increase the ability to bring new
 capabilities to market faster.
 
-\todo{this section is a combination of a problem statement and a solution.
-some of this should be put into the concrete implementation section}
-
-As the network scales and unaffiliated third parties operate heavy clients,
-Storj must be able to maintain a registry of reliable heavy clients and derive
-value from the operation of those heavy clients.
-
-Storj will need to differentiate the software from the network as well as the
-supply side from the demand side. Storj will brand the two aspects separately:
-\begin{description}
-\item[Storj.io] - the brand for supply-side storage node operators contributing
-storage and bandwidth to the network in exchange for compensation.
-\item[Tardigrade.io] - the brand for demand-side partners and customers who
-purchase storage and bandwidth on the network with the expectation of high
-durability, resilience, reliability and backed by an industry-leading SLA.
-\end{description}
-
 Due to the global network of supply and demand for storage and bandwidth, the
 network must be able to transact in virtually any form of value whether that it
 be fiat currency, cryptocurrency or some other form of barter.
@@ -635,7 +661,7 @@ components will be driven by applicability to specific object storage use cases
 and the relationship between features and performance to the price of storage
 and bandwidth relative to those use cases.
 
-\chapter{Framework}\label{sec:framework}
+\chapter{Framework}\label{chap:framework}
 
 After having considered our design constraints, the next goal is to design
 a framework consisting of relatively fundamental components.
@@ -967,7 +993,7 @@ becomes certain to within a known and modifiable error threshold.
 
 An ever-present risk in any distributed storage system is file loss. While there
 are many potential causes for file loss, storage node churn is the leading
-risk, as evidenced by the findings of Maymonkov et al. that expected node
+risk, as evidenced by the findings of Maymonkov {\em et al.} that expected node
 availability is an increasing function of uptime \cite{kad}. Storage nodes
 may go offline due to hardware failure, intermittent internet connectivity, or
 operator choices.
@@ -1025,7 +1051,7 @@ The network assumes STORJ as the default payment medium, but many other payment
 types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
 transfer of live goats.
 
-\chapter{Concrete implementation}\label{sec:concrete}
+\chapter{Concrete implementation}\label{chap:concrete}
 
 The framework we've described above we believe to be relatively fundamental
 given our design constraints. However, within the framework there remains a
@@ -1049,43 +1075,42 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
   services in our network: storage nodes, satellites, and uplinks. Peer classes
   tend to be run separately by different operators.
 
-\item[Storage Node] This peer class participates in the DHT, stores data for
-  others, and gets paid for storage and bandwidth (via a bandwidth allocation
-  protocol).
+\item[Storage Node] This peer class participates in the node discovery
+  system, stores data for others, and gets paid for storage and bandwidth
+  (via the bandwidth allocation protocol \ref{bap}).
 
 \item[Uplink] This peer class represents any application or
-  service that wants to store data. Applications can store data via the
-  S3-compatible API, or through our libstorj C-bindings. This peer class
+  service that wants to store data. Applications can store data via an
+  S3-compatible API or through our libstorj C-bindings. This peer class
   is not expected to remain online like the other two classes and is otherwise
   relatively lightweight. This peer class performs encryption, erasure encoding,
-  and coordinates between the other peer classes on behalf of the customer.
+  and coordinates with the other peer classes on behalf of the customer.
 
-\item[Satellite] This peer class participates in the DHT, caches
-  DHT lookups, stores per-object metadata, keeps storage node reputation, pays
-  storage nodes, performs audits and repair, and manages authorization and user
-  accounts. Any user can run their own satellite, but we expect many users
-  will elect to avoid the operational complexity and create an account on
-  another satellite hosted by a trusted party like a friend, group, or
+\item[Satellite] This peer class participates in the node discovery system,
+  caches node address information, stores per-object metadata, keeps storage
+  node reputation, pays storage nodes, performs audits and repair, and manages
+  authorization and user accounts.
+  Any user can run their own satellite, but we expect many users
+  to elect to avoid the operational complexity and create an account on
+  another satellite hosted by a trusted third party like a friend, group, or
   workplace.
 
 \item[Bucket] A \x{bucket} is an unbounded but named
 collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
-\x{file}, and every \x{file} has a unique \x{path}.
+\x{file}, and every \x{file} has a unique \x{path} within a bucket.
 
 \item[Path] A \x{path} is a unique identifier for a \x{file} within a
-\x{bucket}. A \x{path} is a string of UTF8 codepoints that begins with a forward
-slash and ends with something besides a forward slash. More than one forward
-slash (referred to as the \x{path separator}) separate \x{path components}.
-
+\x{bucket}. A \x{path} is a string of UTF8 codepoints that begin with a forward
+slash and end with something besides a forward slash. Forward
+slashes (referred to as the \x{path separator}) separate \x{path components}.
 An example path might be \code{/etc/hosts}, where the \x{path components} are
 \code{etc} and \code{hosts}.
-
 We encrypt \x{paths} before they ever leave the customer's application's
 computer.
 
-\item[File/Object] A \x{file} (or \x{object} or \x{stream}) is an ordered
-collection of 0 or more \x{segment}s. \x{segment}s have a fixed maximum size,
-so the more bytes the \x{file} represents through \x{segment}s, the more
+\item[File or Object] A \x{file} (or \x{object} or \x{stream}) is an ordered
+collection of 0 or more \x{segment}s. \x{segment}s have a fixed maximum size.
+The more bytes the \x{file} represents through \x{segment}s, the more
 \x{segment}s there are.
 
 A \x{file} also support a limited amount of key/value user-defined fields to
@@ -1099,8 +1124,8 @@ user-configurable maximum \x{segment} size. Breaking large \x{file}s into
 multiple \x{segment}s provides a number of security and scalability advantages.
 
 \item[Inline Segment] An \x{inline segment} is a \x{segment} that is small
-enough it makes sense to store it "inline" with the metadata that keeps track of
-it, such as a \x{pointer}.
+enough such that it makes sense to store it "inline" with the metadata that
+keeps track of it.
 
 \item[Remote Segment] A \x{remote segment} is a larger \x{segment} that will be
 encoded and distributed across the network. A \x{remote segment} is larger than
@@ -1133,6 +1158,8 @@ segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 segment} data directly if applicable.
 \end{description}
 
+\todo{pictures}
+
 \section{Storage Node}
 
 The main duty of a storage node is to reliably store and return data.
@@ -1143,25 +1170,28 @@ download,
 install, and configure Storj software locally, with no account required
 anywhere. Storage node operators will select what disk space and bandwidth usage
 is allowed during configuration.
-Storage nodes will advertise during DHT communications what hard drive space is
-still
+Storage nodes will advertise during node discovery communications what hard
+drive space is still
 available, how much bandwidth is available, and what their desired STORJ token
 wallet address is.
 
 Because Storj is optimized for larger files, storage nodes have no reason to do
-anything more complex than store \x{pieces} directly on disk. As a result,
-unlike the previous release of Storj that used KFS \cite{storj-v2}, Storj no
+anything more complicated than store \x{pieces} directly on disk. Storage
+nodes simply maintain a hierarchy of directories that contain the files they
+store directly. Piece data is not stored in a key/value database. As a result,
+unlike the previous release of Storj that used KFS \cite{storj-v2} (which
+was a custom extension on top of LevelDB \cite{leveldb}), Storj no
 longer has a restriction on the maximum amount of data a storage node can store.
 
-Storage nodes also keep track of optional per-\x{piece} time-to-live, or TTL.
+Storage nodes also keep track of optional per-\x{piece} "time-to-live", or TTL.
 \x{Pieces} may be stored with a specific TTL expiry where data is expected to
-be deleted after the expiration date. If no TTL was provided, data is expected
+be deleted after the expiration date. If no TTL is provided, data is expected
 to be stored indefinitely. This means storage nodes have a database of
 expiration
 times and must occasionally clear out old data.
 
-Storage nodes must additionally keep track of signed bandwidth allocations to
-send to
+Storage nodes must additionally keep track of signed bandwidth allocations
+\ref{bap} to send to
 satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
@@ -1170,11 +1200,11 @@ Storage nodes can choose which satellites to work with. If storage nodes work
 with
 multiple satellites (the default behavior), then payment may come from
 multiple sources on varying payment schedules.
-Storage nodes are paid by specific satellites for returning data when
+Storage nodes are paid by specific satellites (1) for returning data when
 requested in
-the form of egress bandwidth payment. Bandwidth payment is made payable after
+the form of egress bandwidth payment, and (2) for storing data at rest.
+Bandwidth payment is made payable after
 the storage node sends in signed bandwidth allocation messages.
-Storage nodes are also paid for data at rest.
 Storage nodes are expected to reliably store all data sent to them and are
 paid
 with the assumption that they are faithfully doing so.
@@ -1185,11 +1215,12 @@ Storage nodes are {\em not} paid for the initial transfer of data to store
 (ingress
 bandwidth). This is to discourage storage nodes from deleting data only to be
 paid for
-storing more. Storage nodes are not paid for DHT or other maintenance traffic.
+storing more. Storage nodes are not paid for node discovery or other
+maintenance traffic.
 
 Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. They store {\em pieces}.
-Each method will take a {\em piece ID}, a {\em payer ID} (the ID of the
+Each method will take a {\em piece ID}, a {\em satellite ID} (the ID of the
 associated Satellite instance) and signature, an optional TTL,
 and the other metadata required by the bandwidth allocation protocol
 \todo{clean up the list of arguments, add ref to bap}.
@@ -1200,13 +1231,16 @@ that any subrange of bytes can be retrieved again via a \code{get} operation.
 provided), or until a \code{delete} operation is received, whichever comes
 first.
 
-The {\em payer ID} forms a namespace. An identical {\em piece ID} with a
-different {\em payer ID} refers to a different {\em piece}.
+The {\em satellite ID} forms a namespace. An identical {\em piece ID} with a
+different {\em satellite ID} refers to a different {\em piece}.
 
 Storage nodes should allow administrators to configure maximum allowed disk
 space usage and maximum allowed bandwidth usage over the last rolling 30 days.
 They should keep track of how much is remaining of both, and reject operations
-that do not have a valid signature from the appropriate payer.
+that do not have a valid signature from the appropriate satellite. Storage
+nodes do not get penalized for rejecting initial \code{put} operations.
+
+\section{Node identity}
 
 \section{Peer-to-peer communication}
 
@@ -1216,11 +1250,11 @@ Transport Layer Security protocol (TLS) on top of the $\mu$TP
 (STUN) functionality. STUN provides NAT traversal, $\mu$TP provides reliable,
 ordered delivery (like TCP would), TLS provides privacy and authentication,
 and gRPC provides multiplexing and a convenient programmer interface.
-Over time, we'll be replacing TLS to
+Over time, we'll be replacing TLS with a more flexible secure transport
+framework such as the Noise Protocol Framework \cite{noise-proto} to
 reduce round trips due to connection handshakes in situations where the data is
-already encrypted and forward secrecy isn't necessary. \todo{} See the Future
-Work section for more details. Gateways will be provided in appropriate places
-that allow for interoperability with web browsers.
+already encrypted and forward secrecy isn't necessary. See
+\ref{sec:future-work-tls} for more details.
 
 Each node will operate its own certificate authority, which requires a
 public/private keypair and a self-signed certificate. The certificate
@@ -1229,6 +1263,8 @@ compromise.
 It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
 a brand new node ID.
+
+\todo{diagram}
 
 The {\em node ID} will be determined from the certificate authority
 by hashing the DER-encoded public key.
@@ -1261,7 +1297,9 @@ to punch a port through their firewalls may rely on traffic proxying from
 other, more available nodes, for a fee. See the bandwidth allocation protocol
 \todo{ref} for a description of how fees work.
 
-\section{Node discovery}
+\todo{node-introductions}
+
+\section{Node discovery}\label{sec:concrete-node-discovery}
 
 At this point, we have storage nodes and we have a means to communicate with
 them if we know their address. We must account for the fact that storage nodes
@@ -1276,7 +1314,7 @@ functionality for node lookup, while ignoring the key/value storage aspects of
 Kademlia.
 Only using Kademlia for node lookup eliminates the need for some other
 features Kademlia would otherwise require, such as owner-based key
-republishing, neighbor-based key republishing, store and retrieval of values,
+republishing, neighbor-based key republishing, storage and retrieval of values,
 etc. Furthermore, we avoid a number of known attacks by using the
 S/Kademlia \cite{skad} extensions where appropriate.
 
@@ -1298,22 +1336,25 @@ negligible.
 Based on this design, the cache should not be expected to be a primary source
 of truth and results in the cache may be stale. Luckily, due to redundant
 storage, the storage network will be resilient against an expected degree of
-node churn, so the system will be robust even if some lookups in the the cache
+node churn and staleness,
+so the system will be robust even if some lookups in the the cache
 fail or return incorrect addresses.
 Further, because our peer-to-peer communication
 system already provides peer authentication, an overlay network cache that
 sometimes returns faulty
 or perhaps deliberately misleading address lookup responses can only cause a
-loss of performance, but not correctness.
+loss of performance but not correctness.
 
 We plan to host and help set up some well-known community-run overlay caches.
 These caches will perform the duty of quickly returning address information
 for a given node ID if the node has been online recently. Kademlia will be the
-long-lived source of truth and can be used directly if correctness is valued
-more highly than performance by certain customer classes.
+long-lived source of truth and could be used directly in many situations.
 
-\todo{talk about how we're using kademlia to advertise disk space and bandwidth
-availability, and then storing that information in the cache}
+\todo{talk about how we're using kademlia to advertise disk space, bandwidth
+availability, and STORJ wallet address, and then storing that information in
+the cache}
+
+\todo{diagram}
 
 \section{Redundancy}
 
@@ -1335,14 +1376,20 @@ tail uploads we can tolerate and is thus the amount of slow nodes we are immune
 to.
 
 Our durability story does not end with our selection of these numbers.
-Please see section \ref{sec:data_repair} for a discussion about how we repair
-data as its durability drops over time.
+Please see section \ref{sec:concrete-data-repair} for a discussion about
+how we repair data as its durability drops over time.
+
+\todo{diagram}
 
 See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
 \todo{future work: better erasure code algorithm than rs}
 
 \section{Structured file storage}
+
+\subsection{Buckets}
+
+\subsection{Paths}
 
 \subsection{Files}
 
@@ -1355,6 +1402,8 @@ compatibility with other storage platforms. Every \x{file} will support a
 limited set of arbitrary key/value metadata to support object metadata.
 
 \subsection{Files as Segments}
+
+\todo{diagram}
 
 \x{Files} should be designed both for small data and large data.
 A \x{file} may be small enough it consists of only one segment.
@@ -1384,6 +1433,8 @@ to find nodes that have enough space for their specific large file.
 
 \subsection{Segments as Stripes}
 
+\todo{diagram}
+
 In many situations it's important to access just a portion of a piece of
 data. Some large file formats such as large video files, disk images, or file
 archives support the concept of seeking,
@@ -1398,6 +1449,8 @@ network without staging it beforehand, and enables a number of other useful
 features.
 
 \subsection{Stripes as Erasure Shares}
+
+\todo{diagram}
 
 Erasure encoding gives us the chance to control network durability in the face
 of unreliable \x{piece storage node}s. Erasure encoding schemes often are
@@ -1418,6 +1471,8 @@ See section \todo{} for a breakdown of how varying the erasure code parameters
 affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
+
+\todo{diagram}
 
 Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
@@ -1442,11 +1497,7 @@ they wish.
 
 \todo{code-based pointer definition. protobuf?}
 
-\subsection{Paths}
-
-\todo{}
-
-\section{Metadata}
+\section{Metadata}\label{sec:concrete-metadata}
 
 The most trivial implementation for the metadata storage functionality we
 require would be to simply have each user use their preferred trusted database
@@ -1503,43 +1554,40 @@ the problem of Byzantine distributed consensus for now. See Future work
 
 \section{Satellite}
 
-As should be apparent, the data owner has to shoulder significant burdens
-to maintain availability and integrity of data on the Storj network. Because
-nodes cannot be trusted, data owners are responsible for selecting good
-storage nodes, issuing and verifying audits, providing payments, managing file
-state
-and object metadata, etc. Many of these functions require high uptime and
-significant infrastructure, especially for an active set of files. User run
-applications, like a file syncing application, cannot be expected to efficiently
-manage files on the network.
-
-To enable simple access to the network from the widest possible array of client
-applications, Storj implements a thin-client model that delegates trust to a
-dedicated server that manages data ownership. The burdens of the
-data owner can be split across the client and the server in a variety of ways.
-This sort of dedicated server, called the satellite, has been developed and
-released as Free Software. Any individual or organization can run their own
-satellite to facilitate network access.
+The services that holds this metadata we call the \x{satellite}. Users of the
+network will have accounts on a specific satellite instance, which will store
+their metadata for them, manage authorization to data, keep track of storage
+node quality via audits, repair and maintain data when redundancy is reduced,
+and issue payments to storage nodes on the user's behalf.
+Storj implements a thin-client model that delegates trust to the
+satellite service which manages data ownership. Thin-clients (\x{uplinks})
+are thus able to support the widest possible array of client applications, while
+Satellites require high uptime and potentially significant infrastructure,
+especially for an active set of files.
+The satellite service has been developed and released as open source software.
+Any individual or organization can run their own satellite to facilitate
+network access.
 
 With respect to customer data, the satellite is designed to store only
 metadata. It is never given data unencrypted and does not hold encryption keys.
 The only knowledge of an object that the satellite is able to share with
-third parties is metadata such as access patterns. This system protects the
-client's privacy and gives the client complete control over access to the data,
+third parties is its existence, rough size, and metadata such as access
+patterns.
+This system protects the client's privacy and gives the client complete
+control over access to the data,
 while delegating the responsibility of keeping files available on the network
 to the satellite.
 
 In cases where the cost of delegating trust is not excessively high,
-clients may use third-party satellites. Because satellites do not store
+clients may use satellites run by a third-party. Because satellites do not store
 data and have no access to keys, this is still a large improvement over the
 traditional data-center model. Many of the features satellites provide, like
 storage node selection and reputation, leverage considerable network effects.
-Data
-sets grow more useful as they increase in size, indicating that there are
-strong economic incentives to share infrastructure and information
-in a satellite.
+Reputation data sets grow more useful as they increase in size,
+indicating that there are strong economic incentives to share infrastructure
+and information in a satellite.
 
-Applications using object stores delegate significant amounts of trust to the
+Applications using object stores invest significant amounts of trust in the
 storage providers. Providers may choose to operate public satellites as a
 service.
 Application developers then delegate trust to a specific satellite, as they
@@ -1549,10 +1597,10 @@ trust) between customer applications and satellites. This shifts significant
 operational burdens from the application developer to the service-provider.
 This would also allow developers to pay for storage with standard payment
 mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
-Storj Labs Inc. currently provides this service.
+Storj Labs Inc. plans to provide this service.
 
 A specific satellite {\em instance} does not necessarily constitute one
-server. A satellite may be run by a collection of servers and be backed by
+server. A satellite may be run as a collection of servers and be backed by
 a horizontally scalable trusted database for higher uptime.
 
 The satellite is, at its core, one of the most complex and yet
@@ -1560,24 +1608,27 @@ straightforward components of our initial release that fulfills our framework.
 Future framework-conforming releases nonwithstanding, the initial satellite
 is a standard application server that wraps a trusted database such as
 PostgreSQL, Cassandra, or something else. Users sign in to a specific
-satellite with account credentials. The satellite is responsible for
-keeping track of accounts and authorization, storage node contact information
-and
-reputation, and object metadata. The satellite is also responsible for
-payments and data repair. Data available through one satellite instance is
+satellite with account credentials.
+Data available through one satellite instance is
 not available through another satellite instance, though various levels of
 export and import are planned.
 
-The satellite is made up of components discussed earlier:
+The satellite is made up of these components:
 
 \begin{itemize}
-\item A full DHT cache.
+\item A full node discovery cache (\ref{sec:concrete-node-discovery})
 \item An account management and authorization system
+  (\ref{sec:concrete-authorization})
 \item A per-object metadata database indexed by encrypted path
-\item A reputation and storage node statistics database
-\item A storage node payment service
-\item A data audit and data repair service
+  (\ref{sec:concrete-metadata})
+\item A storage node reputation, statistics, and auditing system
+  (\ref{sec:concrete-audits})
+\item A data repair service (\ref{sec:concrete-data-repair})
+\item A storage node payment service (\ref{sec:concrete-payments})
 \end{itemize}
+
+Future releases will see significant improvements to and potentially
+rearchitectures of these systems.
 
 \section{Encryption}
 
@@ -1617,7 +1668,7 @@ are only revealed to the user's chosen metadata storage system.
 
 Order-preserving path encryption is left for future work.
 
-\section{Authorization}
+\section{Authorization}\label{sec:concrete-authorization}
 
 Encryption protects the privacy of data while allowing for the identification
 of tampering, but authorization allows for the prevention of tampering by
@@ -1635,13 +1686,13 @@ macaroon's set of caveats.
 \todo{discuss macaroon-based path restrictions}
 
 Once authorized with a metadata service, that metadata service has an associated
-{\em payer ID} \todo{discuss payer IDs} and is able to sign operations. All
-operations with storage nodes require a specific payer ID and associated
+{\em satellite ID} and is able to sign operations. All
+operations with storage nodes require a specific satellite ID and associated
 signature. A storage node should reject operations not signed by the appropriate
-payer ID. The client must retrieve valid signatures from the metadata service
-prior to operations with storage nodes.
+satellite ID. The client must retrieve valid signatures from the metadata
+service prior to operations with storage nodes.
 
-\section{Audits}
+\section{Audits}\label{sec:concrete-audits}
 
 Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
@@ -1679,7 +1730,7 @@ Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
 system. Audits should happen uniformly at random by byte with replacement.
 
-\section{Data repair}\label{sec:data_repair}
+\section{Data repair}\label{sec:concrete-data-repair}
 
 The node discovery system already has caches in place that have accurate and
 up-to-date information about which storage nodes have been online recently.
@@ -1852,9 +1903,9 @@ There is no process planned in our system for storage nodes to contest their
 reputation scores. It is in the best interest of storage nodes to have good
 uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by satellites
-unfairly should not accept future data from those payers. See the section
-\todo{} about quality control on how we plan to ensure payers are incentivized
-to treat storage nodes fairly.
+unfairly should not accept future data from those satellites. See the section
+\todo{} about quality control on how we plan to ensure satellites are
+incentivized to treat storage nodes fairly.
 
 Initially, storage node reputation will be individually determined by each
 satellite. If a node is disqualified by one satellite, it could still
@@ -1864,7 +1915,7 @@ reputation would then be determined globally.
 
 \todo{future work section about reputation sharing}
 
-\section{Payments}
+\section{Payments}\label{sec:concrete-payments}
 
 In the Storj network, payments are made by uplink users who store data on the
 platform to the satellite they utilize.
@@ -1950,7 +2001,7 @@ once that file falls below the file piece threshold needed for
 repair.
 
 \todo{users pay satellites}
-\todo{payers roll up payments every day, but pay every month}
+\todo{satellites roll up payments every day, but pay every month}
 
 \todo{Payment automation?}
 
@@ -1958,8 +2009,8 @@ repair.
 
 \todo{}
 
-See the payer reputation section for details on
-how storage nodes will know to trust payers.
+See the satellite reputation section for details on
+how storage nodes will know to trust satellites.
 
 Payments to storage nodes will be calculated on a daily basis based on the
 bandwidth
@@ -1970,7 +2021,7 @@ availability, they will not be paid for the services rendered, and the funds
 allocated to it will instead be used to repair any missing
 file pieces and to pay new storage nodes for storing the data.
 
-\subsection{Bandwidth allocation protocol}
+\subsection{Bandwidth allocation protocol}\label{bap}
 
 A core component of our system requires knowing how much bandwidth is used
 between two peers, so we introduce a protocol we call the Bandwidth Allocation
@@ -1987,14 +2038,14 @@ apply to overlay traffic (Kademlia DHT) or other generic maintenance overhead.
 When a client wants to perform an operation for $x$ bytes of bandwidth, it must
 first get authorization from a satellite
 that it has enough funds and is authorized to perform that operation.
-The payer will return an {\em unrestricted
+The \x{satellite} will return an {\em unrestricted
 bandwidth allocation} message. This message will include the identity of the
-payer, the identity of the client, an expiration timestamp, a serial number,
+satellite, the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized, and the direction the bytes will flow
 (whether or not the data will be transfered from or to the client).
-The message will be signed by the payer.
+The message will be signed by the satellite.
 
-%To use a metaphor, the payer is
+%To use a metaphor, the satellite is
 %creating a blank check that is authorized up to $x$ in byte value and sending
 %it to the client.
 
@@ -2019,7 +2070,8 @@ the storage node will keep the largest restricted bandwidth allocation it has
 seen.
 This largest restricted bandwidth allocation is the signed confirmation
 by the client that the client agreed to bandwidth usage of up to $y$
-bytes, along with the payer's confirmation of the client's bandwidth allowance.
+bytes, along with the satellite's confirmation of the client's bandwidth
+allowance.
 The storage node will periodically send the largest restricted bandwidth
 allocations it has received to appropriate satellites, at which point
 satellites will pay the storage node for that bandwidth.
@@ -2040,7 +2092,7 @@ satellites that don't have a good history of paying.
 
 Initially, storage nodes will put satellites through a vetting process
 where storage nodes limit their exposure to unknown satellites and build up
-trust over time with specific payers that are likely to pay their bills.
+trust over time with specific satellites that are likely to pay their bills.
 Storage nodes
 will have a configurable maximum amount of data that they will store for an
 unknown satellite, and can use whether or not they get paid for that data
@@ -2138,17 +2190,26 @@ for metadata and tracking.
 The uplink should run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
-\chapter{Product details}\label{sec:product_details}
-
 \section{Quality control and branding}
-\section{Durability}
 
-\todo{discuss quality control and branding}
+\todo{discuss quality control and branding more}
 \todo{insurance}
 
-\section{Detailed walkthroughs}
+Storj will need to differentiate the software from the network as well as the
+supply side from the demand side. Storj will brand the two aspects separately:
+\begin{description}
+\item[Storj.io] - the brand for supply-side storage node operators contributing
+storage and bandwidth to the network in exchange for compensation.
+\item[Tardigrade.io] - the brand for demand-side partners and customers who
+purchase storage and bandwidth on the network with the expectation of high
+durability, resilience, reliability and backed by an industry-leading SLA.
+\end{description}
 
-\subsection{Uploads}
+\section{Durability}
+
+\chapter{Walkthroughs}\label{chap:walkthroughs}
+
+\section{Uploads}
 
 When a user uploads a file:
 
@@ -2212,7 +2273,7 @@ the
   satellite for later payment.
 \end{itemize}
 
-\subsection{Download}
+\section{Download}
 
 When a user downloads a file:
 
@@ -2251,7 +2312,7 @@ When a user downloads a file:
   satellite for later payment.
 \end{itemize}
 
-\subsection{Delete}
+\section{Delete}
 
 When a user deletes a file:
 
@@ -2297,7 +2358,7 @@ the
   happen too frequently.
 \end{itemize}
 
-\subsection{List}
+\section{List}
 
 When a user wants to receive many files:
 
@@ -2321,7 +2382,7 @@ into unencrypted (and thus lexicographically sorted) paths.
 
 \todo{future work section about order-preserving encryption}
 
-\subsection{Audits}
+\section{Audits}
 
 The auditing process:
 
@@ -2354,7 +2415,7 @@ and place that stripe into the audit queue.
   forward, nor will it select it for new data.
 \end{itemize}
 
-\subsection{Repair}
+\section{Repair}
 
 The repair process:
 
@@ -2383,7 +2444,7 @@ about,
 \item The satellite updates the pointer's metadata.
 \end{itemize}
 
-\subsection{Payment}
+\section{Payment}
 
 The payment process:
 
@@ -2401,9 +2462,7 @@ When a
   node's requested destination.
 \end{itemize}
 
-\section{Reliability}
-
-\chapter{Future Areas of Research}\label{sec:future_work}
+\chapter{Future Areas of Research}\label{chap:future-work}
 
 \todo{ Storj is a work in progress, and many features are planned for future
 versions. There are relatively few examples of functional distributed systems at
@@ -2433,6 +2492,8 @@ work. They are generally faster and use less disk space than blockchain
 protocols, however there is significant trade off around network usage and
 coordination contention, as there could be problematic overlap with two storage
 nodes trying to communicate with one another at the same time.
+
+\section{Replacing TLS}\label{sec:future-work-tls}
 
 \section{Distributed Repair}
 
@@ -2496,7 +2557,7 @@ portion of the network consists of colluding Sybil nodes.
 
 \todo{discuss vetting period}
 
-\subsection{Honest Geppetto}
+\section{Honest Geppetto}
 
 The Honest Geppetto attack is a storage-specific variant of the Google attack.
 The attacker operates a large number of 'puppet' nodes on the network,
@@ -2557,8 +2618,6 @@ across multiple malicious nodes, which is difficult to execute in practice.
 
 \section{Non-byzantine}
 
-\subsection{Aside about distributed consensus}
-
 A long and challenging area of research has been directed toward getting a
 group of computers to agree on a set of values
 \bs{what kind of values? principles? or numerical-type values?},
@@ -2585,8 +2644,9 @@ deal with this uncertainty. Some systems embrace {\em consistency}, which means
 that the system will choose downtime over inconsistent answers. Other
 systems embrace {\em availability}, which means that the system chooses
 potentially inconsistent answers over downtime. The widely-cited CAP
-theorem \cite{cap} states that every system must choose only two of consistency,
-availability, and partition tolerance. Due to the inevitability of network
+theorem \cite{cap1, cap2} states that every system must choose only two of
+consistency, availability, and partition tolerance.
+Due to the inevitability of network
 failures, partition tolerance is non-negotiable, so when a partition happens,
 every system must choose to sacrifice either consistency or availability. Many
 systems sacrifice both (sometimes by accident).
@@ -2659,9 +2719,15 @@ collection of altruistic nodes.
 
 There have been a number of attempts to solve the Byzantine fault tolerant
 distributed consensus problem
-\cite{bitcoin,pbft,qu,fab,fab-revisited,zyzzyva,rbft,
-tangaroa,tendermint,aliph,hashgraph,honeybadger,algorand,casper,
-tangle,avalanche,parsec,mickens-bft}. Each of these algorithms make some
+(PBFT \cite{pbft} (Barbara Liskov again with the
+first solution out of the gate), Q/U \cite{qu}, FaB \cite{fab} (but see
+\cite{fab-revisited}), Bitcoin \cite{bitcoin}, Zyzzyva \cite{zyzzyva} (but also
+see \cite{fab-revisited}), RBFT \cite{rbft}, Tangaroa \cite{tangaroa},
+Tendermint \cite{tendermint}, Aliph \cite{aliph}, Hashgraph \cite{hashgraph},
+HoneybadgerBFT\cite{honeybadger}, Algorand\cite{algorand}, Casper\cite{casper},
+Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
+others\cite{mickens-bft}).
+Each of these algorithms make some
 additional tradeoffs that non-Byzantine distributed consensus algorithms don't
 require to deal with the potential for uncooperative nodes. For example,
 PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin
@@ -2669,15 +2735,6 @@ PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin
 proof-of-work difficulty, in addition to requiring all participants to keep a
 full copy of all change histories (like other blockchain-based
 solutions).
-
-%(PBFT \cite{pbft} (Barbara Liskov again with the
-%first solution out of the gate), Q/U \cite{qu}, FaB \cite{fab} (but see
-%\cite{fab-revisited}), Bitcoin \cite{bitcoin}, Zyzzyva \cite{zyzzyva} (but also
-%see \cite{fab-revisited}), RBFT \cite{rbft}, Tangaroa \cite{tangaroa},
-%Tendermint \cite{tendermint}, Aliph \cite{aliph}, Hashgraph \cite{hashgraph},
-%HoneybadgerBFT\cite{honeybadger}, Algorand\cite{algorand}, Casper\cite{casper},
-%Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
-%others\cite{mickens-bft}).
 
 \todo{talk about merkle-dag, git-inspired approaches to metadata, and how
 they struggle with conflict resolution due to the lack of crdt-like options for
