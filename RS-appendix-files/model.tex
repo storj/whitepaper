@@ -1,0 +1,29 @@
+\section{File piece loss model}
+\label{appendix:RS}
+\linespread{2.0}
+
+In the context of storing an erasure-coded file on a decentralized network, we consider file piece loss from two different perspectives.
+
+\subsection{Direct file piece loss: the simple case first}
+With direct file piece loss, we assume that for a specific file, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if file pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then file piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate\footnote{So if we assume a proportion of $p=.1$ pieces are lost per month, $t$ is given in months.}. 
+To account for $a$ multiple checks per month, we may extend this to $n(1-p/a)^{at}$. If $m$ is the rebuild threshold which controls when a file is rebuilt, we may solve $n(1-p/a)^{at}=m$ for $t$ (taking the ceiling when necessary) to determine how long it will take for the $n$ pieces of a file to decay to less than $m$ pieces. This works out to the smallest $t$ for which
+$t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a$ and $p$, how long we expect a file to last between repairs.
+
+\subsection{Indirect file piece loss: it's not that much harder}
+
+When modeling indirect file piece loss, we suppose that a fixed rate of nodes 
+drop out of the network each month\footnote{Though the rate may be taken over 
+any desired time interval.} whether or not they are holding pieces of the file 
+under consideration. To describe the probability that $d$ of the dropped nodes 
+were delegates for a specific file coded into $n$ pieces, we turn to the 
+Hypergeometric probability distribution. Suppose $c$ nodes are replaced per 
+month out of $C$ total nodes on the network. Then the probability that $d$ 
+nodes were delegates for the file is given by
+\begin{align}
+    P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom}
+\end{align}
+which has mean $nc/C$. We then determine how long it will take for the number of pieces to fall below the desired threshold $m$ by iterating, holding the overall churn $c$ fixed but reducing the number of existing pieces by the distribution's mean in each iteration and counting the number of iterations required. For example, after one iteration, the number of existing piececs is reduced by $nc/C$, so instead of $n$ pieces on the network (as the parameter in \eqref{hgeom}), there are $n-nc/C$ pieces, changing both the parameter and the mean for \eqref{hgeom} in iteration 2.
+
+We may extend this model by considering multiple checks per month (as in the direct file piece loss case), assuming that $c/a$ nodes are lost every $1/a$-th of a month instead of assuming that $c$ nodes are lost per month, where $a$ is the number of checks per month. This yields an initial Hypergeometric probability distribution with mean $nc/aC$.
+
+In either of these two cases (single or multiple file integrity checks per month), we track the number of iterations until the number of available pieces fall below the repair threshold. This number may then be used to determine the expected number of rebuilds per month for any given file.

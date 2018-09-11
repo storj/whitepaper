@@ -27,65 +27,40 @@
   publisher = {IEEE Computer Society},
   timestamp = {2015-06-19T12:07:15.000+0200},
   title = {S/{K}ademlia: A practicable approach towards secure key-based routing.},
-  url = {http://dblp.uni-trier.de/db/conf/icpads/icpads2007.html#BaumgartM07},
+  url = {http://dblp.uni-trier.de/db/conf/icpads/icpads2007.html},
   year = 2007
 },
 
-@misc{5,
-title  = {Protocols for public key cryptosystems},
-author = {R.C. Merkle},
-note   = {\url{http://www.merkle.com/papers/Protocols.pdf}},
-year   = {(April 1980)},
-},
+@inproceedings{proof-of-retrievability,
+ author = {Shacham, Hovav and Waters, Brent},
+ title = {Compact Proofs of Retrievability},
+ booktitle = {Proceedings of the 14th International Conference on the Theory and Application of Cryptology and Information Security: Advances in Cryptology},
+ series = {ASIACRYPT '08},
+ year = {2008},
+ isbn = {978-3-540-89254-0},
+ location = {Melbourne, Australia},
+ pages = {90--107},
+ numpages = {18},
+ url = {http://dx.doi.org/10.1007/978-3-540-89255-7_7},
+ doi = {10.1007/978-3-540-89255-7_7},
+ acmid = {1485934},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+}
 
-@misc{6,
-title  = {Compact Proofs of Retrievability},
-author = {H. Shacham{,} B. Waters},
-note   = {\url{https://cseweb.ucsd.edu/~hovav/dist/verstore.pdf}},
-year   = {(2008)},
-},
-
-@misc{10,
-title  = {Space/time trade-offs in hash coding with allowable errors},
-author = {B. Bloom},
-note   = {\url{http://dmod.eu/deca/ft_gateway.cfm.pdf}},
-year   = {(1970)},
-},
-
-@misc{17,
-title  = {A Next-Generation Smart Contract and Decentralized Application Platform},
-author = {V. Buterin \textit{et al.}},
-note   = {\url{https://github.com/ethereum/wiki/wiki/White-Paper}},
-year   = {(2014)},
-},
-
-@misc{18,
-title  = {IPFS - Content Addressed, Versioned, P2P File System},
-author = {J. Benet},
-note   = {\url{https://github.com/ipfs/ipfs/blob/master/papers/ipfs-cap2pfs/ipfs-p2p-file-system.pdf}},
-year   = {(2014)},
-},
-
-@misc{23,
+@misc{sybil-cost,
 title  = {Bounding Sybil Attacks with Identity Cost},
-author = {S. Wilkinson{,} J. Prestwich},
+author = {Shawn Wilkinson and James Prestwich},
 note   = {\url{https://github.com/Storj/sips/blob/master/sip-0002.md}},
 year   = {(2016)},
 },
 
-@misc{24,
-title  = {Incentives Build Robustness in BitTorrent},
-author = {B. Cohen},
-note   = {\url{http://www.bittorrent.org/bittorrentecon.pdf}},
-year   = {(2003)},
+@misc{sips,
+title  = {SIP Purpose and Guidelines},
+author = {Shawn Wilkinson},
+note   = {\url{https://github.com/storj/sips/blob/master/sip-0001.md}},
+year   = {(2016)},
 },
-
-@misc{27,
-author = {J. S. Plank},
-title  = {A Tutorial on Reed-Solomon Coding for Fault-Tolerance in RAID-like Systems},
-note   = {\url{http://web.eecs.utk.edu/~plank/plank/papers/CS-96-332.pdf}},
-year   = {(1996)}
-}
 
 @inproceedings{raft,
  author = {Ongaro, Diego and Ousterhout, John},
@@ -106,13 +81,13 @@ year   = {(1996)}
 @misc{s3-object-meta,
 	author = {Amazon Inc.},
 	title  = {Amazon Simple Storage Service - Object Metadata},
-	howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html#object-metadata}},
+	howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html}},
 }
 
 @misc{s3-consistency,
   author = {Amazon Inc.},
   title = {Amazon Simple Storage Service - Data Consistency Model},
-  howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html#ConsistencyModel}},
+  howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html}},
 }
 
 @article{tail-at-scale,
@@ -125,7 +100,7 @@ year   = {(1996)}
 	volume	= {56}
 }
 
-@online{backblaze-hd-2018-q1,
+@misc{backblaze-hd-2018-q1,
 	author = {Backblaze Inc.},
 	title = {How Long Do Hard Drives Last: 2018 Hard Drive Stats},
 	year = 2018,
@@ -227,7 +202,7 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
-@article{hashgraph,
+@misc{hashgraph,
   title={The swirlds hashgraph consensus algorithm: Fair, fast, byzantine fault tolerance},
   author={Baird, Leemon},
   year={2016}
@@ -381,20 +356,11 @@ booktitle	= {Proceedings of the 26th Annual ACM Symposium on Principles of Distr
  howpublished = {\url{http://www.scs.stanford.edu/~dm/home/papers/paxos.pdf}}
 }
 
-@article{paxos-simple,
+@misc{paxos-simple,
 author = {Lamport, Leslie},
 title = {Paxos Made Simple},
-booktitle = {},
 year = {2001},
-month = {December},
-publisher = {},
-url = {https://www.microsoft.com/en-us/research/publication/paxos-made-simple/},
-address = {},
-pages = {51-58},
-journal = {},
-volume = {},
-chapter = {},
-isbn = {},
+howpublished = {\url{https://www.microsoft.com/en-us/research/publication/paxos-made-simple/}},
 }
 
 @inproceedings{paxos-system,
@@ -640,7 +606,26 @@ isbn = {},
  publisher = {VLDB Endowment},
 }
 
-@article{cap,
+@article{cap1,
+ author = {Gilbert, Seth and Lynch, Nancy},
+ title = {Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-tolerant Web Services},
+ journal = {SIGACT News},
+ issue_date = {June 2002},
+ volume = {33},
+ number = {2},
+ month = jun,
+ year = {2002},
+ issn = {0163-5700},
+ pages = {51--59},
+ numpages = {9},
+ url = {http://doi.acm.org/10.1145/564585.564601},
+ doi = {10.1145/564585.564601},
+ acmid = {564601},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@article{cap2,
  author = {Gilbert, Seth and Lynch, Nancy},
  title = {Perspectives on the CAP Theorem},
  journal = {Computer},
@@ -810,12 +795,11 @@ booktitle	= {OSDI}
  address = {London, UK, UK},
 }
 
-@paper{mastodon,
-	author = {Matteo Zignani and Sabrina Gaito and Gian Paolo Rossi},
-	title = {Follow the "Mastodon": Structure and Evolution of a Decentralized Online Social Network},
-	conference = {International AAAI Conference on Web and Social Media},
-	year = {2018},
-	keywords = {decentralized online social network; network structure; online social network; online social network evolution},
+@article{mastodon,
+  author = {Matteo Zignani and Sabrina Gaito and Gian Paolo Rossi},
+  title = {{Follow the "Mastodon": Structure and Evolution of a Decentralized Online Social Network}},
+  journal = {International AAAI Conference on Web and Social Media},
+  year = {2018},
 	url = {https://www.aaai.org/ocs/index.php/ICWSM/ICWSM18/paper/view/17862}
 }
 
@@ -843,4 +827,276 @@ pages	= {205--218}
  publisher = {ACM},
  address = {New York, NY, USA},
  keywords = {performance, reliability, scalability},
+}
+
+@misc{nacl-crypto,
+  author = {Daniel J. Bernstein},
+  title = {Cryptography in {NaCl}},
+  year = {2009},
+  howpublished = {\url{https://cr.yp.to/highspeed/naclcrypto-20090310.pdf}}
+}
+
+@misc{nacl-packetlen,
+  author = {Daniel J. Bernstein},
+  title = {{NaCl}: Validation and verification},
+  year = {2016},
+  howpublished = {\url{https://nacl.cr.yp.to/valid.html}}
+}
+
+@misc{bip32,
+  author = {Peter Wuille},
+  title = {{BIP32:} Hierarchical Deterministic Wallets},
+  year = {2012},
+  howpublished = {\url{https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki}}
+}
+
+@article{rs,
+  author = {Irving S. Reed and Gustave Solomon},
+  title = {Polynomial Codes Over Certain Finite Fields},
+  journal = {Journal of the Society for Industrial and Applied Mathematics},
+  volume = {8},
+  number = {2},
+  pages = {300-304},
+  year = {1960},
+  doi = {10.1137/0108018},
+  URL = {https://doi.org/10.1137/0108018},
+  eprint = {https://doi.org/10.1137/0108018}
+}
+
+@misc{bw,
+  author = {Lloyd R. Welch and Elwyn R. Berlekamp},
+  title = {Error correction for algebraic block codes},
+  year = {1986},
+  number = {US4633470A},
+  type = {Patent},
+  location = {US},
+  howpublished = {US Patent US4633470A},
+  url = {https://patents.google.com/patent/US4633470A/}
+}
+
+@misc{storj-v2,
+  author = {Shawn Wilkinson and Tome Boshevski and Josh Brandoff and James Prestwich and Gordon Hall and Patrick Gerbes and Philip Hutchins and Chris Pollard},
+  title = {Storj: A Peer-to-Peer Cloud Storage Network v2.0},
+  year = {2016},
+  howpublished = {\url{https://storj.io/storj.pdf}}
+}
+
+@inproceedings{macaroons,
+title	= {Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud},
+author	= {Arnar Birgisson and Joe Gibbs Politz and Úlfar Erlingsson and Ankur Taly and Michael Vrable and Mark Lentczner},
+year	= {2014},
+booktitle	= {Network and Distributed System Security Symposium}
+}
+
+@article{power-of-two-choices,
+ author = {Mitzenmacher, Michael},
+ title = {The Power of Two Choices in Randomized Load Balancing},
+ journal = {IEEE Trans. Parallel Distrib. Syst.},
+ issue_date = {October 2001},
+ volume = {12},
+ number = {10},
+ month = oct,
+ year = {2001},
+ issn = {1045-9219},
+ pages = {1094--1104},
+ numpages = {11},
+ url = {https://doi.org/10.1109/71.963420},
+ doi = {10.1109/71.963420},
+ acmid = {504343},
+ publisher = {IEEE Press},
+ address = {Piscataway, NJ, USA},
+ keywords = {Load balancing, queuing theory, distributed systems, limiting systems, choices.},
+}
+
+@article{bloom-filter,
+ author = {Bloom, Burton H.},
+ title = {Space/Time Trade-offs in Hash Coding with Allowable Errors},
+ journal = {Commun. ACM},
+ issue_date = {July 1970},
+ volume = {13},
+ number = {7},
+ month = jul,
+ year = {1970},
+ issn = {0001-0782},
+ pages = {422--426},
+ numpages = {5},
+ url = {http://doi.acm.org/10.1145/362686.362692},
+ doi = {10.1145/362686.362692},
+ acmid = {362692},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {hash addressing, hash coding, retrieval efficiency, retrieval trade-offs, scatter storage, searching, storage efficiency, storage layout},
+}
+
+@InProceedings{merkle-tree,
+author="Merkle, Ralph C.",
+editor="Pomerance, Carl",
+title="A Digital Signature Based on a Conventional Encryption Function",
+booktitle="Advances in Cryptology --- CRYPTO '87",
+year="1988",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="369--378",
+isbn="978-3-540-48184-3"
+}
+
+@article{sybil-attack,
+title = "Sybil Nodes as a Mitigation Strategy Against Sybil Attack",
+journal = "Procedia Computer Science",
+volume = "32",
+pages = "1135 - 1140",
+year = "2014",
+note = "The 5th International Conference on Ambient Systems, Networks and Technologies (ANT-2014), the 4th International Conference on Sustainable Energy Information Technology (SEIT-2014)",
+issn = "1877-0509",
+doi = "https://doi.org/10.1016/j.procs.2014.05.544",
+url = "http://www.sciencedirect.com/science/article/pii/S1877050914007443",
+author = "Zied Trifa and Maher Khemakhem",
+keywords = "Structured p2p overlay networks, Chord, Sybil Attack, Monitoring, Tracking ;"
+}
+
+@misc{sqlite,
+author = {Hipp, D. Richard and others},
+title = {{SQLite}},
+howpublished = {\url{https://www.sqlite.org/}},
+year = {2000},
+}
+
+@misc{leveldb,
+author = {Sanjay Ghemawat and Jeff Dean},
+title = {{LevelDB}},
+howpublished = {\url{https://github.com/google/leveldb/}},
+year = {2011},
+}
+
+@article{calm1,
+ author = {Hellerstein, Joseph M.},
+ title = {The Declarative Imperative: Experiences and Conjectures in Distributed Logic},
+ journal = {SIGMOD Rec.},
+ issue_date = {March 2010},
+ volume = {39},
+ number = {1},
+ month = sep,
+ year = {2010},
+ issn = {0163-5808},
+ pages = {5--19},
+ numpages = {15},
+ url = {http://doi.acm.org/10.1145/1860702.1860704},
+ doi = {10.1145/1860702.1860704},
+ acmid = {1860704},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@article{i-confluence,
+ author = {Bailis, Peter and Fekete, Alan and Franklin, Michael J. and Ghodsi, Ali and Hellerstein, Joseph M. and Stoica, Ion},
+ title = {Coordination Avoidance in Database Systems},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {November 2014},
+ volume = {8},
+ number = {3},
+ month = nov,
+ year = {2014},
+ issn = {2150-8097},
+ pages = {185--196},
+ numpages = {12},
+ url = {http://dx.doi.org/10.14778/2735508.2735509},
+ doi = {10.14778/2735508.2735509},
+ acmid = {2735509},
+ publisher = {VLDB Endowment},
+}
+
+@article{hat,
+ author = {Bailis, Peter and Davidson, Aaron and Fekete, Alan and Ghodsi, Ali and Hellerstein, Joseph M. and Stoica, Ion},
+ title = {Highly Available Transactions: Virtues and Limitations},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {November 2013},
+ volume = {7},
+ number = {3},
+ month = nov,
+ year = {2013},
+ issn = {2150-8097},
+ pages = {181--192},
+ numpages = {12},
+ url = {http://dx.doi.org/10.14778/2732232.2732237},
+ doi = {10.14778/2732232.2732237},
+ acmid = {2732237},
+ publisher = {VLDB Endowment},
+}
+
+@article{anna,
+  author = {Wu, Chenggang and Faleiro, Jose M. and Lin, Yihan and Hellerstein, Joseph M.},
+  title = {{Anna: A KVS for any scale}},
+  journal = {ICDE},
+  year = {2018},
+  url = {http://db.cs.berkeley.edu/jmh/papers/anna_ieee18.pdf},
+}
+
+@article{calm2,
+  author = {Alvaro, Peter and Conway, Neil and Hellerstein, Joseph M. and Marczak, William R.},
+  title = {{Consistency Analysis in Bloom: a CALM and Collected Approach}},
+  journal = {CIDR},
+  year = {2011},
+  url = {http://db.cs.berkeley.edu/papers/cidr11-bloom.pdf},
+}
+
+@misc{noise-proto,
+author = {Trevor Perrin},
+title = {{The Noise Protocol Framework}},
+howpublished = {\url{https://noiseprotocol.org/noise.pdf}},
+year = {2018},
+}
+
+@article{consistency-vs-latency,
+ author = {Abadi, Daniel},
+ title = {Consistency Tradeoffs in Modern Distributed Database System Design: CAP is Only Part of the Story},
+ journal = {Computer},
+ issue_date = {February 2012},
+ volume = {45},
+ number = {2},
+ month = feb,
+ year = {2012},
+ issn = {0018-9162},
+ pages = {37--42},
+ numpages = {6},
+ url = {https://doi.org/10.1109/MC.2012.33},
+ doi = {10.1109/MC.2012.33},
+ acmid = {2360959},
+ publisher = {IEEE Computer Society Press},
+ address = {Los Alamitos, CA, USA},
+ keywords = {CAP theorem, database architectures, computer systems organization, networking and information technology, distributed database systems},
+}
+
+@misc{jepsen-consistency,
+author = {Kyle Kingsbury},
+title = {Consistency models clickable map},
+year = {2018},
+howpublished = {\url{https://jepsen.io/consistency}},
+}
+
+@article{vv-consistency,
+ author = {Viotti, Paolo and Vukoli\'{c}, Marko},
+ title = {Consistency in Non-Transactional Distributed Storage Systems},
+ journal = {ACM Comput. Surv.},
+ issue_date = {July 2016},
+ volume = {49},
+ number = {1},
+ month = jun,
+ year = {2016},
+ issn = {0360-0300},
+ pages = {19:1--19:34},
+ articleno = {19},
+ numpages = {34},
+ url = {http://doi.acm.org/10.1145/2926965},
+ doi = {10.1145/2926965},
+ acmid = {2926965},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Consistency, distributed storage},
+}
+
+@misc{anna-announce,
+  author = {Joseph Hellerstein},
+  title = {Anna: A Crazy Fast, Super-Scalable, Flexibly Consistent {KVS}},
+  year = {2018},
+  howpublished = {\url{https://rise.cs.berkeley.edu/blog/anna-kvs/}},
 }
