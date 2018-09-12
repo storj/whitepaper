@@ -20,13 +20,13 @@
 \contentsmargin{0cm} % Removes the default margin
 % Chapter text styling
 \titlecontents{chapter}[1.25cm] % Indentation
-{\addvspace{15pt}\large\sffamily\bfseries} % Spacing and font options for chapters
+{\addvspace{1pt}\large\sffamily\bfseries} % Spacing and font options for chapters
 {\color{ocre!60}\contentslabel[\Large\thecontentslabel]{1.25cm}\color{ocre}} % Chapter number
 {}
 {\color{ocre!60}\normalsize\sffamily\bfseries\;\titlerule*[.5pc]{.}\;\thecontentspage} % Page number
 % Section text styling
 \titlecontents{section}[1.25cm] % Indentation
-{\addvspace{5pt}\sffamily\bfseries} % Spacing and font options for sections
+{\addvspace{1pt}\sffamily\small} % Spacing and font options for sections
 {\contentslabel[\thecontentslabel]{1.25cm}} % Section number
 {}
 {\sffamily\hfill\color{black}\thecontentspage} % Page number
@@ -38,6 +38,8 @@
 {}
 {\sffamily\;\titlerule*[.5pc]{.}\;\thecontentspage} % Page number
 []
+
+\setcounter{tocdepth}{1}
 
 %----------------------------------------------------------------------------------------
 %	MINI TABLE OF CONTENTS IN CHAPTER HEADS
