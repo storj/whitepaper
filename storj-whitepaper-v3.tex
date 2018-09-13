@@ -887,8 +887,9 @@ storage network.
 
 \section{Metadata}
 
-Once we split an object up and selected storage nodes on which to store the
-new pieces, we now need to keep track of which storage nodes we selected.
+Once we split an object up with erasure codes and select storage nodes on
+which to store the new pieces, we now need to keep track of which storage
+nodes we selected.
 Moreover, to maintain S3 compatibility, the user must be able to choose an
 arbitrary key, often treated like a path, to identify this mapping of data
 pieces to node. This implies the necessity of a metadata storage system.
@@ -899,37 +900,39 @@ hierarchical objects (paths with prefixes), per-object key/value storage,
 arbitrarily large files, arbitrarily large amounts of files, and so on.
 Metadata values
 should be able to be stored, retrieved, and removed by arbitrary key, and
-deterministic iteration over those keys will also be required. Every time an
+deterministic iteration over those keys will also be required.
+
+Every time an
 object is added, edited, or removed, one or more entries in this metadata
 storage system will need to be adjusted. As a result, there could be heavy churn
 in this metadata system, and across the entire userbase the metadata itself
 could end up being sizeable.
-
 To provide some examples, suppose in
 a few years this system stores 1 total exabyte of data, where the average object
 size is 50MB and our erasure code is such that $n=40$. This metadata will need
 to keep track of which 40 nodes were selected for each object.
 1 exabyte of 50MB objects is 20 billion objects. If
-each metadata element is roughly 40*64+192 bytes (info for each selected node
-plus the path and some general overhead), there are over 55 terabytes of
-metadata of which to keep track.
-Fortunately, this metadata can be heavily partitioned by user. A user storing a
+each metadata element is roughly $40\cdot 64+192$ bytes (info for each
+selected node plus the path and some general overhead), there are over 55
+terabytes of metadata of which to keep track.
+Fortunately, this metadata can be heavily partitioned by user. A user storing
 100 terabytes of 50MB objects will only incur a metadata overhead of 5.5
 gigabytes. It's worth pointing out that these numbers vary
 heavily with average object size: the larger the object size, the less the
 metadata overhead.
 
-Aside from scale requirements, the desired API is straightforward and
-simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
-given a path),
-\x{List} (paginated, deterministic listing of existing paths), and \x{Delete}
-(remove a path).
-
 One of our framework's focuses is enabling this component -- metadata
 storage -- to be interchangeable per user. Specifically, we expect to ship with
 multiple implementations of metadata storage that users will be allowed to
 choose between. This greatly assists with our design goal of coordination
-avoidance between users (\ref{sec:coordination-avoidance}).
+avoidance between users (see section \ref{sec:coordination-avoidance}).
+
+Aside from scale requirements, to implement S3 compatibility,
+the desired API is straightforward and
+simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
+given a path),
+\x{List} (paginated, deterministic listing of existing paths), and \x{Delete}
+(remove a path).
 
 \section{Encryption}
 
@@ -959,9 +962,8 @@ by a deterministic, hierarchical encryption scheme.
 A hierarchical encryption scheme similar to
 BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
 parents, and will allow some files to be shared without sharing other files.
-
 Like all other metadata, paths themselves can be encrypted using a hierarchical
-encryption scheme. \todo{ref to hd scheme section}
+encryption scheme. \todo{ref to our hd scheme section}
 
 \section{Audits and reputation}
 
@@ -982,15 +984,16 @@ In our storage system,
 audits are simply a mechanism by which a node's degree of stability is
 determined. Failed audits will result in marking a storage node as bad, which
 could result in shuffling data to new nodes and avoiding that node altogether
-in the future. File repair needs are detected via another mechanism.
+in the future. File repair needs are determined based entirely on storage node
+uptime and overall health.
 
 Audits in this case are probabilistic challenges that confirm with a high
 degree of certainty and a low amount of overhead that a storage node is well
 behaved, is keeping the data it claims, and is not susceptible to hardware
-failure or malintent. An audit functions as a spot check to help calculate a
-storage node's future usefulness.
+failure or malintent. An audit functions as a spot check to help calculate
+the future usefulness of a given storage node.
 
-This partial auditing mechanism does not audit all bytes in all files and
+This auditing mechanism does not audit all bytes in all files and
 leaves room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
@@ -1006,8 +1009,8 @@ An ever-present risk in any distributed storage system is file loss. While there
 are many potential causes for file loss, storage node churn is the leading
 risk, as evidenced by the findings of Maymonkov {\em et al.} that expected node
 availability is an increasing function of uptime \cite{kad}. Storage nodes
-may go offline due to hardware failure, intermittent internet connectivity, or
-operator choices.
+may go offline due to hardware or software failure, intermittent internet
+connectivity, or operator choices.
 Because audits are validating that conforming nodes store data correctly, all
 that remains is to detect when a storage node goes offline or becomes bad and
 then repair at-risk data.
@@ -1022,7 +1025,7 @@ when determining which {\em files} to repair.
 
 There are many other ways data might get lost in the network besides node churn:
 corruption, malicious behavior, bad hardware, software error, user space
-reclaimation, etc., but these issues are less serious than full node
+reclamation, etc., but these issues are less serious than full node
 churn (power loss, internet connectivity intermittency, complete disk failure,
 software shutdown or removal).
 Our spot-check based audits will incentivize storage nodes to reliabily store
@@ -1060,8 +1063,8 @@ to pay their bills.
 The Storj network is payment agnostic.
 The protocol does not require a specific payment type.
 The network assumes STORJ as the default payment medium, but many other payment
-types could be implemented, including Bitcoin, Ether, ACH transfer, or physical
-transfer of live goats.
+types could be implemented, including Bitcoin, Ether, credit or debit card,
+ACH transfer, or physical transfer of live goats.
 
 \chapter{Concrete implementation}\label{chap:concrete}
 
@@ -1078,6 +1081,8 @@ As with our previous network, we will publish changes to this concrete
 architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \section{Definitions}
+
+\subsection{Actors/Entities}
 
 \begin{description}
 \item[Client] A user that would like to upload or download data from the network.
@@ -1106,7 +1111,11 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
   to elect to avoid the operational complexity and create an account on
   another satellite hosted by a trusted third party like a friend, group, or
   workplace.
+\end{description}
 
+\subsection{Data}
+
+\begin{description}
 \item[Bucket] A \x{bucket} is an unbounded but named
 collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
 \x{file}, and every \x{file} has a unique \x{path} within a bucket.
@@ -1141,7 +1150,7 @@ keeps track of it.
 
 \item[Remote Segment] A \x{remote segment} is a larger \x{segment} that will be
 encoded and distributed across the network. A \x{remote segment} is larger than
-the metadata required to keep track of its book keeping.
+the metadata required to keep track of its bookkeeping.
 
 \item[Stripe] A \x{stripe} is a further subdivision of a \x{segment}. A
 \x{stripe} is a fixed amount of bytes that is used as an encryption and erasure
@@ -1174,26 +1183,22 @@ segment} data directly if applicable.
 
 \section{Storage node}
 
-The main duty of a storage node is to reliably store and return data.
-Storage node operators
+\todo{piecestore.png}
+
+The main duty of the storage node is to reliably store and return data.
+Node operators
 are individuals or entities that have excess hard drive space and want to earn
-compensation for lending their space to others. Storage node operators will
+income by lending their space to others. These operators will
 download,
 install, and configure Storj software locally, with no account required
-anywhere. Storage node operators will select what disk space and bandwidth usage
-is allowed during configuration.
-Storage nodes will advertise during node discovery communications what hard
-drive space is still
-available, how much bandwidth is available, and what their desired STORJ token
+anywhere. They will then configure disk space and bandwidth allowance.
+During node discovery, storage nodes will advertise how much bandwidth and
+hard drive space is available, and what their desired STORJ token
 wallet address is.
 
 Because Storj is optimized for larger files, storage nodes have no reason to do
-anything more complicated than store \x{pieces} directly on disk. Storage
-nodes simply maintain a hierarchy of directories that contain the files they
-store directly. Piece data is not stored in a key/value database. As a result,
-unlike the previous release of Storj that used KFS \cite{storj-v2} (which
-was a custom extension on top of LevelDB \cite{leveldb}), Storj no
-longer has a restriction on the maximum amount of data a storage node can store.
+anything more complicated than store \x{pieces} directly on disk. Piece data
+can be stored in any approach storage node feels suitable.
 
 Storage nodes also keep track of optional per-\x{piece} "time-to-live", or TTL.
 \x{Pieces} may be stored with a specific TTL expiry where data is expected to
@@ -1208,9 +1213,8 @@ satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
-Storage nodes can choose which satellites to work with. If storage nodes work
-with
-multiple satellites (the default behavior), then payment may come from
+Storage nodes can choose which satellites to work with. If they work
+with multiple satellites (the default behavior), then payment may come from
 multiple sources on varying payment schedules.
 Storage nodes are paid by specific satellites (1) for returning data when
 requested in
@@ -1228,33 +1232,36 @@ Storage nodes are {\em not} paid for the initial transfer of data to store
 (ingress
 bandwidth). This is to discourage storage nodes from deleting data only to be
 paid for
-storing more. Storage nodes are not paid for node discovery or other
+storing more. They are also not paid for node discovery or other
 maintenance traffic.
 
 Storage nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}. They store {\em pieces}.
-Each method will take a {\em piece ID}, a {\em satellite ID} (the ID of the
-associated Satellite instance) and signature, an optional TTL,
-and the other metadata required by the bandwidth allocation protocol (\ref{bap})
-\todo{clean up the list of arguments}.
+Each method will take a {\em piece ID}, an ID and signature of the associated
+satellite instance, an optional TTL, and the other metadata required by the
+bandwidth allocation protocol (see section \ref{bap}).
 
-The \code{put} operation will take a stream of bytes and store the bytes such
+The \code{put} operation will take a stream of bytes and store them such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
-\code{get} operations are expected to work until the TTL expires (if a TTL was
+\code{Get} operations are expected to work until the TTL expires (if a TTL was
 provided), or until a \code{delete} operation is received, whichever comes
 first.
 Storage
-nodes do not get penalized for rejecting initial \code{put} operations.
+nodes will not be penalized for rejecting initial \code{put} operations.
 
 The {\em satellite ID} forms a namespace. An identical {\em piece ID} with a
 different {\em satellite ID} refers to a different {\em piece}.
 
-Storage nodes should allow administrators to configure maximum allowed disk
-space usage and maximum allowed bandwidth usage over the last rolling 30 days.
-They should keep track of how much is remaining of both, and reject operations
+Storage nodes will allow administrators to configure maximum allowed disk
+space and bandwidth usage over the last rolling 30 days.
+They will keep track of how much is remaining of both, and reject operations
 that do not have a valid signature from the appropriate satellite.
 
 \section{Node identity}
+
+During setup, nodes generate their own identity and certificates for use in
+the network.
+This node ID is used for node discovery and routing.
 
 Each node will operate its own certificate authority, which requires a
 public/private keypair and a self-signed certificate. The certificate
@@ -1266,31 +1273,37 @@ a brand new node ID.
 
 \todo{diagram}
 
-The {\em node ID} will be determined from the certificate authority
-by hashing the DER-encoded public key.
+The node's unique ID will be determined by hashing the DER-encoded public key
+of the certificate authority.
 
 As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a public key
-and will serve as a proof of work for joining the network. Unlike Bitcoin proof
-of work \cite{bitcoin}, the work will be dependent on how many {\em trailing}
+and will serve as a proof of work for joining the network. Unlike Bitcoin's
+proof of work \cite{bitcoin}, the work will be dependent on how many
+{\em trailing}
 zero bits one can find in the hash output. This means that the node ID will
 still be usable in a balanced Kademlia \cite{kad} tree.
+This cost is meant to make Sybil attacks prohibitively expensive and time
+consuming.
 
-Each node will also have revokable leaf key pair and certificate, signed by
-the node's certificate authority. Nodes will use this leaf keypair for actual
-communication. Each leaf will have a signed timestamp that Satellites should
+Each node will have a revocable leaf certificate and key pair, signed by
+the node's certificate authority. Nodes use the leaf keypair for
+communication. Each leaf has a signed timestamp that satellites
 keep track of per node. Should the leaf become compromised, the node can issue
 a new leaf with a later timestamp. Interested peers should make note of newly
 seen leaf timestamps and reject connections from nodes with earlier leaves.
 
+Nodes use leaves from their root certificate for communication with other
+nodes in the network, allowing for secure node-to-node communication in the network.
+
 \section{Peer-to-peer communication}
 
-Initially, we'll be using the gRPC \cite{grpc} protocol on top of of the
+Initially, we are using the gRPC \cite{grpc} protocol on top of of the
 Transport Layer Security protocol (TLS) on top of the $\mu$TP
 \cite{utp} transport protocol with added Session Traversal Utilities for NAT
 (STUN) functionality. STUN provides NAT traversal, $\mu$TP provides reliable,
 ordered delivery (like TCP would), TLS provides privacy and authentication,
 and gRPC provides multiplexing and a convenient programmer interface.
-Over time, we'll be replacing TLS with a more flexible secure transport
+Over time, we will replace TLS with a more flexible secure transport
 framework such as the Noise Protocol Framework \cite{noise-proto} to
 reduce round trips due to connection handshakes in situations where the data is
 already encrypted and forward secrecy isn't necessary. See
@@ -1304,10 +1317,10 @@ the ID. Satellites can configure a minimum proof of work required to pass an
 audit, such that over time, the network will require greater proofs of work
 due to natural user intervention. \todo{ref for future work}
 
-For the few cases where a node cannot achieve a successful hole punch through a
-NAT or firewall via STUN, uPnP, NATPmP, or a similar technique, manual
+For the few cases where a node cannot achieve a successful connection through a
+NAT or firewall (via STUN, uPnP, NATPmP, or similar techniques), manual
 intervention and port forwarding will be required. In the future, nodes unable
-to punch a port through their firewalls may rely on traffic proxying from
+to create a connection through their firewalls may rely on traffic proxying from
 other, more available nodes, for a fee. See the bandwidth allocation protocol
 (\ref{bap}) for a description of how fees work.
 
@@ -1344,7 +1357,11 @@ may be necessary \todo{future work}. The caching service will then cache
 the last known good address for each node, evicting nodes that it hasn't talked
 to after a certain period.
 Fortunately, caching address information for a network of 80k nodes
-(for example) can be done with only 3MB of memory, so the space requirements
+(for example) can be done with only 5MB of memory\footnote{
+This is assuming an ordered in-memory list of 4-tuples of node ID (32 bytes),
+IP address (16 bytes for IPv6), port (2 bytes), and timestamp (4 bytes).
+$80000\cdot(32+16+4+4)/(1024\cdot 1024) \approx 4.12$
+}, so the space requirements
 are negligible.
 
 Based on this design, the cache should not be expected to be a primary source
@@ -1364,9 +1381,13 @@ These caches will perform the duty of quickly returning address information
 for a given node ID if the node has been online recently. Kademlia will be the
 long-lived source of truth and could be used directly in many situations.
 
-\todo{talk about how we're using kademlia to advertise disk space, bandwidth
-availability, and STORJ wallet address, and then storing that information in
-the cache}
+With each message shared on the network, nodes will include their available
+disk space, bandwidth availability, STORJ wallet address, and any other
+metadata the network needs.
+The network overlay cache will collect information provided by the nodes
+during refresh periods, allowing faster lookups for storage nodes.
+The node metadata is stored in a protobuf binary format to limit storage
+needs on the cache.
 
 \todo{diagram}
 
@@ -1381,9 +1402,10 @@ pieces generated during creation.
 $m$ and $o$ are the {\em minimum safe} and {\em optimal} values, respectively.
 $m$ is chosen such that if the amount of available pieces falls below $m$, a
 repair is triggered immediately in an attempt to make sure we always maintain
-$k$ or more pieces. $o$ is chosen such that during uploads, as soon as $o$
-pieces have finished uploading, remaining pieces up to $n$ are canceled as
-described above. $o$ is chosen such that storing $o$ pieces is all that is
+$k$ or more pieces. $o$ is chosen such that during uploads and repairs,
+as soon as $o$ pieces have finished uploading, remaining pieces up to $n$ are
+canceled.
+$o$ is chosen such that storing $o$ pieces is all that is
 needed to achieve the desired durability goals; $n$ is thus chosen such that
 storing $n$ pieces would be excess durability. $n-o$ is the amount of long
 tail uploads we can tolerate and is thus the amount of slow nodes we are immune
@@ -1393,7 +1415,7 @@ Our durability story does not end with our selection of these numbers.
 Please see section \ref{sec:concrete-data-repair} for a discussion about
 how we repair data as its durability drops over time.
 
-\todo{diagram}
+\todo{diagram: redundancy.png, redundancy_kmon.png}
 
 See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
@@ -1404,96 +1426,111 @@ See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 \subsection{Files with extended attributes}
 
 Many applications benefit from being able to keep metadata alongside files. For
-example, NTFS supports "alternate data streams" for each file, HFS supports
-resource forks, EXT4 supports "extended attributes," and more importantly for
+example, the Windows file system (NTFS) supports a type of metadata called
+"alternate data streams" for each file. The Apple file system (HFS) supports
+"resource forks," and the Linux file system (EXT4) supports
+"extended attributes." Most importantly for
 our purposes, AWS S3 supports "object metadata" \cite{s3-object-meta}. Being
-able to support arbitrarily named sets of keys/values improves
-compatibility with other storage platforms. Every \x{file} will support a
-limited set of arbitrary key/value metadata to support object metadata.
+able to support arbitrarily named sets of keys-value pairs improves
+compatibility with other storage platforms. Every \x{file} will include a
+limited set of arbitrary key-value pairs to support object metadata. We call
+these "extended attributes."
 
 \subsection{Files as Segments}
 
-\todo{diagram}
+\todo{diagram 2_segment.png}
 
-\x{Files} should be designed both for small data and large data.
-A \x{file} may be small enough it consists of only one segment.
+The highest level subdivision of a file is called a "segment."
+\x{Files} should be designed for both small and large data.
+A \x{file} may be small enough that it consists of only one segment.
 If that \x{segment} is smaller than the metadata required to store it on the
-network, the \x{segment} will be an \x{inline segment} and the data will be
-stored directly inline with the metadata.
+network, the data will be stored inline with the metadata. We call this an
+"inline segment."
 
-For larger \x{files} (\x{files} past a certain size) the data will be broken
-into multiple large \x{remote segment}s. Segmenting in this manner has a
-number of advantages to security, privacy, performance, and availability.
+For larger \x{files}, the data will be broken
+into one or more large \x{remote segment}s. Segmenting in this manner offers
+numerous advantages to security, privacy, performance, and availability. The
+last segment of a file stored remotely contains the extended attributes of
+the file and other useful information such as the number of segments in the
+file, the size of the segments, and file encryption details.
 
-Maximum \x{segment} size is a configurable parameter. To preserve privacy, it is
-recommended that \x{segment} sizes be standardized as a byte multiple, such as
-32 MB or 64 MB. Smaller \x{segment}s may be padded with zeroes or random data.
+Maximum \x{segment} size is a configurable parameter. To preserve privacy, we
+recommend that \x{segment} sizes be standardized as a byte multiple, such as
+32 MB or 64 MB.
 Standardized sizes help frustrate attempts to determine the content of a given
 \x{segment} and can help obscure the flow of data through the network.
+Smaller \x{segment}s may be padded with zeroes or random data.
 
-Segmenting large files like videos and distributing the \x{segment}s
-across the network separately reduces the impact of content delivery on any
+Segmenting large files (e.g. videos) and distributing the \x{segment}s
+across the network reduces the impact of content delivery on any
 given node.
 Bandwidth demands are distributed more evenly across the network.
 In addition, the end-user can take advantage of parallel transfer, similar to
-BitTorrent or other peer-to-peer networks. Last, capping the size of segments
-allows for more uniform storage node filling--a node must only have enough
-space to store a segment to participate in the network, and clients don't have
-to find nodes that have enough space for their specific large file.
+BitTorrent or other peer-to-peer networks. Lastly, capping the size of segments
+allows for more uniform storage node filling--a node need only have enough
+space to store a segment in order to participate in the network,
+and a client doesn't need
+to find nodes that have enough space for their large file.
 
 \subsection{Segments as Stripes}
 
-\todo{diagram}
+\todo{diagram 3_stripe.png}
 
-In many situations it's important to access just a portion of a piece of
-data. Some large file formats such as large video files, disk images, or file
-archives support the concept of seeking,
-where only a partial subset of the data is needed for correct access or
-read operation. To support these uses,
-it's useful to be able to decode and decrypt only parts of a file.
+In many situations it's important to access a subsection of a larger piece of
+data. Some file formats such as video files or disk images support seeking,
+where only a subset of the data is needed for read operations.
+To support these operations,
+it's useful to be able to decode and decrypt small parts of a file.
 
-A \x{stripe} should be no more than a couple of kilobytes, and erasure encoding
-a single \x{stripe} at a time allows us to read portions of a large \x{segment}
-without retrieving the entire \x{segment}, allows us to stream data into the
+A \x{stripe} defines a subset of a segment and should be no more than a
+couple of kilobytes large. Erasure encoding
+a single \x{stripe} at a time allows us to read small portions of a
+large \x{segment} without retrieving the entire \x{segment} first.
+It also allows us to stream data into the
 network without staging it beforehand, and enables a number of other useful
 features.
 
 \subsection{Stripes as Erasure Shares}
 
-\todo{diagram}
+\todo{diagram 4_erasure_share.png}
 
 Erasure encoding gives us the chance to control network durability in the face
-of unreliable \x{piece storage node}s. Erasure encoding schemes often are
+of unreliable \x{storage node}s. Erasure encoding schemes often are
 described as $(k, n)$ schemes, where $k$ \x{erasure shares} are needed for
 reconstruction out of $n$ total. For every \x{stripe}, $n$ \x{erasure share}s
 are generated, where the network has an expansion factor of $n/k$.
 
 For example, let's say a \x{stripe} is broken into 40 \x{erasure share}s
 ($n=40$), where any 20 ($k=20$) are needed to reconstruct the \x{stripe}. Each
-of the 40 \x{erasure share}s will be $\frac{1}{20}$th the size of the original
+of the 40 \x{erasure share}s will be $1/20$th the size of the original
 \x{stripe}.
 
-All $n$ \x{erasure share}s have a well defined index associated
-with them. More specifically, for any given $n$, the $i$th share of an erasure
-code will always be the same.
 
 See section \todo{} for a breakdown of how varying the erasure code parameters
 affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
 
-\todo{diagram}
+\todo{diagram 5_piece.png}
 
 Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
-immense relative to their size. Instead of keeping track of all of the
-erasure shares separately, we pack all of the \x{erasure share}s together into
-a few \x{piece}s.
+immense relative to their size.
+All $n$ \x{erasure share}s have a well defined index associated
+with them. More specifically, for any given $n$, the $i$th share of an erasure
+code will always be the same.
+Instead of keeping track of all of the
+erasure shares separately, we pack all of the \x{erasure share}s with the
+same index into a \x{piece}.
 In a $(k, n)$ scheme, there are $n$ \x{piece}s, where each
 \x{piece} $i$ is the ordered concatenation of all of the \x{erasure share}s with
 index $i$. As a result, where each \x{erasure share} is $1/k$th of a
 \x{stripe}, each \x{piece} is $1/k$th of a \x{segment}, and only $k$
 \x{piece}s are needed to recover the full \x{segment}.
+
+A \x{piece} is what
+we finally store on a storage node. We generate and attempt uploads to $n$
+storage nodes, but only $k$ nodes are required to recover the original file.
 
 \todo{piece ids are generated as the hmac of a root piece id and the storing
 node id}
