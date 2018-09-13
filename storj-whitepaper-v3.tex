@@ -687,7 +687,7 @@ and bandwidth relative to those use cases.
 
 \todo{ben golub wrote up the economic portion of the ospp talk. incorporate
 and add him to the author list!
-https://docs.google.com/document/d/1aEn1ACRayQE9JwHbqBCQSM9_9Ot1H6NbEdyZVCmhFLU/edit
+https://docs.google.com/document/d/1aEn1ACRayQE9JwHbqBCQSM9\_9Ot1H6NbEdyZVCmhFLU/edit
 }
 
 \chapter{Framework}\label{chap:framework}
@@ -1448,7 +1448,10 @@ Our durability story does not end with our selection of these numbers.
 Please see section \ref{sec:concrete-data-repair} for a discussion about
 how we repair data as its durability drops over time.
 
-\todo{diagram: redundancy.png, redundancy_kmon.png}
+\todo{diagram:
+redundancy.png
+redundancy\_kmon.png
+}
 
 See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
@@ -1471,7 +1474,7 @@ these "extended attributes."
 
 \subsection{Files as Segments}
 
-\todo{diagram 2_segment.png}
+\todo{diagram 2\_segment.png}
 
 The highest level subdivision of a file is called a "segment."
 \x{Files} should be designed for both small and large data.
@@ -1507,7 +1510,7 @@ to find nodes that have enough space for their large file.
 
 \subsection{Segments as Stripes}
 
-\todo{diagram 3_stripe.png}
+\todo{diagram 3\_stripe.png}
 
 In many situations it's important to access a subsection of a larger piece of
 data. Some file formats such as video files or disk images support seeking,
@@ -1525,7 +1528,7 @@ features.
 
 \subsection{Stripes as Erasure Shares}
 
-\todo{diagram 4_erasure_share.png}
+\todo{diagram 4\_erasure\_share.png}
 
 Erasure encoding gives us the chance to control network durability in the face
 of unreliable \x{storage node}s. Erasure encoding schemes often are
@@ -1544,7 +1547,7 @@ affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
 
-\todo{diagram 5_piece.png}
+\todo{diagram 5\_piece.png}
 
 Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
@@ -2656,7 +2659,7 @@ we can just create some kind of clearing system (as all payment processors have)
 
 \todo{
 User need to have a deposit on his account which will allow him to use the system. As we have pay-as-you-go payment model so the most fair and efficient way will be deposit model and build a clearing  around this deposits.
-So to start using Storj user need top up his accouunt for $xyz amount of money, then he will see his total deposit and as soon as he will create his first bucket and/or upload first file we will start charge money from his deposit on the base of our clearing rules (once per day, hour, week, month). User will see in his consol history of all transactions, even real time which will allow him to manage and understand all the processes and money movements that is going on in his account.
+So to start using Storj user need top up his accouunt for \$xyz amount of money, then he will see his total deposit and as soon as he will create his first bucket and/or upload first file we will start charge money from his deposit on the base of our clearing rules (once per day, hour, week, month). User will see in his consol history of all transactions, even real time which will allow him to manage and understand all the processes and money movements that is going on in his account.
 After satellite will do a session roll up  (per day) to not to lose a lot of on transaction fee we will hold needed amount of money on his deposit and will transfer it from holding account to satelite account and after to Stoj Nodes in the end of payroll period.
 If user will finish his deposit he will need to top up it more either we will block it and delete all his files and buckets during xyz (30 days) period. If user top up his balance during this xyz (30 days) period he will need to pay breach fee, to cover to satelite possible loses that he may has because of this sitution and cover possible risk from the users who have the same breach situations.
 
