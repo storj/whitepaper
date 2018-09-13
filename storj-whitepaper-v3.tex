@@ -88,12 +88,13 @@ Remaining medium todo items:
 \begin{itemize}
 \item Anyone:
   Clean up distributed consensus positioning in the appendix.
-\item Eng: Describe how path encryption works
 \item Eng: General data repair framework description
 \item Eng: more macaroon details
 \item Eng: future work section about hot files
 \item make point about why rs is better than replication more clear,
   contrasting with other approaches
+\item discuss when a storage node can limit download bandwidth to prevent
+  abuse
 \end{itemize}
 
 Remaining little todo items:
@@ -104,6 +105,8 @@ Remaining little todo items:
 \item Eng: Future work section about finding a better data structure than
  a bloom filter for gc
 \item Figure out latex theme licensing
+\item Make sure audits try to refresh the cache if there's a failure contacting
+  a node before flagging the node as down.
 \end{itemize}
 }
 
@@ -204,6 +207,10 @@ In recent years, we have seen colossal infrastructure data breaches, periods of
 unavailable on a grand scale, storage costs failing to decrease in line with
 demand, and a struggle to keep up with user demand for faster data and larger
 formats.
+
+\todo{Cam suggests for the next paragraph:
+I think it would be better to start with the problem, "there is expected to be X amount of data by year Y." Then propose decentralized storage as a potential solution. Start general, then progressively get more specific until you reach the thesis, "Storj is the answer"
+}
 
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
@@ -366,6 +373,12 @@ high-bandwidth internet connections is unevenly distributed across the world.
 While some users can easily access symmetric, high-speed, unlimited bandwidth
 connections, others may have significant difficulty obtaining access to the same.
 
+\todo{Moby suggests:
+[Opinion] I think this paragraph would be better off if it was written more generally. In other words, get rid of specific references to countries (United States) and ISPs (Comcast).
+
+The same bandwidth limitations we'd like to account for in the US are present in other countries as well. Additionally, although Comcast sucks, I don't see any need to explicitly call them out in this section.
+}
+
 In the United States, the way many residential internet service providers (ISPs)
 operate presents two specific challenges for designers of a
 decentralized network protocol. The first challenge is that the internet
@@ -479,6 +492,8 @@ storage system, but we have found that in aggregate, enough small operator
 environments exist that their combination over the internet constitute
 significant opportunity and advantage for cheaper and faster storage.
 
+\todo{Egon suggests the previous sentence is too long}
+
 Operating a decentralized network requires node operators to contribute
 resources (e.g. network bandwidth, compute, storage, and energy) in exchange
 for compensation (i.e. the opportunity to earn revenue).
@@ -506,6 +521,9 @@ system, many users worried about single-entity risk will have a viable
 alternative.
 With decentralized architecture, Storj could cease operating and the data
 would continue to be available.
+
+\todo{Kevin suggests for the previous paragraph:
+I think we need to tighten up this illustration of why trusting a singular entity incurs costs, creates counterparty, risk, etc.}
 
 We have decided to adopt a decentralized architecture because while there
 are tradeoffs, we believe decentralization addresses the core limitations,
@@ -537,11 +555,10 @@ is in their net best interest to do so.
 
 Some distributed storage systems (e.g. AWS S3, Azure Blob Storage)
 operate in an environment
-where all nodes are considered altruistic.
-
-For example, Amazon owns all of their nodes directly and
-rogue operations engineers are not generally coopting node behavior for their
-own purposes.
+where all nodes are considered altruistic. For example, sans hardware failure
+or security breaches, Amazon's storage nodes
+are not going to do anything besides what they were explicitly programmed to do,
+because Amazon owns and runs all of them.
 
 On the other hand, Storj operates in an environment where every node is
 managed by its own independent operator.
@@ -606,6 +623,8 @@ entirely controllable by each user.
 
 \section{Marketplace and economics}
 
+\todo{kevin suggests the following paragraph get rewritten}
+
 Designing a decentralized storage network with the intent of creating and
 operating a business presents additional design constraints not faced when only
 pursuing an ideological goal of a purely decentralized application
@@ -628,6 +647,8 @@ that the {\em rational} nodes on the network (the majority of operators) behave
 as similarly as possible to the expected behavior of {\em altruistic} nodes.
 Incentives should likewise be eliminated that elicit any {\em byzantine}
 behavior.
+
+\todo{Egon says the last sentence is unclear}
 
 Third, to drive network growth and adoption, we must have a price-competitive
 product and attractive
@@ -663,6 +684,11 @@ New features and changes to the concrete implementations of framework
 components will be driven by applicability to specific object storage use cases
 and the relationship between features and performance to the price of storage
 and bandwidth relative to those use cases.
+
+\todo{ben golub wrote up the economic portion of the ospp talk. incorporate
+and add him to the author list!
+https://docs.google.com/document/d/1aEn1ACRayQE9JwHbqBCQSM9_9Ot1H6NbEdyZVCmhFLU/edit
+}
 
 \chapter{Framework}\label{chap:framework}
 
@@ -737,7 +763,7 @@ selection is an explicit, nondeterministic process in our framework. This means
 that we must keep track of which nodes were selected for each upload via a
 small amount of metadata; we can't select nodes for storing data implicitly or
 deterministically as in a system like Dynamo \cite{dynamo}. This decision
-implies the requirement of a separate metadata storage system to keep track
+implies the requirement of a metadata storage system to keep track
 of selected nodes.
 
 \section{Peer-to-peer communication and discovery}
@@ -752,8 +778,10 @@ This may require techniques like STUN, UPnP, NAT-PMP, etc.
 \item provides authentication, where each participant cryptographically
 proves the identity of the peer with whom they are speaking to avoid
 man-in-the-middle attacks.
-\item provides complete privacy, where only the two peers
-know what transfers between them.
+\item provides complete privacy. In cases such as the bandwidth allocation
+protocol (see section \ref{bap}), the client and storage node must be able
+to communicate without any risk of eavesdroppers. The protocol should
+ensure that all communications are private by default.
 \end{itemize}
 
 Additionally, the framework requires a way to look up peer network addresses
@@ -793,7 +821,7 @@ codes allow changes in durability without changes in expansion factor.
 
 \todo{take some of the above to the redundancy design requirements section}
 
-\todo{fix flow:
+\todo{fix flow, potentially move to implementation
 
 An erasure code is often described by two numbers, $k$ and $n$. If a block of
 data is encoded with a $(k,n)$ erasure code, there are $n$ total generated {\em
@@ -828,6 +856,8 @@ decrease in bandwidth footprint.
 It further causes a significant increase in the funds available per byte to
 storage nodes due to the decreased dilution of incoming funds to storage node
 payment relative to larger expansion factors.
+
+\todo{stefan requests other exp factors}
 
 \begin{table}[h]
 \centering
@@ -956,14 +986,14 @@ without giving up encryption details for others.
 
 Because each file should be encrypted differently with different keys and
 potentially different algorithms, the metadata about that encryption must
-be stored somewhere in a way that is secure and reliable. This metadata will
-be stored in the previously discussed metadata storage system, itself encrypted
+be stored somewhere in a way that is secure and reliable. This metadata,
+along with other metadata about the file, including its path, will
+be stored in the previously discussed metadata storage system, encrypted
 by a deterministic, hierarchical encryption scheme.
 A hierarchical encryption scheme similar to
 BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
 parents, and will allow some files to be shared without sharing other files.
-Like all other metadata, paths themselves can be encrypted using a hierarchical
-encryption scheme. \todo{ref to our hd scheme section}
+\todo{ref to our hd scheme section}
 
 \section{Audits and reputation}
 
@@ -1033,7 +1063,7 @@ data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, and
 we expect to account for varying
-amounts of other issues by configuring Reed-Solomon erasure code
+amounts of other issues by configuring erasure code
 parameters according to differing network conditions.
 
 \section{Payments}
@@ -1134,11 +1164,14 @@ collection of 0 or more \x{segment}s. \x{segment}s have a fixed maximum size.
 The more bytes the \x{file} represents through \x{segment}s, the more
 \x{segment}s there are.
 
-A \x{file} also support a limited amount of key/value user-defined fields to
-support extended attributes.
+A \x{file} also supports a limited amount of key/value user-defined fields
+called extended attributes.
 
 Like \x{path}s, the data contained in a \x{file} is encrypted before it ever
 leaves the client computer.
+
+\item[Extended attribute] An extended attribute is a user defined key/value
+field that is associated with a file.
 
 \item[Segment] A \x{segment} represents a single array of bytes, between 0 and a
 user-configurable maximum \x{segment} size. Breaking large \x{file}s into
@@ -1542,14 +1575,25 @@ where in the network the \x{piece}s are located to recover it. This is contained
 in the \x{pointer} data structure, and the owner can secure the \x{pointer} as
 they wish.
 
+A \x{pointer} includes which nodes are storing the \x{pieces},
+encryption information, erasure coding details,
+the repair threshold amount that determines how much redundancy a \x{segment}
+must lose before triggering a repair, the amount of \x{pieces} that must be
+stored to consider a repair to be successful, and other details. The full
+definition of a pointer can be seen below. \todo{}
+
 \todo{code-based pointer definition. protobuf?}
 
 \section{Metadata}\label{sec:concrete-metadata}
 
+The metadata storage system in the Storj network predominantly stores
+\x{pointers}. Other individual components of the Storj network communicate with
+the pointer database to store and retrieve pointers by path to perform actions.
+
 The most trivial implementation for the metadata storage functionality we
 require would be to simply have each user use their preferred trusted database
-such as PostgreSQL, SQLite, MongoDB, Cassandra\cite{cassandra},
-Spanner\cite{spanner}, CockroachDB, to name a few. In many cases, this will
+such as MongoDB, MariaDB, Couchbase, SQLite, Cassandra\cite{cassandra},
+Spanner\cite{spanner}, or CockroachDB, to name a few. In many cases, this will
 be acceptable for specific users, provided those users are managing appropriate
 backups of their metadata. Indeed, the types of users who have petabytes of data
 to store can most likely manage reliable backups of a single relational database
@@ -1602,13 +1646,18 @@ solve the problem of Byzantine distributed consensus for now. See Future work
 
 \section{Satellite}
 
+\todo{Point out that the satellite is a collection of subservices and does
+not compare to the storage node and the uplink in regards to the ease of
+running it. also focus that the subservices can run distributed over multiple
+locations.}
+
 The services that holds this metadata we call the \x{satellite}. Users of the
 network will have accounts on a specific satellite instance, which will store
 their metadata for them, manage authorization to data, keep track of storage
 node quality via audits, repair and maintain data when redundancy is reduced,
 and issue payments to storage nodes on the user's behalf.
 Storj implements a thin-client model that delegates trust to the
-satellite service which manages data ownership. Thin-clients (\x{uplinks})
+satellite service which manages data ownership. \x{Uplinks}
 are thus able to support the widest possible array of client applications, while
 Satellites require high uptime and potentially significant infrastructure,
 especially for an active set of files.
@@ -1680,36 +1729,48 @@ Storj Labs Inc. plans to provide this service.
 Our encryption is authenticated encryption, with support for either the
 AES-GCM cipher and the Salsa20 and Poly1305 combination NaCl calls "Secretbox"
 \cite{nacl-crypto}. Authenticated encryption is used so that the user can know
-if the data has been tampered with. Data encryption keys are chosen by clients
-randomly.
+if the data has been tampered with. Data encryption keys are chosen by the
+uplink randomly.
 
-Data is encrypted in small batches of \x{stripes}, recommended to be 4KB or
-less \cite{nacl-packetlen}. While the same encryption key is used for every
-\x{stripe} in a \x{segment}, \x{segments} may have
+Data is encrypted in blocks of small batches of \x{stripes}, recommended to be
+4KB or less \cite{nacl-packetlen}. While the same encryption key is used for
+every \x{stripe} in a \x{segment}, \x{segments} may have
 different encryption keys. On the other hand, the nonce for each encryption
-batch must be monotonically increasing from the previous batch throughout the
+batch must be monotonically incrementing from the previous batch throughout the
 entire \x{stream}. The nonce wraps around to 0 if the counter reaches the
-maximum representable nonce. The first nonce is chosen at random and is stored
-with the \x{stream}'s metadata.
-\todo{consider multipart upload}
-
-Paths are also encrypted with authenticated encryption, but the nonce and key
-must be deterministic, determined entirely from a root secret combined with the
-unencrypted path. \todo{explain path encryption scheme}
+maximum representable nonce. The starting nonce for the stream is chosen at
+random and is stored with the \x{stream}'s metadata.
+The starting nonce for the next segment
+is the incremented ending nonce from the previous segment. If multipart upload
+is used, i.e. multiple segments are uploaded in parallel, the starting nonce
+for each segment can be calculated from the starting nonce of the stream, the
+segment number, and the number of encryption blocks in each segment.
 
 This scheme protects the
 content of the data from the \x{storage node} housing the data. The data owner
 retains complete control over the encryption key, and thus over access to the
 data.
 
-\todo{describe path encryption}
+Paths are also encrypted with authenticated encryption, but the nonce and key
+must be deterministic, determined entirely from a root secret combined with the
+unencrypted path. Each \x{path component} is encrypted separately.
+The first path component is encrypted with a key and nonce derived from the
+root secret. A new secret is derived from the root secret and the unencrypted
+name of the first path component. This new secret is used to derive the
+encryption key and nonce for encrypting the second path component. For every
+next path component a new secret is derived from the secret and unencrypted
+name of the previous path component and the respective encryption key and
+nonce are derived from this new secret. HMAC-SHA512 is used for all key
+derivations.
 
 Path encryption is optional, as encrypted paths make efficient sorted path
 listing challenging. When path encryption is enabled (a per-bucket feature),
 objects are sorted by their encrypted path name, which is relatively unhelpful
 when interested in unencrypted paths. For this reason, users can opt in to
 disabling path encryption. When path encryption is disabled, unencrypted paths
-are only revealed to the user's chosen metadata storage system.
+are only revealed to the user's chosen satellite, but not to the storage
+nodes. Storage nodes continue to have no information about the path and
+metadata of the pieces they store.
 
 Order-preserving path encryption is left for future work.
 
@@ -1739,19 +1800,28 @@ service prior to operations with storage nodes.
 
 \section{Audits}\label{sec:concrete-audits}
 
+\todo{diagram}
+
+In a network with untrusted nodes, validating that nodes are returning data
+accurately and otherwise behaving as expected is vital to ensuring a properly
+functioning system. Audits are a way to confirm that nodes have the data they
+claim to have. Auditors, such as a satellite, will send a \x{challenge} to a
+storage node and expect a valid response. A challenge is a request of the
+storage node for it to prove it has the data it claims to.
+
 Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
-and expected responses are generated ahead of time as a form of compact
+and expected responses are generated at the time of storage as a form of compact
 proof of retrievability \cite{proof-of-retrievability}. By using a Merkle tree
 \cite{merkle-tree}, the amount of metadata needed to store these pre-generated
-challenges and responses can be made to be negligible.
+challenges and responses can be negligible.
 
-Unfortunately, in such a scheme, the challenges and responses must be
+Unfortunately, in such a scheme, the challenges and expected responses must be
 pre-generated, and without a periodic regeneration of these challenges, a
 storage node can begin to pass most audits without storing all of the requested
-data.
+data. We can use the following method to run arbitrary audits without
+pregenerated challenges.
 
-We do something else.
 An assumption in our storage system is that most storage nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
@@ -1759,25 +1829,26 @@ via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
 We are already using Reed-Solomon erasure coding
 \cite{rs} on small ranges (\x{stripes}), so we use it to issue challenges and
 verify responses as well.
-This feature can be used for arbitrary audits without pregenerated challenges.
 
-To perform an audit, we first choose a \x{stripe} to audit. We request that
+To perform an audit, we first choose a \x{stripe}. We request that
 \x{stripe}'s \x{erasure shares} from all storage nodes responsible. We then run
 the Berlekamp-Welch algorithm \cite{bw} across all the \x{erasure shares}. When
-enough storage nodes return correct information, any faulty or missing response
+enough storage nodes return correct information, any faulty or missing responses
 can easily be identified. These audit failures will be stored and saved in the
 reputation system.
 
 It is important that every storage node has a frequent set of random audits to
-gain statistical power on how well-behaved that storage node is, but it is not
-a requirement that audits are performed on every byte, or even on every file.
+gain statistical power on how well-behaved that storage node is. However, as
+discussed in section \ref{sec:framework-audits}, it is
+not a requirement that audits are performed on every byte, or even on every
+file.
 Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
 system. Audits should happen uniformly at random by byte with replacement.
 
 \section{Data repair}\label{sec:concrete-data-repair}
 
-The node discovery system already has caches in place that have accurate and
+The node discovery system has caches in place that have accurate and
 up-to-date information about which storage nodes have been online recently.
 When a storage node changes state from recently online to offline, this can
 trigger a lookup in a reverse index in a user's metadata database, identifying
@@ -1787,7 +1858,7 @@ threshold, $m$, the segment should be downloaded and reconstructed, and the
 missing pieces should be regenerated and uploaded to new nodes. Finally, the
 \x{pointer} should be updated to include the new information.
 
-As storage node nodes go offline--taking their file pieces with them--it will
+As storage nodes go offline--taking their file pieces with them--it will
 be necessary for the missing pieces to be rebuilt once the entire file's pieces
 fall below the predetermined threshold $m$. If a node goes offline, the
 satellite will mark that nodes' file pieces as missing.
@@ -1804,20 +1875,20 @@ with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
 should be set for when uploads are successful and when repair is needed. See
-Appendix \todo{} for how we calculate these things given user inputs.
+Appendix \todo{} for how we calculate these values given user inputs.
 
-A practical upshot of this design is that for now, the satellite must
+A direct implication of this design is that for now, the satellite must
 constantly stay running. If the user's satellite stops running, repairs will
-stop, and data will eventually fall out of the network due to node churn. This
-is similar to the design of how value storing and republishing works in
+stop, and data will eventually disappear from the network due to node churn.
+This is similar to the design of how value storing and republishing works in
 Kademlia \cite{kad}.
 
-The ingress bandwidth demands of the audit and repair system are large, but the
-egress demands are relatively small. A large amount of data comes in to the
-system for audits and repairs, but just the formerly missing pieces get sent
-back out.
+The ingress bandwidth demands of the audit and repair system are large, but
+given standard configuration, the egress demands are relatively small.
+A large amount of data comes in to the system for audits and repairs, but only
+the formerly missing pieces get sent back out.
 While the repair and audit system can run anywhere, the bandwidth usage
-asymmetry means that hosting providers that offer free ingress
+asymmetry means that hosting providers which offer free ingress
 make for an especially attractive hosting location for users of this system.
 We will describe a Distributed Repair method in the Future Works section
 \todo{ref} that
@@ -1828,14 +1899,14 @@ does not rely on the favorable pricing model of current hosting providers.
 Repairs are one of the few places latency doesn't matter. The data repair system
 just needs to get through as many files as possible, but it doesn't matter if
 a specific file takes longer. Throughput is much more important than
-latency during repair. Furthermore, repair
+latency during repair. However, repair
 is still a costly operation due to significant bandwidth and CPU usage
 impacting a single operator, so repair work should be minimized.
 As a result, when repairing a segment,
 only the minimum number of pieces required should be downloaded.
 Unfortunately, this means that
 without full redundancy, erasure codes will be less effective at catching
-errors. Further, the fallback safety mechanism that the user has for detecting
+errors. Furthermore, the fallback safety mechanism that the user has for detecting
 errors (authenticated encryption) is unavailable to the repair system (no
 decryption keys).
 
@@ -1856,9 +1927,9 @@ point to new locations.
 \section{Storage node reputation}
 
 Reputation metrics on decentralized networks are a critical part of
-enabling reasonable trust \todo{Can we eliminate the word trust here?}
+enabling cooperation
 between nodes
-where there would otherwise be none. Reputation metrics
+where progress would be challenging otherwise. Reputation metrics
 are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
 reliability, and durability.
@@ -1873,14 +1944,14 @@ As a result, it will be placed into a vetting
 process until enough data is known about it.
 We propose the following way to gather data about new nodes
 without compromising the integrity of the network.
-Every time a file is uploaded, the system will select a small amount of
-unvetted storage nodes to include in the list of target nodes.
+Every time a file is uploaded, the system will select a small number of
+additional unvetted storage nodes to include in the list of target nodes.
 The Reed-Solomon parameters will be chosen such that these unvetted storage
 nodes will not affect the durability of the file, but will allow the network
 to test the node
 with a small fraction of data until we are sure the node is reliable.
 After the storage node has successfully stored enough data for a long enough
-period (potentially months),
+period (on the order of 2-4 weeks),
 the system will then start including that storage
 node in the standard selection process used for general uploads.
 Importantly, storage nodes get paid during this
@@ -1981,7 +2052,7 @@ and for object downloads.
 Storage nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
 period, a satellite will calculate earnings for each of its storage nodes.
-Provided the storage node node hasn't been blacklisted,
+Provided the storage node hasn't been blacklisted,
 the storage node will be paid by the satellite for the data it has stored
 over the course of
 the month, per the satellite's records.
@@ -2020,7 +2091,7 @@ protocol. To download a file, an uplink user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The satellite sends a confirmation of this promise
 to the uplink, along with file piece storage node node locations.
-The console then sends the promise to pay directly
+The uplink then sends the promise to pay directly
 to the storage node nodes, along with the details on the file pieces it needs.
 Each storage node then accepts or rejects this operation.
 If a storage node accepts this
@@ -2073,9 +2144,10 @@ Protocol for correctly verifying that a certain amount of bandwidth was used
 between two peers with incentives.
 We don't measure all peer-to-peer traffic;
 some operations are simply considered to be
-the cost of doing business. This bandwidth traffic measurement only applies
-to storage operations (storage and retrievals of pieces) and does not
-apply to overlay traffic (Kademlia DHT) or other generic maintenance overhead.
+the cost of doing business. This bandwidth traffic measurement only tracks
+bandwidth used during storage operations (storage and retrievals of pieces)
+and does not apply to overlay traffic (Kademlia DHT) or other generic
+maintenance overhead.
 
 \todo{diagram, gory detail, protobufs, update references}
 
@@ -2086,7 +2158,7 @@ The \x{satellite} will return an {\em unrestricted
 bandwidth allocation} message. This message will include the identity of the
 satellite, the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized, and the direction the bytes will flow
-(whether or not the data will be transfered from or to the client).
+(whether or not the data will be transferred from or to the client).
 The message will be signed by the satellite.
 
 %To use a metaphor, the satellite is
@@ -2096,10 +2168,10 @@ The message will be signed by the satellite.
 Once the client has an unrestricted bandwidth allocation, the client will then
 create {\em restricted bandwidth allocations},
 %or to continue the metaphor, a filled-in check,
-indicating $y$ bytes have been transfered so far. The client
+indicating $y$ bytes have been transferred so far. The client
 will start by sending a restricted allocation for some small amount,
 perhaps only a few kilobytes,
-so the storage node can verify the clients authorization.
+so the storage node can verify the client's authorization.
 If the allocation is signed correctly, the storage node will
 transfer up to the amount listed in the restricted allocation ($y$ bytes) before
 awaiting another allocation. The client will then send another allocation where
@@ -2131,87 +2203,81 @@ payment.
 
 \section{Satellite reputation}
 
-Storage nodes have a strong incentive to avoid accepting data assigned to
-satellites that don't have a good history of paying.
+When a satellite on the Storj network has a less than stellar payment history,
+there is a strong incentive for the storage nodes to avoid accepting its data
+assignments.
 
-Initially, storage nodes will put satellites through a vetting process
-where storage nodes limit their exposure to unknown satellites and build up
-trust over time with specific satellites that are likely to pay their bills.
-Storage nodes
-will have a configurable maximum amount of data that they will store for an
-unknown satellite, and can use whether or not they get paid for that data
-as input into
-whether or not that satellite should be trusted for more data in the future.
+When a new satellite joins the network, the participating storage nodes will
+commence a vetting process that limits their exposure to the new and unknown
+satellite, while building trust over time to highlight which of the
+satellites have the best payment record.
 
-Storage node operators will be able to opt in and out of working
-with specific satellites they already trust or distrust.
-Storj Labs will ship a list of recommended satellites that
-they have already vetted for quality control that
-node operators can elect to use.
+Storage nodes will be able to configure the maximum amount of data they will
+store for an untrusted satellite, and will build historical data on whether
+that satellite should be trusted further in the future.
+Storage node operators will also retain manual control on what satellites they
+would like to trust, or don’t trust, if desired.
 
-If a satellite operator wants their
-satellite included on the Storj-provided inclusion list, the satellite operator
-may be required to pay Storj for insurance such that Storj can pay storage
-nodes on the satellite operator's behalf if the satellite goes down.
+Storage node operators can elect to automatically trust a Storj Labs
+provided collection of recommended satellites that adhere to a strict set of
+quality controls.
+To protect storage node operators, if a Satellite Operator wants to be
+included in the Storj Recommended Satellites list, the Satellite Operator may
+be required to pay Storj Labs for insurance. This insurance will allow Storj
+Labs to continue to pay storage node operators in place of the satellite should
+the satellite become temporarily inoperable.
 
 \todo{future work - shared reputation, satellite reputation}
 
 \section{Garbage collection}
 
-When data is moved or deleted, it's important to inform impacted storage nodes
-that they are no longer required to store that data. Unfortunately, sometimes
-storage nodes will be temporarily unavailable and delete messages will be
-missed. In these cases, data that is no longer needed is considered
-{\em garbage}. Payers only pay for data they expect to be stored, so storage
-nodes with lots of garbage will find less earnings than they would
-otherwise be entitled to unless a garbage collection system is employed.
+When clients move or delete data, satellites will notify storage nodes
+that they are no longer required to store that data. However,
+storage nodes will sometimes be temporarily unavailable and will miss delete
+messages. In these cases, unneeded data is considered
+{\em garbage}. Payers only pay for data that they expect to be stored. Storage
+nodes with lots of garbage will earn less than they would
+otherwise unless a garbage collection system is employed. For this reason, we
+introduce garbage collection to free up space on storage nodes.
 
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
 leaves no additional garbage, whereas a {\em conservative} garbage collector may
 leave some small proportion of garbage around given some other tradeoffs,
 often with the aim of improving performance.
-As long as a conservative garbage collector is used in our system, it should
-be assumed that the cost of storage owed to a storage node is high enough
-to amortize the cost of storing the garbage.
+As long as a conservative garbage collector is used in our system, the cost of
+storage owed to a storage node should be high enough to amortize the cost of
+storing the garbage.
 
-When data is deleted through the client, the metadata system (and thus a
+When delete messages are issued via the client, the metadata system (and thus a
 satellite, with satellite reputation on the line) will require proof that
 deletes were issued to a configurable minimum number of storage nodes.
 This means that every time
-data is deleted, storage nodes that are online and reachable will get
-notification right away.
+data is deleted, storage nodes that are online and reachable will receive
+notifications right away.
 
 For the nodes that miss initial delete messages, we propose a conservative
 garbage collection strategy. Periodically, storage nodes will request
-a highly-compressible data structure such as a
-{\em Bloom filter} \cite{bloom-filter} from satellites that contains hints about
-what pieces a node is expected to continue storing.
-A Bloom filter is a mechanism that can
-answer certain set membership questions, describing whether an element
-{\em isn't contained} or
-{\em maybe contained}, but can not determine whether an element
-{\em is contained} in the set.
-Satellites will reject
-requests for these data structures that happen too frequently.
+a data structure to detect differences. In the simplest form it can be a hash
+of stored keys, which allows efficient detection of out-of-sync state. After
+detecting out-of-sync state, collection can use another structure such as a
+{\em Bloom filter} \cite{bloom-filter} to find out what data has not been
+deleted.
+
+Satellites will reject overly frequent requests for these data structures.
 By returning a data
 structure tailored to each node on a periodic schedule, a satellite can give a
 storage node the ability to clean up garbage data to a configurable tolerance.
 
-Because Bloom filters are probabilistic and their collision risk is
-configurable, the conservative garbage collector can be tuned to eliminate
-garbage down to an acceptable tolerance, given the tradeoff of additional
-bandwidth for these larger, more exact cleanup messages. Further, each time a
-Bloom filter is generated, it can be generated with a new hashing seed, lowering
-the probability that a specific piece of garbage consistently gets
-missed by the garbage collector.
-
-Because this garbage collection system is not precise, storage nodes have a
+The data structures need to be tuned to eliminate garbage down to an acceptable
+level, given the tradeoff of additional bandwidth and faster collection.
+Because this garbage collection system is probabilistic, storage nodes have a
 strong incentive to stay online to witness as many delete messages as possible.
 If a storage node misses a handful of delete messages due to an outage, the
-garbage will eventually get cleaned up with enough Bloom filter based cleanups.
-On the other hand, because this garbage collection system is not precise,
-bandwidth overhead for negotiating the list of pieces a storage node must store
+regular cleanups will eventually clear out the garbage.
+On the other hand, due to the imprecise nature of this garbage collection
+system, the
+bandwidth overhead for a storage node negotiating the list of its pieces
 will be efficient and small.
 
 \todo{See our future work section about undeletes in
@@ -2581,8 +2647,39 @@ data format will support merkle tree repair in the future.
 \section{Cohorts}
 \section{Hot files}
 \section{Reputation sharing}
-\section{Garbage Collection improvements}
+\section{Garbage collection improvements}
+\section{Accelerated payments}
 
+\todo{Viktor says:
+we can just create some kind of clearing system (as all payment processors have) with obligated deposits for services, so that will help us to prevent potential fraud (non-paying customers) from one side and allow us to process all transactions in most efficient and fast way. Because money movement will be just between virtual balances of users until the end of clearing session (we can do clearing once/twice/3 or 4 times per day depends on existing/projected statistics of withdrawals - need to discuss first). In the end of clearing session we/admin can finally process payment to user wallets. This will help us also reduce transaction costs and give us more transparency compare to typical money transfers when you do it in crypto.
+}
+
+\todo{
+User need to have a deposit on his account which will allow him to use the system. As we have pay-as-you-go payment model so the most fair and efficient way will be deposit model and build a clearing  around this deposits.
+So to start using Storj user need top up his accouunt for $xyz amount of money, then he will see his total deposit and as soon as he will create his first bucket and/or upload first file we will start charge money from his deposit on the base of our clearing rules (once per day, hour, week, month). User will see in his consol history of all transactions, even real time which will allow him to manage and understand all the processes and money movements that is going on in his account.
+After satellite will do a session roll up  (per day) to not to lose a lot of on transaction fee we will hold needed amount of money on his deposit and will transfer it from holding account to satelite account and after to Stoj Nodes in the end of payroll period.
+If user will finish his deposit he will need to top up it more either we will block it and delete all his files and buckets during xyz (30 days) period. If user top up his balance during this xyz (30 days) period he will need to pay breach fee, to cover to satelite possible loses that he may has because of this sitution and cover possible risk from the users who have the same breach situations.
+
+TODO satellites roll up payments every day, but pay every month
+Everyday roll up mechanism will looks like a standart clearing mechanism in authorized payment institutions. So it will looks like:
+
+Diagramm
+
+where satelite move money from user’s deposit account to user’s hold account where they stored until the clearing session and transfer then to satellite account and in the end of the month transfer money to Storj Nodes and leave some service fee on their account.
+
+This kind of mechanizm will help Storj to do payments instantly, under small comissions and in the most fair wait for users, satelites and Storj Nodes as well.
+
+
+TODO Payment automation?
+To create automatic payments we need to give all processing rights to satellite, where satellite can accept deposits of users on his address and create subwallets (or even 2 - main wallet and wallet for intraday clearing session where we will hold payments for each data movement) for each user and operate with them.
+So automation will looks like:
+Diagram where satile accept all money and manage them inside users subwallets
+}
+
+\todo{the cost per a lot of small transactions in ETH Blockchain is far more expensive than doing just one big aggregated transaction.
+But we can do another way of doing mass payments - we can update a users balance on the client side but not do real STORJ transfer until user will ask satellite to do that. So in that case most of the users will only withdraw money when they will collect some reasonable amount of money. But till then there will be no Blockchain transactions at all, that will help satellite to decrease his transaction costs. Also maybe we can allow satellite to set up minimum withdrawal amount to decrease the transaction cost.
+We need to know that in 1-2 years there will be not just one our satellite but bunch of others , and we need to think from their prospective, how it will be more useful for external administrator to manage all this things and make money on it.
+}
 \newpage \appendix
 
 \chapter{Attacks}
