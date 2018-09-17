@@ -121,10 +121,10 @@ the efficiency and economics of large-scale storage.
 Eliminating central control allows users to store and share data
 without reliance on a third-party storage provider. Decentralization mitigates
 the risk of data failures and outages while simultaneously increasing
-the security and privacy of object storage.
-Decentralization also allows market forces to optimize on cheaper ways to
+the security and privacy of object storage, while also
+allowing market forces to optimize on cheaper ways to
 provide storage at a greater rate than any single entity could afford.
-While there are many ways to build such a system, there are some specific
+Though there are many ways to build such a system, there are some specific
 responsibilities any given implementation should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
@@ -138,6 +138,7 @@ This paper represents the combined efforts of many individuals.
 Contributors at Storj Labs, Inc. include but are not limited to:
 Alexander Bender,
 Alexander Leitner,
+Ben Golub,
 Benjamin Sirb,
 Brandon Iglesias,
 Bryan White,
@@ -164,10 +165,12 @@ Natalie Villasana,
 Patrick Gerbes,
 Philip Hutchins,
 Shawn Wilkinson,
-and Stefan Benten.
+Stefan Benten,
+Tim Adams,
+and Viktor Ihnatiuk.
 
 We'd also like to especially thank the other authors of the previous
-Storj v2 paper:
+Storj v2 whitepaper:
 Braydon Fuller,
 Chris Pollard,
 Gordon Hall,
@@ -200,11 +203,11 @@ Outline of this intro (and the entire paper) should be:
 The Internet is a massive decentralized and distributed network consisting of
 billions of devices which are not controlled by a single group or entity.
 However, much of the data available through the Internet is quite centralized,
-currently stored with a handful of techn companies that have the experience and
-capital to build massive datacenters capable of handling this vast amount of
-information.
+currently stored with a handful of technology companies that have the
+experience and capital to build massive data centers capable of handling this
+vast amount of information.
 In recent years, we have seen colossal infrastructure data breaches, periods of
-unavailable on a grand scale, storage costs failing to decrease in line with
+unavailability on a grand scale, storage costs failing to decrease in line with
 demand, and a struggle to keep up with user demand for faster data and larger
 formats.
 
@@ -216,7 +219,7 @@ Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
 Decentralized storage can do this because its architecture matches the real
 Internet better, which itself is decentralized, as opposed to massive
-centralized datacenters. This model can address the rapidly
+centralized data centers. This model can address the rapidly
 expanding amount of data for which current solutions struggle.
 With an anticipated 44 zettabytes of data expected to exist by 2020 and a
 market that will grow to \$92 billion USD in the same time frame
@@ -245,9 +248,9 @@ We've integrated these components to implement a decentralized object storage
 system that is secure, performant, and reliable.
 
 We have organized the rest of this paper into six
-chapters. Chapter \ref{chap:design-constraints} discusses the design space
+chapters: chapter \ref{chap:design-constraints} discusses the design space
 in which Storj operates and elaborates on specific constraints which
-we are base our optimization efforts on.
+we base our optimization efforts on.
 Chapter \ref{chap:framework} covers our framework, while chapter
 \ref{chap:concrete}
 proposes a simple concrete implementation of each component.
@@ -261,10 +264,10 @@ Before designing a system, it's important to first define its requirements.
 There are many different ways to design a decentralized storage system, but
 with the addition of a few requirements, the potential design space shrinks
 significantly.
-Our design constraints are heavily informed by our product and
+Our design constraints are heavily influenced by our product and
 market fit goals.
 By carefully considering each requirement, we ensure the framework
-we choose is as universal as possible given the constraints.
+we choose is as universal as possible, given the constraints.
 
 \section{S3 compatibility}
 
@@ -284,8 +287,8 @@ To achieve this, the Storj implementation allows
 applications previously built against S3 to work with Storj with
 minimal friction or changes.
 This adds strong requirements on feature set, performance, and durability.
-At bare minimum, this requires the methods sketched out in
-Figure \ref{fig:s3-api-code}.
+At a bare minimum, this requires the methods sketched out in
+Figure \ref{fig:s3-api-code} to be implemented.
 
 \begin{figure}
 \begin{lstlisting}
@@ -327,13 +330,13 @@ participants join the network and then leave for various reasons, well
 before their hardware has actually failed. A network with a high churn rate will
 use large amounts of bandwidth just to ensure durability of the data and
 will fail to scale. As a result, a scalable, highly durable storage
-system must encourage stable nodes and keep the churn rate as low as possible.
+network must encourage stable nodes and keep the churn rate as low as possible.
 
 Churn rate affects the network much more than hardware failure. As an
 illustration, Maymounkov {\em et al.} found that in
 decentralized systems, the probability of a node staying connected to the
 network for an additional hour is an {\em increasing}
-function of uptime (\cite{kad}, figure \ref{fig:kad-uptime}).
+function of uptime (\cite{kad}, Figure \ref{fig:kad-uptime}).
 In other words, the longer a node is a
 participant in the network, the more likely it is to continue
 participating. This gives our system a strong incentive to prefer long-lived
@@ -342,7 +345,8 @@ and stable nodes.
 \begin{figure}
 \centering
 \includegraphics[width=.6\textwidth]{images/uptime.png}
-\caption{Probability of remaining online another hour as a function of uptime.
+\caption{Probability of remaining online an additional hour as a function of
+uptime.
 The $x$ axis represents minutes. The $y$ axis shows the fraction of nodes
 that stayed online at least $x$ minutes that also stayed online at least
 $x+60$ minutes. Source: Maymounkov {\em et al.} \cite{kad}}
@@ -354,13 +358,14 @@ varies as a function of node churn.
 
 \section{Latency}
 
-Decentralized storage systems have the potential to capitalize on
-massive opportunities for parallelism compared to traditional data centers.
+Unlike traditional data centers,
+decentralized storage systems can potentially capitalize on
+massive opportunities for parallelism.
 Some of these opportunities include increased transfer rates, processing
-capabilities, and increased overall throughput even when individual
+capabilities, and overall throughput even when individual
 network links are slow. However, parallelism cannot, by itself, improve {\em
 latency}. If an individual network link is utilized as part of an operation,
-the latency of the link will be the lower bound for the overall operation.
+its latency will be the lower bound for the overall operation.
 Therefore, any distributed system
 intended for high performance applications must continuously and aggressively
 optimize for low latency, both at an individual process scale, as well as for
@@ -368,7 +373,8 @@ the system's entire architecture.
 
 \section{Bandwidth}
 
-Global bandwidth availability is increasing year after year; however, access to
+Global bandwidth availability is increasing year after year; but unfortunately,
+access to
 high-bandwidth internet connections is unevenly distributed across the world.
 While some users can easily access symmetric, high-speed, unlimited bandwidth
 connections, others may have significant difficulty obtaining access to the same.
@@ -379,29 +385,32 @@ connections, others may have significant difficulty obtaining access to the same
 The same bandwidth limitations we'd like to account for in the US are present in other countries as well. Additionally, although Comcast sucks, I don't see any need to explicitly call them out in this section.
 }
 
-In the United States, the way many residential internet service providers (ISPs)
+In the United States and other countries,
+the way many residential internet service providers (ISPs)
 operate presents two specific challenges for designers of a
-decentralized network protocol. The first challenge is that the internet
-connection is often asymmetric. Customers subscribe to internet service
+decentralized network protocol. The first challenge designers often face are
+the asymmetric internet connections offered by ISPs.
+Customers subscribe to internet service
 based on an advertised download speed, but the upload speed is potentially an
 order of magnitude or two slower. The second challenge is that bandwidth is
-sometimes "capped" by the ISP at a fixed amount of traffic per month.
+sometimes "capped" by the ISP at a fixed amount of allowed traffic per month.
 For example, in many
-US markets, Comcast imposes a one terabyte per month bandwidth cap with stiff
-fines for customers who go over this limit. \cite{comcast-cap}
+US markets, the ISP Comcast imposes a one terabyte per month bandwidth cap
+with stiff fines for customers who go over this limit. \cite{comcast-cap}
 An internet connection with a cap of 1 TB/month cannot average more than
-385 KB/s over the month without exceeding the monthly bandwidth cap, even if
-the internet connection advertises speeds of 10 MB/s or higher.
+385 KB/s over the month without exceeding the monthly bandwidth allowance,
+even if the ISP advertises speeds of 10 MB/s or higher.
 Such caps impose
-significant limitations on the bandwidth available at any given moment.
+significant limitations on the bandwidth available to the network
+at any given moment.
 
 With device failure and churn guaranteed, any decentralized system will have a
 corresponding amount of repair traffic. As a result, it is important to account
 for the bandwidth required not only for data storage and retrieval, but also
 for data maintenance and repair. Designing a
 storage system that is careless with bandwidth usage would give undue
-preference to storage providers with access to unlimited high-speed bandwidth,
-centralizing the system to some degree. In order to keep the storage
+preference to storage node operators with access to unlimited high-speed
+bandwidth, centralizing the system to some degree. In order to keep the storage
 system as decentralized as possible and working in as many environments
 as possible, bandwidth usage must be aggressively minimized.
 
@@ -423,7 +432,7 @@ security of data stored; however,
 decentralized storage platforms include an additional layer of
 complexity and risk associated with the storage of data on inherently
 untrusted nodes. Because decentralized storage platforms cannot take many
-of the same shortcuts datacenter-based approaches can (e.g. firewalls, DMZs,
+of the same shortcuts data center based approaches can (e.g. firewalls, DMZs,
 etc.), decentralized storage must be designed from the ground up to support
 enhanced security and privacy at all levels of the system.
 
@@ -435,18 +444,20 @@ without providing access to the underlying data and its metadata by
 Storj Labs, third-party operators of system components, or malicious actors.
 
 Certain categories of data are subject to specific regulatory compliance.
-For example, the United States has the Health Insurance Portability and
+For example, legislation in the United States includes
+the Health Insurance Portability and
 Accountability Act (HIPAA) which has requirements for data center
-compatibility. Europe has General Data Protection Regulation (GDPR) regarding
+compatibility. European countries have to consider the General Data Protection
+Regulation (GDPR) regarding
 how individual information must be protected and secured. Of course there
 are many other regulations in other sectors.
 
 Open source software
 provides the level of transparency and assurance needed to prove that the
-behaviors of the system are as advertised. Customers should be able to evaluate
-that our solution is programmatically resistant to established
-attack vectors, manipulation, and censorship, in addition to having a lack of a
-centralized point of attack or failure and being implemented correctly.
+behaviors of the system are as advertised. Customers should be able to
+evaluate that our software is implemented correctly, is resistant to
+attack vectors (known or unknown), is secure, and otherwise fulfills all
+of the customers' requirements.
 
 \section{Object size}
 
@@ -1004,27 +1015,26 @@ validate and verify that storage nodes are accurately storing what they have
 been
 asked to store.
 
-Many storage systems use audits as a way of determining when to do repair and
-which files to repair. Our storage system does not.
+Many storage systems use audits as a way of determining when and where to repair
+files. Our storage system does not use auditing for this purpose.
 Instead, we are extending the probabilistic nature of
 common per-file {\em proofs of retrievability} \cite{proof-of-retrievability}
 to range across all files.
 
 In our storage system,
-audits are simply a mechanism by which a node's degree of stability is
-determined. Failed audits will result in marking a storage node as bad, which
-could result in shuffling data to new nodes and avoiding that node altogether
-in the future. File repair needs are determined based entirely on storage node
-uptime and overall health.
-
-Audits in this case are probabilistic challenges that confirm with a high
-degree of certainty and a low amount of overhead that a storage node is well
-behaved, is keeping the data it claims, and is not susceptible to hardware
-failure or malintent. An audit functions as a spot check to help calculate
+audits are simply a mechanism used to determine a node's degree of stability.
+Failed audits will result in a storage node marked as bad, which
+will result in shuffling data to new nodes and avoiding that node altogether
+in the future. Storage node uptime and overall health are the primary metrics
+used to determine which files need repair.
+Audits in this case are probabilistic challenges that confirm, with a high
+degree of certainty and a low amount of overhead, that a storage node is well
+behaved, keeping the data it claims, and not susceptible to hardware
+failure or malintent. Audits function as spot checks to help calculate
 the future usefulness of a given storage node.
 
-This auditing mechanism does not audit all bytes in all files and
-leaves room for false positives, where the verifier believes the storage node
+This auditing mechanism does not audit all bytes in all files, which can
+leave room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
 partial audit is easily calculable (see Section \todo{}). When applied
@@ -1444,6 +1454,17 @@ storing $n$ pieces would be excess durability. $n-o$ is the amount of long
 tail uploads we can tolerate and is thus the amount of slow nodes we are immune
 to.
 
+\todo{Jens says:
+
+Please add some easy to understand examples here.
+
+20,30,40,50 (k,m,o,n) has a storage expansion factor of up to 2.5 but the durability might not be high enough and data repair needs to kick in frequently. That will consume expensive downloads.
+
+29,35,80,95 has a higher expansion factor of up to 3.3 but less expensive data repairs are needed (for the same durability?).
+
+Optimization problem with 2 factors. See future research section. That part was missing in my head. Patrick explained it very well.
+}
+
 Our durability story does not end with our selection of these numbers.
 Please see section \ref{sec:concrete-data-repair} for a discussion about
 how we repair data as its durability drops over time.
@@ -1452,6 +1473,8 @@ how we repair data as its durability drops over time.
 redundancy.png
 redundancy\_kmon.png
 }
+
+\todo{safety net, long tail tolerance, durability level, n-k not explained}
 
 See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
@@ -1633,7 +1656,7 @@ On the other hand, there are a few upsides:
   catastrophic scenario, this design is no worse than most other technologies or
   techniques application developers frequently use (databases).
 \item {\bf Simplicity} - other projects have spent multiple years on shaky
-  implementations of byzantine fault tolerant consensus metadata storage.
+  implementations of byzantine-fault tolerant consensus metadata storage.
   We can get a useful product to market without doing this work at all.
   This is a considerable advantage.
 \item {\bf Coordination Avoidance} - \todo{}
@@ -1808,9 +1831,9 @@ service prior to operations with storage nodes.
 In a network with untrusted nodes, validating that nodes are returning data
 accurately and otherwise behaving as expected is vital to ensuring a properly
 functioning system. Audits are a way to confirm that nodes have the data they
-claim to have. Auditors, such as a satellite, will send a \x{challenge} to a
-storage node and expect a valid response. A challenge is a request of the
-storage node for it to prove it has the data it claims to.
+claim to have. Auditors, such as satellites, will send a \x{challenge} to a
+storage node and expect a valid response. A challenge is a request to the
+storage node in order to to prove it has the data.
 
 Some distributed storage systems (including the previous release of Storj
 \cite{storj-v2}) discuss {\em Merkle tree proofs}, in which audit challenges
@@ -1823,7 +1846,7 @@ Unfortunately, in such a scheme, the challenges and expected responses must be
 pre-generated, and without a periodic regeneration of these challenges, a
 storage node can begin to pass most audits without storing all of the requested
 data. We can use the following method to run arbitrary audits without
-pregenerated challenges.
+pre-generated challenges.
 
 An assumption in our storage system is that most storage nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
@@ -2031,6 +2054,11 @@ satellite. If a node is disqualified by one satellite, it could still
 store data for other satellites. Reputation will not be shared between
 satellites. Over time, as we plan to eliminate satellites,
 reputation would then be determined globally.
+
+\todo{dr ben says:
+
+Propose adding https://drive.google.com/open?id=1gIZwbsrxhZIK97UcPu1a3Uc1ClqR3WWU
+}
 
 \todo{future work section about reputation sharing}
 
@@ -2290,37 +2318,75 @@ the case of bugs or mistaken file removal.}
 
 \section{Uplink}
 
-The uplink provides an S3-compatible drop-in interface for applications that
+The uplink provides an S3-compatible drop-in interface for users and
+applications that
 need to store data but don't want to bother with the complexities of distributed
 storage directly. The uplink is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The uplink (via libstorj) first encrypts data, erasure encodes it, then
-streams it out to storage nodes, all while coordinating with a chosen satellite
-for metadata and tracking.
-
 The uplink should run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
+For protocol details, see chapter \ref{chap:walkthroughs}.
+
 \section{Quality control and branding}
 
-\todo{discuss quality control and branding more}
-\todo{insurance}
+The Storj Network has two essential software components that serve two distinct
+target margets:
 
-Storj will need to differentiate the software from the network as well as the
-supply side from the demand side. Storj will brand the two aspects separately:
-\begin{description}
-\item[Storj.io] - the brand for supply-side storage node operators contributing
-storage and bandwidth to the network in exchange for compensation.
-\item[Tardigrade.io] - the brand for demand-side partners and customers who
-purchase storage and bandwidth on the network with the expectation of high
-durability, resilience, reliability and backed by an industry-leading SLA.
-\end{description}
+\begin{enumerate}
+\item creating storage supply for the network via recruiting storage node
+  operators and
+\item creating demand for cloud storage with paying users.
+\end{enumerate}
 
-\section{Durability}
+Storj will differentiate these software components and the experience design
+for each segment by separating the supply side of our business from the
+demand side.
+
+\url{storj.io} will remain the place for contributing extra storage and
+bandwidth to the Storj Network. This includes storage node setup, documentation,
+FAQs, and tutorials. Users of both brands will also be able to access our
+source code and community through \url{storj.io}.
+
+The demand side of our business will be directed through \url{tardigrade.io}.
+This experience will be focused toward our partners and customers who purchased
+decentralized storage and bandwidth from the network with the expectation of
+high durability, resilience, and reliability, backed by an industry-leading
+service level agreement (SLA). This includes any offers, free trials, satellite
+selection, documentation, FAQs, tutorials, etc.
+
+The "Tardigrade" brand will serve as a satellite quality credentialing system.
+For a satellite to be considered a "Tardigrade quality" satellite, it must
+adhere to certain compliance and quality requirements.
+
+Storj Labs will implement quality controls to ensure our
+\url{tardigrade.io} users have access to high quality, premium satellites.
+These quality controls will continuously audit and rank satellites on their
+behavior, durability, compliance, and performance.
+Satellites must pass these quality controls to be approved for use as
+\url{tardigrade.io} satellites. Anyone can set up a satellite via
+\url{storj.io}, but to have a satellite listed as an official Tardigrade
+satellite, an operator must pass these quality controls.
+
+Storj Labs may also require a small fee from satellites wishing to be listed
+as "Tardigrade" satellites. This fee could cover a few different costs. First,
+the fee could pay a form of insurance. If the satellite temporarily goes
+offline, Storj Labs can continue to pay storage nodes on the behalf of the
+satellite until the satellite returns to avoid losing data. Second, this fee
+may cover country-specific tax compliance functionality. For example, this fee
+could cover assisting satellite operators in complying with the United States'
+1099 form tax filing.
+
+These compliance and quality controls will be implemented to ensure that
+storage nodes and satellites are able to continuously meet all SLAs of the
+Tardigrade product(s).
 
 \chapter{Walkthroughs}\label{chap:walkthroughs}
+
+The following is a collection of common use case examples of different types of
+transactions of data through the system.
 
 \section{Upload}
 
@@ -2529,7 +2595,7 @@ and place that stripe into the audit queue.
   forward, nor will it select it for new data.
 \end{itemize}
 
-\section{Repair}
+\section{Data repair}
 
 The repair process:
 
