@@ -1042,7 +1042,7 @@ leave room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
 partial audit is easily calculable (see Section \todo{}). When applied
-iteratively to a storage node as a whole, detection of unexpected behavior
+iteratively to a storage node as a whole, detection of missing or altered data
 becomes certain to within a known and modifiable error threshold.
 
 \todo{discuss reputation}
@@ -1244,8 +1244,9 @@ hard drive space is available, and what their desired STORJ token
 wallet address is.
 
 Because Storj is optimized for larger files, storage nodes have no reason to do
-anything more complicated than store \x{pieces} directly on disk. Piece data
-can be stored in any approach storage node feels suitable.
+anything more complicated here than store \x{pieces} directly on disk. Storage
+node software can store the piece data in any way as long as it can be
+retrieved later on demand.
 
 Storage nodes also keep track of optional per-\x{piece} "time-to-live", or TTL.
 \x{Pieces} may be stored with a specific TTL expiry where data is expected to
@@ -1442,13 +1443,14 @@ needs on the cache.
 
 We use the Reed-Solomon erasure code \cite{rs}. For each object that we store
 we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
-$k$ and $n$ are the standard Reed Solomon numbers, where $k$ is the minimum
+$k$ and $n$ are the standard Reed-Solomon numbers, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
 
 $m$ and $o$ are the {\em minimum safe} and {\em optimal} values, respectively.
-$m$ is chosen such that if the amount of available pieces falls below $m$, a
-repair is triggered immediately in an attempt to make sure we always maintain
+$m$ is chosen such that if a satellite notices the amount of available pieces
+has fallen below $m$, it triggers a repair
+immediately in an attempt to make sure we always maintain
 $k$ or more pieces. $o$ is chosen such that during uploads and repairs,
 as soon as $o$ pieces have finished uploading, remaining pieces up to $n$ are
 canceled.
@@ -1487,6 +1489,9 @@ redundancy\_kmon.png
 See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
 
 \todo{future work: better erasure code algorithm than rs}
+
+\todo{Better in what way? better error correctability, i.e. FEC? Regenerating
+codes to further limit the necessary coordination traffic?}
 
 \section{Structured file storage}
 
@@ -1638,7 +1643,8 @@ There are a few downsides with this punt-to-the-user approach, however, such as:
 \item {\bf Availability} - the availability of the user's data
 is tied entirely to the availability of their metadata server. The counterpoint
 here is that the availability can be made arbitrarily good with existing trusted
-distributed solutions such as Cassandra, Spanner, or CockroachDB. Further, any
+distributed solutions such as Cassandra, Spanner, or CockroachDB and with an
+appropriate amount of effort put into maintaining operations. Further, any
 individual metadata service downtime does not affect the entire network. In
 fact, the network as a whole can never go down.
 \item {\bf Durability} -
@@ -1885,7 +1891,7 @@ system. Audits should happen uniformly at random by byte with replacement.
 
 \section{Data repair}\label{sec:concrete-data-repair}
 
-The node discovery system has caches in place that have accurate and
+The node discovery system has caches in place that have reasonably accurate and
 up-to-date information about which storage nodes have been online recently.
 When a storage node changes state from recently online to offline, this can
 trigger a lookup in a reverse index in a user's metadata database, identifying
@@ -2688,8 +2694,9 @@ nodes trying to communicate with one another at the same time.
 
 \section{Distributed repair}
 
-The system can detect when a file's Reed Solomon erasure encoding pieces fall
-below a certain threshold. At that time, the file must be repaired, with
+As mentioned, the audit process checks continually for files whose Reed-Solomon
+erasure-encoded pieces have fallen below a certain threshold. When such a file
+is found, it must be repaired, with
 the new pieces being stored on new storage nodes.
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
@@ -2826,14 +2833,11 @@ multiple concurrent disjoint lookup paths through the network.
 The hostage byte attack is a storage-specific attack where malicious storage
 nodes
 refuse to transfer pieces, or portions of pieces, in order to extort additional
-payments from data owners. Data owners should protect themselves against hostage
-byte attacks by storing pieces redundantly across multiple nodes (see Section
-2.7). As long as the client keeps the bounds of its erasure encoding a secret,
-the malicious storage node cannot know what the last byte is. Redundant storage
-is not
-a complete solution for this attack, but addresses the vast majority of
-practical applications of this attack. Defeating redundancy requires collusion
-across multiple malicious nodes, which is difficult to execute in practice.
+payments from data owners. The Reed-Solomon encoding ought to be sufficient to
+defeat attacks of this sort (as the client can simply download the necessary
+number of pieces from other nodes) unless multiple malicious nodes collude to
+gain control of many pieces of the same file. The same mitigations discussed
+under the Honest Geppetto attack can apply here to help avoid this situation.
 
 \chapter{Selected use cases}
 
