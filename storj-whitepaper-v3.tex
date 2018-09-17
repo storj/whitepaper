@@ -846,9 +846,8 @@ across more nodes in the $(k=20,n=40)$ case. These considerations make erasure
 codes an important part of our general framework.
 
 With the simplifying assumption that $p$ is the monthly node
-birth/death \todo{pick one} rate (the proportion that describes the number of
-nodes
-leaving/joining the network per month), we can model file durability
+churn rate (that is, the fraction of nodes that will go offline in a month on
+average), we can model file durability
 as the CDF of the Poisson distribution with mean $\lambda=pn$,
 where we expect $\lambda$ pieces of the file to be lost monthly. To estimate
 durability, we consider the CDF up to $n-k$,
