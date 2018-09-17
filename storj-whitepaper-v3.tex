@@ -1454,9 +1454,13 @@ as soon as $o$ pieces have finished uploading, remaining pieces up to $n$ are
 canceled.
 $o$ is chosen such that storing $o$ pieces is all that is
 needed to achieve the desired durability goals; $n$ is thus chosen such that
-storing $n$ pieces would be excess durability. $n-o$ is the amount of long
-tail uploads we can tolerate and is thus the amount of slow nodes we are immune
-to.
+storing $n$ pieces would be excess durability.
+
+$n-o$ is the amount of long tail uploads we can tolerate and is thus the amount
+of slow nodes we are immune to. $o-m$ is the amount of nodes that can go
+temporarily offline at the same time without triggering a repair. $m-k$ is the
+safety buffer to avoid losing the data between the time we recognize it requires
+a repair and the actual repair is executed.
 
 \todo{Jens says:
 
