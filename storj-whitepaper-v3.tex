@@ -868,17 +868,21 @@ It further causes a significant increase in the funds available per byte to
 storage nodes due to the decreased dilution of incoming funds to storage node
 payment relative to larger expansion factors.
 
-\todo{stefan requests other exp factors}
-
 \begin{table}[h]
 \centering
 \begin{tabular}{c c c l}
 $k$ & $n$ & Exp. factor & P(D) \\
-\hline 2 & 4 & 2 & 99.207366813274616391\%\\
-4 & 8 & 2 & 99.858868985411326445\%\\
-8 & 16 & 2 & 99.995462406878260756\%\\
-16 & 32 & 2 & 99.999994620652776179\%\\
-32 & 64 & 2 & 99.999999999990544376\%\\
+\hline 2 & 4 & 2 & 99.207366813274616\%\\
+4 & 6 & 1.5 & 97.688471224736705\%\\
+4 & 8 & 2 & 99.858868985411326\%\\
+4 & 12 & 3 & 99.999514117129605\%\\
+8 & 16 & 2 & 99.995462406878260\%\\
+16 & 32 & 2 & 99.999994620652776\%\\
+20 & 30 & 1.5 & 99.970766304935266\%\\
+20 & 40 & 2 & 99.999999807694154\%\\
+20 & 50 & 2.5 & 99.999999999999548\%\\
+32 & 64 & 2 & 99.999999999990544\%\\
+100 & 150 & 1.5 & 99.999999999973570\%\\
 \end{tabular}
 \caption{$P(D)$ for various choices of $k$ and $n$, assuming $p=0.1$.}
 \end{table}
