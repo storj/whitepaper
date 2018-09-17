@@ -1047,7 +1047,7 @@ becomes certain to within a known and modifiable error threshold.
 
 An ever-present risk in any distributed storage system is file loss. While there
 are many potential causes for file loss, storage node churn is the leading
-risk, as evidenced by the findings of Maymonkov {\em et al.} that expected node
+risk, as evidenced by the findings of Maymounkov {\em et al.} that expected node
 availability is an increasing function of uptime \cite{kad}. Storage nodes
 may go offline due to hardware or software failure, intermittent internet
 connectivity, or operator choices.
@@ -1109,7 +1109,7 @@ ACH transfer, or physical transfer of live goats.
 \chapter{Concrete implementation}\label{chap:concrete}
 
 The framework we've described above we believe to be relatively fundamental
-given our design constraints. However, within the framework there remains
+given our design constraints. However, within the framework there remains a
 significant degree of freedom in choosing how to implement each component.
 
 In this section, we lay out our initial implementation strategy. We expect
@@ -1403,7 +1403,7 @@ Fortunately, caching address information for a network of 80k nodes
 (for example) can be done with only 5MB of memory\footnote{
 This is assuming an ordered in-memory list of 4-tuples of node ID (32 bytes),
 IP address (16 bytes for IPv6), port (2 bytes), and timestamp (4 bytes).
-$80000\cdot(32+16+4+4)/(1024\cdot 1024) \approx 4.12$
+$80000\cdot(32+16+2+4)/(1024\cdot 1024) \approx 4.12$
 }, so the space requirements
 are negligible.
 
@@ -1810,8 +1810,9 @@ disallowing clients. Users who are authorized should be able to add, remove,
 and edit files, while users who are not authorized should not be able to do so.
 
 First, metadata operations should be authorized. Users should authenticate with
-their chosen metadata service, which should allow them given their authorization
-configuration access to various operations.
+their chosen metadata service, which should allow them
+access to various operations
+according to their authorization configuration.
 
 Our initial metadata authorization scheme uses macaroons \cite{macaroons}.
 Each account has a root macaroon and operations are validated against a supplied
@@ -2039,7 +2040,7 @@ between those two.
 
 On the Storj network, preferential storage node reputation is only used to
 select where new data should be stored, both during repair and during the
-upload of new files, unlink disqualifying events.
+upload of new files, unlike disqualifying events.
 If a storage node's preferential reputation decreases, its file pieces will not
 be moved or repaired to other nodes.
 
