@@ -525,8 +525,8 @@ To illustrate, we find that there exists an array of unfavorable
 and costly outcomes which may result from trusting a single entity.
 For example, changes to the company's roadmap may result in the product
 becoming less useful, changes to the company's position on data collection could
-cause it to sell your metadata to advertisers, or perhaps the company goes out
-of business or otherwise fails to keep your data safe.
+cause it to sell customer metadata to advertisers, or perhaps the company goes
+out of business or otherwise fails to keep customer data safe.
 By creating an equivalent or better decentralized
 system, many users worried about single-entity risk will have a viable
 alternative.
@@ -1677,13 +1677,14 @@ not compare to the storage node and the uplink in regards to the ease of
 running it. also focus that the subservices can run distributed over multiple
 locations.}
 
-The services that holds this metadata we call the \x{satellite}. Users of the
+The services that holds this metadata is called the \x{satellite}. Users of the
 network will have accounts on a specific satellite instance, which will store
-their metadata for them, manage authorization to data, keep track of storage
-node quality via audits, repair and maintain data when redundancy is reduced,
+their file metadata, manage authorization to data, keep track of storage
+node reliability, repair and maintain data when redundancy is reduced,
 and issue payments to storage nodes on the user's behalf.
-Storj implements a thin-client model that delegates trust to the
-satellite service which manages data ownership. \x{Uplinks}
+Storj implements a thin-client model that delegates trust around managing
+files' location metadata to the satellite service which manages data
+ownership. \x{Uplinks}
 are thus able to support the widest possible array of client applications, while
 Satellites require high uptime and potentially significant infrastructure,
 especially for an active set of files.
@@ -1733,7 +1734,7 @@ while delegating the responsibility of keeping files available on the network
 to the satellite.
 
 Clients may use satellites run by a third-party. Because satellites do not store
-data and have no access to keys, this is still a large improvement over the
+data and have no access to keys, this is a large improvement over the
 traditional data-center model. Many of the features satellites provide, like
 storage node selection and reputation, leverage considerable network effects.
 Reputation data sets grow more useful as they increase in size,
@@ -1741,7 +1742,8 @@ indicating that there are strong economic incentives to share infrastructure
 and information in a satellite.
 
 Providers may choose to operate public satellites as a service.
-Application developers then delegate trust to a specific satellite, as they
+Application developers then delegate trust regarding the location of their
+data on the network to a specific satellite, as they
 would to a traditional object store, but to a lesser degree. Future updates
 will allow for various distributions of responsibilities (and thus levels of
 trust) between customer applications and satellites. This shifts significant
