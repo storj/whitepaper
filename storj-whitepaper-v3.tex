@@ -2102,7 +2102,7 @@ and for object downloads.
 Storage nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
 period, a satellite will calculate earnings for each of its storage nodes.
-Provided the storage node hasn't been blacklisted,
+Provided the storage node hasn't been added to the exclusion list,
 the storage node will be paid by the satellite for the data it has stored
 over the course of
 the month, per the satellite's records.
@@ -2155,9 +2155,9 @@ Satellites will also earn revenue from account holders for executing audits,
 repairing files, and storing metadata. Every day, each satellite will execute
 a number of audits across all of its storage nodes on the network. During an
 audit,
-if a storage node does not have the file it should be storing, it will be
-immediately
-blacklisted and the satellite will flag that storage node's file pieces for
+if a storage node does not have the file it should be storing, it will
+immediately be added to the exclusion list and
+the satellite will flag that storage node's file pieces for
 repair
 in the system.
 The satellite will be paid for both completing the audit
@@ -2409,103 +2409,134 @@ transactions of data through the system.
 
 \section{Upload}
 
-When a user uploads a file:
+The Storj Network aims to make uploads a pain-free and simple process, as well
+as ensuring that encryption and other requirements do not add unnecessary
+burdens to the end-user.
+
+First, the user begins transferring data to an instance of the uplink. The
+user will use one of several Storj clients to upload their data.
 
 \begin{itemize}
-\item First, data begins transfer to the uplink.
 \item The uplink chooses an encryption key and starting nonce for
   this segment and begins encrypting incoming data with authenticated
   encryption as it flows through.
 \item The uplink buffers data until it knows whether the incoming file is
-short enough to be an inline segment or a remote segment. We'll assume a remote
-segment.
+short enough to be an inline segment or a remote segment. Inline segments are
+small enough to be stored on the satellite itself. The rest of this
+walkthrough will assume a remote segment because that process involves the
+full technology stack.
 \item The uplink sends a request to the satellite to prepare for the storage
-of this first segment. The satellite will:
-  \begin{itemize}
-  \item Confirm that the uplink has appropriate authorization and funds for
-    the request. The uplink must have an account with this
-specific satellite already.
-  \item Make a selection of nodes that conform to the bucket's configured
-    durability, performance, geographic and reputation requirements that have
-    enough resources.
-  \item Return a list of nodes, along with their contact information and
-    signed unrestricted bandwidth allocation messages, and a chosen root piece
-    id.
-  \end{itemize}
-\item The uplink will take this information and begin parallel connections to
+of this first segment. The request object contains API credentials and identity
+certificates.
+\end{itemize}
+
+Second, the satellite will
+\begin{itemize}
+\item Confirm that the uplink has appropriate authorization and funds for
+  the request. The uplink must have an account with this specific satellite
+  already.
+\item Make a selection of nodes with adequate resources that conform to the
+  bucket's configured durability, performance, geographic and reputation
+  requirements.
+\item Return a list of nodes, along with their contact information and
+  signed unrestricted bandwidth allocation messages, and a chosen root piece
+  id.
+\end{itemize}
+
+Third, the uplink will take this information and begin parallel connections to
   all of the chosen storage nodes via the bandwidth allocation protocol
   (\ref{bap}).
+
+\begin{itemize}
 \item The uplink will begin breaking the segment into stripes and then
   erasure encode each stripe.
 \item The generated erasure shares will be concatenated into \x{pieces} as they
   transfer to each storage node in parallel.
 \item The erasure encoding will be configured to over-encode to more pieces
-  than needed. This will allow for the elimination of long tails and the
+  than needed. This will eliminate the long tail effect and lead to a
   significant improvement of visible performance by allowing the uplink to
   cancel the slowest uploads.
 \item The data will continue to transfer until the maximum segment size is hit
   or the stream ends, whichever is sooner.
-\item The storage node will store the largest restricted bandwidth allocation,
-the
-  TTL of the segment (if any), and the data itself by the storage node-specific
-  piece
-  id (the HMAC of the root piece id and the storage node's id).
-\item If the upload is aborted for any reason, the storage node will keep the
-  largest bandwidth allocation it received but otherwise will throw away all
-  relevant request data.
-\item The uplink encrypts the random encryption key chosen for this file
-  with a deterministic hierarchical key.
-\item The uplink will upload a \x{pointer} back to the satellite, which
-  contains information on which storage nodes were
-  ultimately successful, what encrypted path was chosen for this segment, which
-  erasure code algorithm was used, the chosen piece id, the
-  encrypted encryption key and other metadata, and a signature.
-\item The uplink will then proceed with the next segment, continuing to
-  process segments until the entire stream has completed. Each segment gets
-  a new encryption key, but the nonce monotonically increases from the previous
-  segment.
-\item The last segment stored in the stream will contain additional metadata
-  about how many segments the stream contained, how large the segments were
-  in bytes, and the starting nonce of the first segment.
-\item The storage nodes will later send the largest restricted
-  bandwidth allocation they received as part of the upload to the appropriate
-  satellite for later payment.
 \end{itemize}
+
+Fourth, the storage node will store the largest restricted bandwidth allocation,
+the TTL of the segment if one exists, and the data itself by the storage
+node-specific piece ID (the HMAC of the root piece ID and the storage node's
+ID) and the delegating satellite ID.
+
+\begin{itemize}
+\item If the upload is aborted for any reason, the storage node will keep the
+  largest bandwidth allocation it received from the client uplink on behalf of
+  the satellite, but otherwise will throw away all relevant request data.
+\item The uplink encrypts the random encryption key it chose for this file
+  utilizing a deterministic hierarchical key.
+\item The uplink will upload a \x{pointer} object back to the satellite, which
+  contains the following information:
+  \begin{itemize}
+  \item Which storage nodes were ultimately successful
+  \item What encrypted path was chosen for this segment
+  \item Which erasure code algorithm was used
+  \item The chosen piece ID
+  \item The encrypted encryption key and other metadata
+  \item A signature.
+  \end{itemize}
+\end{itemize}
+
+Finally, the uplink will then proceed with the next segment, continuing to
+process segments until the entire stream has completed. Each segment gets
+a new encryption key, but the nonce monotonically increases from the previous
+segment.
+
+\begin{itemize}
+\item The last segment stored in the stream will contain additional metadata:
+  \begin{itemize}
+  \item How many segments the stream contained
+  \item How large the segments are, in bytes
+  \item The starting nonce of the first segment
+  \end{itemize}
+\end{itemize}
+
+Periodically, the storage nodes will later send the largest restricted
+bandwidth allocation they received as part of the upload to the appropriate
+satellite for payment.
 
 \section{Download}
 
 When a user downloads a file:
 
 \begin{itemize}
-\item First, a request for data is received by the uplink.
-\item The uplink tries to reduce round trips to the satellite
-  by speculatively requesting the pointers for the first few segments, in
-  addition to the pointer for the last segment from the satellite. The last
-  segment is needed to learn the size of the object, how many segments
-  there are, and how big the segments are.
+\item First, the user sends a request for data to the uplink.
+\item The uplink tries to reduce the number of round trips to the satellite
+  by speculatively requesting the pointers for the first few segments in
+  addition to the pointer for the last segment. The uplink needs the last
+  segment to learn the size of the object, the size and number of segments,
+  and how to decrypt the data.
 \item For every segment pointer requested, the satellite will:
   \begin{itemize}
   \item Validate that the uplink has access to download the segment pointer
-    and funds to pay for its downloading.
-  \item Generate an unrestricted bandwidth allocation for the segment.
+    and has enough funds to pay for the download.
+  \item Generate an unrestricted bandwidth allocation for each piece that
+    makes up the segment.
   \item Look up the contact information for the storage nodes listed in the
   pointer.
-  \item Return the requested segment, the bandwidth allocations, and contact
-    info.
+  \item Return the requested segment pointer, the bandwidth allocations, and
+    node contact info for each piece.
   \end{itemize}
-\item The uplink will calculate if more segments are necessary for the
-  data request it received, requesting the remaining segment pointers if so.
+\item The uplink will determine whether more segments are necessary for the
+  data request it received, and will request the remaining segment pointers if so.
 \item Once all necessary segment pointers have been returned, if the requested
-  segments are not inline, the satellite will initiate parallel requests
+  segments are not inline, the uplink will initiate parallel requests
   via the bandwidth allocation protocol (\ref{bap}) to all appropriate storage
   nodes for the appropriate erasure share ranges inside of each stored piece.
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
   be gained by allowing the uplink to cancel the slowest downloads.
-\item If the download is aborted for any reason, the storage node will keep the
-  largest bandwidth allocation it received but otherwise will throw away all
+\item If the download is aborted for any reason, each storage node will keep the
+  largest bandwidth allocation it received but will otherwise throw away all
   relevant request data.
-\item The uplink will combine the retrieved erasure shares into stripes.
+\item The uplink will combine the retrieved erasure shares into stripes and
+  decrypt the data.
 \item The storage nodes will later send the largest restricted
   bandwidth allocation they received as part of the download to the appropriate
   satellite for later payment.
@@ -2527,39 +2558,94 @@ When a user deletes a file:
   pointer.
   \item Return the segments, the agreements, and contact info.
   \end{itemize}
-\item For all of the segments that are not inline, the satellite will
+\item For all of the remote segments, the satellite will
   initiate parallel requests to all appropriate storage nodes to signal that the
   pieces are being removed.
-\item The storage nodes will return a signed message saying the storage node
+\item The storage nodes will return a signed message indicating the storage node
 received
 the
   delete operation and will delete the file and its bookkeeping info.
-\item The uplink will upload back to the satellite all of the signed
-  messages it received from working storage nodes. The satellite will require an
-  adjustable percent of the total storage nodes to sign messages successfully
-  to ensure that the uplink did its part in letting storage nodes know the
-  object
-  has been deleted.
-\item The satellite will remove the segment pointers and stop charging and
-  paying for them.
-\item The uplink will return success.
+\item The uplink will upload all of the signed messages that it received from
+  working storage nodes back to the satellite. The satellite will require an
+  adjustable percent of the total storage nodes to successfully sign messages
+  to ensure that the uplink did its part in notifying the storage nodes that the
+  object was deleted.
+\item The satellite will remove the segment pointers and stop charging the
+  customer and paying the storage nodes for them.
+\item The uplink will return a success status.
 \item Periodically, storage nodes will ask the satellite for generated garbage
-  collection messages that will help storage nodes who were offline during the
-  main
-  deletion event.
-  The garbage collection messages will assist the storage node in pruning data
-  that is
-  no longer live. Initially, these garbage collection messages will be tunable
-  Bloom filters to allow the storage node to probabilistically prune unneeded
-  data
-  without using much bandwidth.
+  collection messages that will update storage nodes who were offline during the
+  main deletion event.
   Satellites will reject requests for garbage collection messages that
-  happen too frequently.
+  happen too frequently. See section \ref{sec:garbage-collection} for more
+  details.
 \end{itemize}
+
+\section{Move}
+
+When a user wants to move a file:
+
+\begin{itemize}
+\item First, the uplink receives a request for moving a file to a new path.
+\item The uplink requests all of the segment pointers of that file.
+\item For every segment pointer, the satellite:
+  \begin{itemize}
+  \item validates that the uplink has access to download it, and
+  \item returns the requested segment metadata.
+  \end{itemize}
+\item For every segment pointer, the uplink:
+  \begin{itemize}
+  \item decrypts the metadata with an encryption key derived from the path,
+  \item changes the path to the new destination, and
+  \item re-encrypts the metadata with a new encryption key derived from the
+    new path.
+  \end{itemize}
+\item The uplink requests that the satellite add
+  all modified segment pointers and remove all old segment pointers in an
+  atomic operation.
+\item No storage node will receive any request related to the file move.
+\end{itemize}
+
+Because of the complexity around atomic pointer batch modifications, efficient
+move operations may not be implemented right away.
+
+\section{Copy}
+
+When a user wants to copy a file:
+
+\begin{itemize}
+\item First, the uplink receives a request for copying a file to a new path.
+\item The uplink requests all of the segment pointers of the file.
+\item For every segment pointer, the satellite:
+  \begin{itemize}
+  \item validates that the uplink has access to download it,
+  \item looks up the contact information for the storage nodes listed in the
+    pointer, and
+  \item returns the requested segment metadata and contact info.
+  \end{itemize}
+\item For every segment pointer, the uplink:
+  \begin{itemize}
+  \item decrypts the metadata with an encryption key derived from the path,
+  \item changes the path to the new destination,
+  \item invokes a copy operation on each of the storage nodes from the pointer
+    to duplicate the piece with a new piece ID,
+  \item waits for the storage nodes to respond that they have duplicated the
+    data,
+  \item re-encrypts the metadata with a new encryption key derived from the
+    new path.
+  \end{itemize}
+\item The uplink uploads all modified segment pointers to the satellite.
+\end{itemize}
+
+Importantly, it is okay if the storage nodes de-duplicate storage, or, only
+store one actual copy of the data. All that matters is that the storage node
+can identify the data by both the old and new piece ID. If one of the piece
+IDs receives a delete operation, the other piece ID should continue working.
+Only after both pieces are deleted should node free the space.
 
 \section{List}
 
-When a user wants to receive many files:
+When a user wants to list many files:
 
 \begin{itemize}
 \item First, a request for listing objects is received by the uplink.
@@ -2581,23 +2667,27 @@ into unencrypted (and thus lexicographically sorted) paths.
 
 \todo{future work section about order-preserving encryption}
 
-\section{Audits}
+\section{Audit}
 
-The auditing process:
+The auditing process works as follows:
 
 \begin{itemize}
-\item Each satellite has a queue of audits, where an audit will entail
-  validating a specific stripe of a segment across a set of storage nodes.
-\item Periodically, satellites will choose a stripe to audit by selecting
-  an object uniformly at random, weighted by the number of bytes it has,
-and place that stripe into the audit queue.
-\item Similarly, satellites will choose a stripe to audit by identifying
-  storage nodes that have had fewer recent audits than other storage nodes, and
-  selecting
-  a stripe at random from the data contained by that storage node. That stripe
-  audit
-  request will also be placed in the audit queue.
-\item Satellites will process elements from the queue.
+\item Each satellite has a queue of segment stripes that will be audited across
+  a set of storage nodes. The queue is filled via two mechanisms.
+  \begin{itemize}
+  \item In the first mechanism, the satellite populates the queue periodically
+    by selecting segments randomly, and then stripes within those segments also
+    at random. Because segments have a maximum size, this sufficiently
+    approximates our goal of choosing a byte to audit uniformly at random.
+  \item In the second mechanism, the satellite chooses a stripe to audit by
+    identifying storage nodes that have had fewer recent audits than other
+    storage nodes. The satellite will select a stripe at random from the data
+    contained by that storage node.
+  \end{itemize}
+\end{itemize}
+
+Satellites will then work to process the queue and report errors.
+\begin{itemize}
 \item For each stripe request, the satellite will perform the entire download
   operation for that small stripe range. Unlike standard downloads, the stripe
   request does not need to be performant; the satellite will attempt to
@@ -2605,13 +2695,10 @@ and place that stripe into the audit queue.
   storage nodes.
 \item After receiving as many shares as possible within a generous timeout,
   the erasure shares will be analyzed to discover which, if any, are wrong.
-  Satellites will take note of storage nodes that return invalid data, and if
-  a
-  storage node returns too much invalid data, the storage node will be
-  blacklisted by the
-  satellite and marked as bad. The satellite will not pay the storage
-  node going
-  forward, nor will it select it for new data.
+  Satellites will take note of storage nodes that return invalid data, and if a
+  storage node returns too much invalid data, the satellite will add the
+  storage node to its exclusion list. The satellite will not pay the storage
+  node going forward, nor will the storage node be selected for new data.
 \end{itemize}
 
 \section{Data repair}
