@@ -1220,9 +1220,9 @@ encoding a \x{stripe}, there are $n$ \x{piece}s after processing a \x{remote
 segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 \x{erasure shares} from that \x{segment}'s \x{stripe}s.
 
-\item[Pointer] A \x{pointer} is a data structure that keeps track of which
-\x{piece storage nodes} a \x{remote segment} was stored on, or the \x{inline
-segment} data directly if applicable.
+\item[Pointer] A \x{pointer} is a data structure that either contains the
+\x{inline segment} data, or keeps track of which
+\x{storage nodes} the pieces of a \x{remote segment} were stored on.
 \end{description}
 
 \todo{pictures}
