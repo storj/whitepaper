@@ -1556,22 +1556,22 @@ the problem of Byzantine distributed consensus for now. See Future work
 
 \section{Satellite}
 
-The services that holds this metadata we call the \x{satellite}. Users of the
+The services that holds this metadata is called the \x{satellite}. Users of the
 network will have accounts on a specific satellite instance, which will store
-their metadata for them, manage authorization to data, keep track of storage
-node quality via audits, repair and maintain data when redundancy is reduced,
+their file metadata, manage authorization to data, keep track of storage
+node reliability, repair and maintain data when redundancy is reduced,
 and issue payments to storage nodes on the user's behalf.
-Storj implements a thin-client model that delegates trust to the
+Storj implements a thin-client model that delegates trust around managing your files location metadata to the
 satellite service which manages data ownership. Thin-clients (\x{uplinks})
 are thus able to support the widest possible array of client applications, while
 Satellites require high uptime and potentially significant infrastructure,
 especially for an active set of files.
 The satellite service has been developed and released as open source software.
 Any individual or organization can run their own satellite to facilitate
-network access.
+network access. (say something here about Storage Node Satellite whitelists?)
 
 With respect to customer data, the satellite is designed to store only
-metadata. It is never given data unencrypted and does not hold encryption keys.
+metadata. It is never given data or file metadata unencrypted and does not hold encryption keys.
 The only knowledge of an object that the satellite is able to share with
 third parties is its existence, rough size, and metadata such as access
 patterns.
@@ -1582,7 +1582,7 @@ to the satellite.
 
 In cases where the cost of delegating trust is not excessively high,
 clients may use satellites run by a third-party. Because satellites do not store
-data and have no access to keys, this is still a large improvement over the
+data and have no access to keys, this is a large improvement over the
 traditional data-center model. Many of the features satellites provide, like
 storage node selection and reputation, leverage considerable network effects.
 Reputation data sets grow more useful as they increase in size,
@@ -1592,17 +1592,17 @@ and information in a satellite.
 Applications using object stores invest significant amounts of trust in the
 storage providers. Providers may choose to operate public satellites as a
 service.
-Application developers then delegate trust to a specific satellite, as they
+Application developers then delegate trust regarding the location of their data on the network to a specific satellite, as they
 would to a traditional object store, but to a lesser degree. Future updates
 will allow for various distributions of responsibilities (and thus levels of
 trust) between customer applications and satellites. This shifts significant
-operational burdens from the application developer to the service-provider.
+operational burdens from the application developer to the service-provider, in this case the storage nodes.
 This would also allow developers to pay for storage with standard payment
 mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
 Storj Labs Inc. plans to provide this service.
 
-A specific satellite {\em instance} does not necessarily constitute one
-server. A satellite may be run as a collection of servers and be backed by
+A specific satellite {\em instance}, or satellite service, does not necessarily constitute one
+server. A satellite may be run as a collection of servers, or satellite instances and be backed by
 a horizontally scalable trusted database for higher uptime.
 
 The satellite is, at its core, one of the most complex and yet
