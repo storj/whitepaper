@@ -1064,8 +1064,8 @@ probabilistic audits are enough for us to estimate the likelihood that a node
 will have the data it should have; we can use the audits
 along with node uptime (which is much more efficient than audits)
 to calculate when a file is at risk.
-We {\em only} consider {\em node} availability and configured repair thresholds
-when determining which {\em files} to repair.
+We don't consider any types of availability other than node availability when
+determining which files to repair.
 
 There are many other ways data might get lost in the network besides node churn:
 corruption, malicious behavior, bad hardware, software error, user space
@@ -1165,8 +1165,8 @@ collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
 \x{file}, and every \x{file} has a unique \x{path} within a bucket.
 
 \item[Path] A \x{path} is a unique identifier for a \x{file} within a
-\x{bucket}. A \x{path} is a string of UTF8 codepoints that begin with a forward
-slash and end with something besides a forward slash. Forward
+\x{bucket}. A \x{path} is a string of bytes that begin with a forward
+slash byte and end with something besides a forward slash byte. Forward
 slashes (referred to as the \x{path separator}) separate \x{path components}.
 An example path might be \code{/etc/hosts}, where the \x{path components} are
 \code{etc} and \code{hosts}.
@@ -1175,8 +1175,7 @@ computer.
 
 \item[File or Object] A \x{file} (or \x{object} or \x{stream}) is an ordered
 collection of 0 or more \x{segment}s. \x{segment}s have a fixed maximum size.
-The more bytes the \x{file} represents through \x{segment}s, the more
-\x{segment}s there are.
+The more bytes the \x{file} has, the more \x{segment}s there tend to be.
 
 A \x{file} also supports a limited amount of key/value user-defined fields
 called extended attributes.
@@ -1185,19 +1184,21 @@ Like \x{path}s, the data contained in a \x{file} is encrypted before it ever
 leaves the client computer.
 
 \item[Extended attribute] An extended attribute is a user defined key/value
-field that is associated with a file.
+field that is associated with a file. Extended attributes are stored encrypted.
 
 \item[Segment] A \x{segment} represents a single array of bytes, between 0 and a
 user-configurable maximum \x{segment} size. Breaking large \x{file}s into
 multiple \x{segment}s provides a number of security and scalability advantages.
 
-\item[Inline Segment] An \x{inline segment} is a \x{segment} that is small
-enough such that it makes sense to store it "inline" with the metadata that
-keeps track of it.
-
 \item[Remote Segment] A \x{remote segment} is a larger \x{segment} that will be
 encoded and distributed across the network. A \x{remote segment} is larger than
-the metadata required to keep track of its bookkeeping.
+the metadata required to keep track of its bookkeeping, such as the nodes it
+is stored on.
+
+\item[Inline Segment] An \x{inline segment} is a \x{segment} that is small
+enough where the data it represents takes less space than the corresponding
+data a \x{remote segment} would need to keep track of which nodes had the data.
+In these cases, the data is stored "inline" instead of being stored on nodes.
 
 \item[Stripe] A \x{stripe} is a further subdivision of a \x{segment}. A
 \x{stripe} is a fixed amount of bytes that is used as an encryption and erasure
@@ -1589,7 +1590,8 @@ Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
 immense relative to their size.
 All $n$ \x{erasure share}s have a well defined index associated
-with them. More specifically, for any given $n$, the $i$th share of an erasure
+with them. More specifically, erasure coding is entirely deterministic. For
+a fixed stripe and any given $n$, the $i$th share of an erasure
 code will always be the same.
 Instead of keeping track of all of the
 erasure shares separately, we pack all of the \x{erasure share}s with the
@@ -1887,7 +1889,7 @@ not a requirement that audits are performed on every byte, or even on every
 file.
 Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
-system. Audits should happen uniformly at random by byte with replacement.
+system.
 
 \section{Data repair}\label{sec:concrete-data-repair}
 
@@ -2793,8 +2795,8 @@ portion of the network consists of colluding Sybil nodes.
 
 \section{Honest Geppetto}
 
-The Honest Geppetto attack is a storage-specific variant of the Google attack.
-The attacker operates a large number of 'puppet' nodes on the network,
+In this attack,
+the attacker operates a large number of 'puppet' nodes on the network,
 accumulating trust and contracts over time. Once a certain threshold is reached,
 he pulls the strings on each puppet to execute a hostage attack with the data
 involved, or simply drops each node from the network. The best defense
