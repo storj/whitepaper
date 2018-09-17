@@ -2123,9 +2123,9 @@ Satellites will track utilized bandwidth through a bandwidth allocation
 protocol. To download a file, an uplink user connects to the satellite to
 identify where its file pieces are stored and to provide a promise to pay for
 the file download. The satellite sends a confirmation of this promise
-to the uplink, along with file piece storage node node locations.
+to the uplink, along with the storage node locations.
 The uplink then sends the promise to pay directly
-to the storage node nodes, along with the details on the file pieces it needs.
+to the storage nodes, along with the details on the file pieces it needs.
 Each storage node then accepts or rejects this operation.
 If a storage node accepts this
 operation, it confirms and retains a copy of this promise to pay, sending the
@@ -2395,18 +2395,18 @@ transactions of data through the system.
 When a user uploads a file:
 
 \begin{itemize}
-\item First, data begins transfer to the console.
-\item The console chooses an encryption key and starting nonce for
+\item First, data begins transfer to the uplink.
+\item The uplink chooses an encryption key and starting nonce for
   this segment and begins encrypting incoming data with authenticated
   encryption as it flows through.
-\item The console buffers data until it knows whether the incoming file is
+\item The uplink buffers data until it knows whether the incoming file is
 short enough to be an inline segment or a remote segment. We'll assume a remote
 segment.
-\item The console sends a request to the satellite to prepare for the storage
+\item The uplink sends a request to the satellite to prepare for the storage
 of this first segment. The satellite will:
   \begin{itemize}
-  \item Confirm that the console has appropriate authorization and funds for
-    the request. The console must have an account with this
+  \item Confirm that the uplink has appropriate authorization and funds for
+    the request. The uplink must have an account with this
 specific satellite already.
   \item Make a selection of nodes that conform to the bucket's configured
     durability, performance, geographic and reputation requirements that have
@@ -2415,16 +2415,16 @@ specific satellite already.
     signed unrestricted bandwidth allocation messages, and a chosen root piece
     id.
   \end{itemize}
-\item The console will take this information and begin parallel connections to
+\item The uplink will take this information and begin parallel connections to
   all of the chosen storage nodes via the bandwidth allocation protocol
   (\ref{bap}).
-\item The console will begin breaking the segment into stripes and then
+\item The uplink will begin breaking the segment into stripes and then
   erasure encode each stripe.
 \item The generated erasure shares will be concatenated into \x{pieces} as they
   transfer to each storage node in parallel.
 \item The erasure encoding will be configured to over-encode to more pieces
   than needed. This will allow for the elimination of long tails and the
-  significant improvement of visible performance by allowing the console to
+  significant improvement of visible performance by allowing the uplink to
   cancel the slowest uploads.
 \item The data will continue to transfer until the maximum segment size is hit
   or the stream ends, whichever is sooner.
@@ -2436,14 +2436,14 @@ the
 \item If the upload is aborted for any reason, the storage node will keep the
   largest bandwidth allocation it received but otherwise will throw away all
   relevant request data.
-\item The console encrypts the random encryption key chosen for this file
+\item The uplink encrypts the random encryption key chosen for this file
   with a deterministic hierarchical key.
-\item The console will upload a \x{pointer} back to the satellite, which
+\item The uplink will upload a \x{pointer} back to the satellite, which
   contains information on which storage nodes were
   ultimately successful, what encrypted path was chosen for this segment, which
   erasure code algorithm was used, the chosen piece id, the
   encrypted encryption key and other metadata, and a signature.
-\item The console will then proceed with the next segment, continuing to
+\item The uplink will then proceed with the next segment, continuing to
   process segments until the entire stream has completed. Each segment gets
   a new encryption key, but the nonce monotonically increases from the previous
   segment.
@@ -2460,15 +2460,15 @@ the
 When a user downloads a file:
 
 \begin{itemize}
-\item First, a request for data is received by the console.
-\item The console tries to reduce round trips to the satellite
+\item First, a request for data is received by the uplink.
+\item The uplink tries to reduce round trips to the satellite
   by speculatively requesting the pointers for the first few segments, in
   addition to the pointer for the last segment from the satellite. The last
   segment is needed to learn the size of the object, how many segments
   there are, and how big the segments are.
 \item For every segment pointer requested, the satellite will:
   \begin{itemize}
-  \item Validate that the console has access to download the segment pointer
+  \item Validate that the uplink has access to download the segment pointer
     and funds to pay for its downloading.
   \item Generate an unrestricted bandwidth allocation for the segment.
   \item Look up the contact information for the storage nodes listed in the
@@ -2476,7 +2476,7 @@ When a user downloads a file:
   \item Return the requested segment, the bandwidth allocations, and contact
     info.
   \end{itemize}
-\item The console will calculate if more segments are necessary for the
+\item The uplink will calculate if more segments are necessary for the
   data request it received, requesting the remaining segment pointers if so.
 \item Once all necessary segment pointers have been returned, if the requested
   segments are not inline, the satellite will initiate parallel requests
@@ -2484,11 +2484,11 @@ When a user downloads a file:
   nodes for the appropriate erasure share ranges inside of each stored piece.
 \item Because not all erasure shares are necessary for recovery, long tails
   will be eliminated and a significant and visible performance improvement will
-  be gained by allowing the console to cancel the slowest downloads.
+  be gained by allowing the uplink to cancel the slowest downloads.
 \item If the download is aborted for any reason, the storage node will keep the
   largest bandwidth allocation it received but otherwise will throw away all
   relevant request data.
-\item The console will combine the retrieved erasure shares into stripes.
+\item The uplink will combine the retrieved erasure shares into stripes.
 \item The storage nodes will later send the largest restricted
   bandwidth allocation they received as part of the download to the appropriate
   satellite for later payment.
@@ -2499,11 +2499,11 @@ When a user downloads a file:
 When a user deletes a file:
 
 \begin{itemize}
-\item First, the delete operation is received by the console.
-\item The console requests all of the segment pointers for the file.
+\item First, the delete operation is received by the uplink.
+\item The uplink requests all of the segment pointers for the file.
 \item For every segment pointer, the satellite will:
   \begin{itemize}
-  \item Validate that the console has access to delete the segment pointer.
+  \item Validate that the uplink has access to delete the segment pointer.
   \item Generate a signed agreement for the deletion of the segment, so the
     storage node knows the satellite is expecting the delete to proceed.
   \item Look up the contact information for the storage nodes listed in the
@@ -2517,15 +2517,15 @@ When a user deletes a file:
 received
 the
   delete operation and will delete the file and its bookkeeping info.
-\item The console will upload back to the satellite all of the signed
+\item The uplink will upload back to the satellite all of the signed
   messages it received from working storage nodes. The satellite will require an
   adjustable percent of the total storage nodes to sign messages successfully
-  to ensure that the console did its part in letting storage nodes know the
+  to ensure that the uplink did its part in letting storage nodes know the
   object
   has been deleted.
 \item The satellite will remove the segment pointers and stop charging and
   paying for them.
-\item The console will return success.
+\item The uplink will return success.
 \item Periodically, storage nodes will ask the satellite for generated garbage
   collection messages that will help storage nodes who were offline during the
   main
@@ -2545,14 +2545,14 @@ the
 When a user wants to receive many files:
 
 \begin{itemize}
-\item First, a request for listing objects is received by the console.
-\item The console will translate the request on unencrypted paths to encrypted
+\item First, a request for listing objects is received by the uplink.
+\item The uplink will translate the request on unencrypted paths to encrypted
   paths.
-\item The console will request from the satellite the appropriate list of
+\item The uplink will request from the satellite the appropriate list of
   encrypted paths.
-\item The satellite will validate that the console has appropriate access
+\item The satellite will validate that the uplink has appropriate access
   and then return the requested list.
-\item The console will decrypt the return results and return them.
+\item The uplink will decrypt the return results and return them.
 \end{itemize}
 
 It's worth pointing out that because the satellite stores paths in sorted
@@ -2661,7 +2661,7 @@ The satellite's role on the network means that the network could be prone
 to some
 centralization if others outside of the Storj Labs team do not run their own
 satellites. The biggest challenge is achieving fast byzantine consensus,
-where storage node nodes can interact with one another, share encoded pieces of
+where storage nodes can interact with one another, share encoded pieces of
 files,
 and still operate within the performance levels users will expect from a
 platform that is competing with traditional cloud storage providers.
@@ -2685,7 +2685,7 @@ the new pieces being stored on new storage nodes.
 Currently, this
 repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt, and the
-previously missing shards are sent to new storage nodes
+previously missing pieces are sent to new storage nodes
 selected by the satellite.
 
 Long term, it would be better to create a technique where file repair takes
@@ -2706,7 +2706,7 @@ notify
 which storage nodes should store the restored file pieces. The storage node
 would then
 download the file pieces needed for the repair from the storage nodes where they
-reside. The repair node would execute the repair and run the shards
+reside. The repair node would execute the repair and run the pieces
 through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
@@ -2787,7 +2787,7 @@ is ineffective. In the meantime, this can be partially prevented by relatedness
 analysis of nodes. Bayesian inference across downtime, latency, and other
 attributes can be used to assess the likelihood that two nodes are operated by
 the same organization, and data owners can and should attempt to distribute
-shards across as many unrelated nodes as possible.
+pieces across as many unrelated nodes as possible.
 
 \section{Eclipse}
 
@@ -2816,9 +2816,9 @@ multiple concurrent disjoint lookup paths through the network.
 
 The hostage byte attack is a storage-specific attack where malicious storage
 nodes
-refuse to transfer shards, or portions of shards, in order to extort additional
+refuse to transfer pieces, or portions of pieces, in order to extort additional
 payments from data owners. Data owners should protect themselves against hostage
-byte attacks by storing shards redundantly across multiple nodes (see Section
+byte attacks by storing pieces redundantly across multiple nodes (see Section
 2.7). As long as the client keeps the bounds of its erasure encoding a secret,
 the malicious storage node cannot know what the last byte is. Redundant storage
 is not
