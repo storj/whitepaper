@@ -370,8 +370,8 @@ bandwidth, centralizing the system to some degree. In order to keep the storage
 system as decentralized as possible and working in as many environments
 as possible, bandwidth usage must be aggressively minimized.
 
-Please see Appendix \todo{} for a discussion on how bandwidth availability
-and repair traffic limit usable space.
+Please see appendix \ref{appendix:bandwidth-space-limits} for a discussion on how
+bandwidth availability and repair traffic limit usable space.
 
 \section{Security and privacy}
 
@@ -583,8 +583,8 @@ entirely controllable by each user.
 
 Public cloud computing in general (and public cloud storage in particular) has
 proven to be an attractive business model for the large centralized cloud
-providers. Cloud computing is estimated to be a \$200B market in 2018
-\todo{citation needed}.
+providers. Cloud computing is estimated to be a \$186.4 billion dollar market
+in 2018, reaching \$302.5 billion by 2021 \cite{gartner-cloud-growth}.
 
 The public cloud storage model has provided a compelling economic model to end
 users by enabling them to scale on demand and avoid the significant fixed
@@ -1032,7 +1032,8 @@ This auditing mechanism does not audit all bytes in all files. This can
 leave room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
-partial audit is easily calculable (see Section \todo{}). When applied
+partial audit is easily calculable (see appendix
+\ref{appendix:audit-false-positive}). When applied
 iteratively to a storage node as a whole, detection of missing or altered data
 becomes certain to within a known and modifiable error threshold.
 
@@ -2818,8 +2819,9 @@ data format will support merkle tree repair in the future.
 \section{Hot files}\label{sec:future-hot-files}
 \section{Reputation sharing}
 \section{Garbage collection improvements}
-\section{Accelerated payments}
 \section{Scalable cache/node discovery}\label{sec:future-cache}
+
+\section{Accelerated payments}
 
 \todo{Viktor says:
 we can just create some kind of clearing system (as all payment processors have) with obligated deposits for services, so that will help us to prevent potential fraud (non-paying customers) from one side and allow us to process all transactions in most efficient and fast way. Because money movement will be just between virtual balances of users until the end of clearing session (we can do clearing once/twice/3 or 4 times per day depends on existing/projected statistics of withdrawals - need to discuss first). In the end of clearing session we/admin can finally process payment to user wallets. This will help us also reduce transaction costs and give us more transparency compare to typical money transfers when you do it in crypto.
@@ -2987,7 +2989,7 @@ responses can easily be identified.
 New storage nodes will be placed into a vetting process until enough audits
 have passed.
 
-\chapter{Selected use cases}
+\chapter{Choosing Reed-Solomon parameters}
 
 \input{RS-appendix-files/model.tex}
 \input{RS-appendix-files/numexp.tex}
@@ -3124,6 +3126,16 @@ file systems}
 A fundamental question for networks relying on erasure coding and repair is
 how to choose the best set of system parameters to obtain a desired level of
 reliability under a given constraint of bandwidth consumption.
+
+\todo{fill this in}
+
+\chapter{Bandwidth availability limits usable space}\label{appendix:bandwidth-space-limits}
+
+\todo{explain how bandwidth availability limits usable space (due to repair costs)}
+
+\chapter{Audit false positive risk}\label{appendix:audit-false-positive}
+
+\todo{calculate the risk of a false positive with an audit}
 
 \chapter{TODO}
 
