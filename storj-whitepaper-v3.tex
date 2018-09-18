@@ -3131,6 +3131,14 @@ A fundamental question for networks relying on erasure coding and repair is
 how to choose the best set of system parameters to obtain a desired level of
 reliability under a given constraint of bandwidth consumption.
 
+1) Erasure codes are great but there is no such thing as a free lunch. The two main associated costs are expansion factor and the additional bandwidth needed to repair files. 
+
+2) The costs are driven by an acceptable durability rate in the presence of node churn.
+Generally speaking, the longer nodes stay on the network the less aggressive our erasure parameters need be.
+
+3) Ultimately then what we have is an optimization problem pitting our desire for a durable network against needing an economically viable system (i.e. our costs must be lower than our revenue)
+
+
 \newpage
 \bibliographystyle{unsrt}
 \begingroup
