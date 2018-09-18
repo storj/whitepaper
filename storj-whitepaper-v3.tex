@@ -108,6 +108,7 @@ Dan Sorensen,
 Dennis Coyle,
 Dylan Lott,
 Egon Elbre,
+Faris Huskovic,
 Garrett Ransom,
 Helene Unland,
 James Hagans,
@@ -138,7 +139,8 @@ Chris Pollard,
 Gordon Hall,
 James Prestwich,
 Josh Brandoff,
-and Tome Boshevski.
+Tome Boshevski,
+and Vitalik Buterin.
 
 Finally, we extend a huge thank you to everyone we talked to during the
 design and architecture of this system for their valuable thoughts, feedback,
@@ -2989,12 +2991,6 @@ responses can easily be identified.
 New storage nodes will be placed into a vetting process until enough audits
 have passed.
 
-\chapter{Choosing Reed-Solomon parameters}
-
-\input{RS-appendix-files/model.tex}
-\input{RS-appendix-files/numexp.tex}
-\input{RS-appendix-files/conc.tex}
-
 \chapter{Distributed consensus}
 
 \section{Non-byzantine}
@@ -3121,30 +3117,56 @@ solutions).
 they struggle with conflict resolution due to the lack of crdt-like options for
 file systems}
 
-\chapter{Object repair costs}
+\chapter{Object Repair Costs}
 
-A fundamental question for networks relying on erasure coding and repair is
-how to choose the best set of system parameters to obtain a desired level of
-reliability under a given constraint of bandwidth consumption.
+	As the saying goes, there is no free lunch. Erasure codes are pretty amazing, but they do come at a cost. The two biggest being additional network bandwidth for object repair and extra space overhead (which we call the expansion factor). Consequently a fundamental challenge is how to choose the system parameters that keep expansion and repair bandwidth to a minimum but also provide an acceptable level of durability. Luckily we are not alone in wondering about this and there is a good amount of prior research on the problem. "Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy" is an excellent guide and much of our work follows from their conclusions. The end result is a mathematical framework which determines network durability and repair bandwidth given Reed-Solomon parameters, average node lifetime, and reconstruction rate. The following is a summary of results and explanation of their implications. 
+    
+\section{Repair Bandwidth and Loss Rate Framework}
+\begin{table}[h]
+\centering
 
-1) Erasure codes are great but there is no such thing as a free lunch. The two
-main associated costs are expansion factor and the additional bandwidth needed
-to repair files.
+\begin{tabular}{| c | c |}\hline
+Variable & Description\\\hline
+$MTTF$ & Mean time to failure \\
+$\alpha$ & 1/$MTTF$\\
+$MRT$ & Mean reconstruction time \\
+$\gamma$ & 1/$MRT$\\
+$D$&Total bytes on the network\\
+$n$ & Total number of pieces per segment (RS encoding)\\
+$k$ & Pieces needed to rebuild a segment (RS encoding)\\
+$m$ & Repair threshold\\
+$LR$ & Loss rate\\
+1-$LR$ & Durability\\
+$E_D$ & Expansion factor\\
+$B_R$ & Ratio of data that is repair bandwidth\\
+\hline
+\end{tabular}
+\end{table}
 
-2) The costs are driven by an acceptable durability rate in the presence of
-node churn.
-Generally speaking, the longer nodes stay on the network the less aggressive
-our erasure parameters need be.
+\begin{align*}
+BW_R&=\frac{\alpha D(n-m+k)}{k\ln(n/m)}\\
+LR&=\frac{1}{(m+1)\ln(n/m)}\frac{m!}{(k-1)!}\left(\frac{\alpha}{\gamma}\right)^{m-k+2}\\
+E_D&=n/k\\
+B_R&=BW_R/D\\
+\end{align*}
 
-3) Ultimately then what we have is an optimization problem pitting our desire
-for a durable network against needing an economically viable system (i.e. our
-costs must be lower than our revenue)
+\section{Node churn is bad for durability}
+	From the equations you see that repair bandwidth is impacted by node churn linearly, which is expected. Lower mean time to node failure triggers more frequent rebuilds and therefore more bandwidth usage. Loss rate is much more sensitive to high node churn, it increases exponentially with alpha. This necessitates very stable nodes, with lifetimes of several months, to achieve acceptable network durability. 
+	
 
-\todo{fill this in}
+\section{Repair bandwidth limits usable space}
 
-\chapter{Bandwidth availability limits usable space}\label{appendix:bandwidth-space-limits}
+	Repair affects storage node's participation beyond their bandwidth usage, it also constrains the amount of usable disk space. Consider a storage node with 1 TB of available space, with a stated monthly bandwidth cap of 500 GB. If it's known (via the above framework) that a storage node can expect to repair 50\% of its data in a given month, and assuming each stored object is served at least once, then we can store no more than 333 GB on this node since anything more causes more bandwidth than allowed. In other words, paid bandwidth plus repair bandwidth must always be less than or equal to the cap. 
+    
+    Higher repair rates equal lower effective storage size, but nodes serving paid data more frequently are more sensitive to the effect. In practice, the paid bandwidth rate will vary with the type of data being stored on each node. These ratios must be monitored closely to determine appropriate usable space limits as the network evolves over time.
 
-\todo{explain how bandwidth availability limits usable space (due to repair costs)}
+
+\chapter{Choosing Reed-Solomon parameters}
+
+\input{RS-appendix-files/model.tex}
+\input{RS-appendix-files/numexp.tex}
+\input{RS-appendix-files/conc.tex}
+
 
 \chapter{Audit false positive risk}\label{appendix:audit-false-positive}
 
