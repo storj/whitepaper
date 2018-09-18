@@ -17,6 +17,7 @@
 \usepackage[english]{babel}
 \usepackage{listings}
 \usepackage{listings-golang}
+\usepackage{listings-protobuf}
 \usepackage{color}
 \usepackage{tikz}
 \usepackage[labelfont=it,textfont={it},singlelinecheck=on,justification=centering]{caption}
@@ -25,9 +26,6 @@
 \usepackage{comment}
 \usepackage{cite}
 
-\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true}
-\lstset{numbers=left,numberstyle=\tiny, stepnumber=1, numbersep=5pt}
-\lstset{language=TeX}
 \setlength{\parskip}{1em}
 
 \renewcommand{\baselinestretch}{1.2}
@@ -36,7 +34,7 @@
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
 \newcommand{\bs}[1]{{\color{red}#1}}
 
-\lstset{ % add your own preferences
+\lstset{
     basicstyle=\footnotesize\tt,
     keywordstyle=\color{blue},
     numbers=left,
@@ -175,10 +173,6 @@ unavailability on a grand scale, storage costs failing to decrease in line with
 demand, and a struggle to keep up with user demand for faster data and larger
 formats.
 
-\todo{Cam suggests for the next paragraph:
-I think it would be better to start with the problem, "there is expected to be X amount of data by year Y." Then propose decentralized storage as a potential solution. Start general, then progressively get more specific until you reach the thesis, "Storj is the answer"
-}
-
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
 Decentralized storage can do this because its architecture matches the real
@@ -187,7 +181,7 @@ centralized data centers. This model can address the rapidly
 expanding amount of data for which current solutions struggle.
 With an anticipated 44 zettabytes of data expected to exist by 2020 and a
 market that will grow to \$92 billion USD in the same time frame
-\todo{citations needed}, we have discovered that decentralized cloud storage
+\cite{storage-growth}, we have discovered that decentralized cloud storage
 has the potential to address several key market segments.
 As the industry's capabilities evolve, decentralized cloud
 storage will be able to address a much wider range of use cases from basic
@@ -255,6 +249,7 @@ At a bare minimum, this requires the methods sketched out in
 Figure \ref{fig:s3-api-code} to be implemented.
 
 \begin{figure}
+\lstset{language=Golang}
 \begin{lstlisting}
   // Bucket operations
 	CreateBucket(bucketName string)
@@ -317,7 +312,7 @@ $x+60$ minutes. Source: Maymounkov {\em et al.} \cite{kad}}
 \label{fig:kad-uptime}
 \end{figure}
 
-See Appendix \ref{appendix:RS} for a discussion about how repair bandwidth
+See appendix \ref{appendix:RS} for a discussion about how repair bandwidth
 varies as a function of node churn.
 
 \section{Latency}
@@ -909,6 +904,10 @@ Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
 
+\begin{center}
+\includegraphics[width=\textwidth]{diagram-drafts/redundancy.png}
+\end{center}
+
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without needing to wait
 for a slower subset.
@@ -1228,8 +1227,6 @@ segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 
 \section{Storage node}
 
-\todo{piecestore.png}
-
 The main duty of the storage node is to reliably store and return data.
 Node operators
 are individuals or entities that have excess hard drive space and want to earn
@@ -1433,10 +1430,8 @@ disk space, bandwidth availability, STORJ wallet address, and any other
 metadata the network needs.
 The network overlay cache will collect information provided by the nodes
 during refresh periods, allowing faster lookups for storage nodes.
-The node metadata is stored in a protobuf binary format to limit storage
+The node metadata is stored in a binary format to limit storage
 needs on the cache.
-
-\todo{diagram}
 
 \section{Redundancy}
 
@@ -1445,6 +1440,10 @@ we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
 $k$ and $n$ are the standard Reed-Solomon numbers, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
+
+\begin{center}
+\includegraphics[width=\textwidth]{diagram-drafts/redundancy_kmon.png}
+\end{center}
 
 $m$ and $o$ are the {\em minimum safe} and {\em optimal} values, respectively.
 $m$ is chosen such that if a satellite notices the amount of available pieces
@@ -1463,36 +1462,13 @@ temporarily offline at the same time without triggering a repair. $m-k$ is the
 safety buffer to avoid losing the data between the time we recognize it requires
 a repair and the actual repair is executed.
 
-\todo{Jens says:
-
-Please add some easy to understand examples here.
-
-20,30,40,50 (k,m,o,n) has a storage expansion factor of up to 2.5 but the durability might not be high enough and data repair needs to kick in frequently. That will consume expensive downloads.
-
-29,35,80,95 has a higher expansion factor of up to 3.3 but less expensive data repairs are needed (for the same durability?).
-
-Optimization problem with 2 factors. See future research section. That part was missing in my head. Patrick explained it very well.
-}
-
-Our durability story does not end with our selection of these numbers.
-Please see section \ref{sec:concrete-data-repair} for a discussion about
+See appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
+Also see section \ref{sec:concrete-data-repair} for a discussion about
 how we repair data as its durability drops over time.
 
-\todo{diagram:
-redundancy.png
-redundancy\_kmon.png
-}
-
-\todo{safety net, long tail tolerance, durability level, n-k not explained}
-
-See Appendix \ref{appendix:RS} for how we select our Reed-Solomon numbers.
-
-\todo{future work: better erasure code algorithm than rs}
-
-\todo{Better in what way? better error correctability, i.e. FEC? Regenerating
-codes to further limit the necessary coordination traffic?}
-
 \section{Structured file storage}\label{sec:structured-file-storage}
+
+\todo{diagram}
 
 \subsection{Files with extended attributes}
 
@@ -1508,8 +1484,6 @@ limited set of arbitrary key-value pairs to support object metadata. We call
 these "extended attributes."
 
 \subsection{Files as Segments}
-
-\todo{diagram 2\_segment.png}
 
 The highest level subdivision of a file is called a "segment."
 \x{Files} should be designed for both small and large data.
@@ -1545,8 +1519,6 @@ to find nodes that have enough space for their large file.
 
 \subsection{Segments as Stripes}
 
-\todo{diagram 3\_stripe.png}
-
 In many situations it's important to access a subsection of a larger piece of
 data. Some file formats such as video files or disk images support seeking,
 where only a subset of the data is needed for read operations.
@@ -1562,8 +1534,6 @@ network without staging it beforehand, and enables a number of other useful
 features.
 
 \subsection{Stripes as Erasure Shares}
-
-\todo{diagram 4\_erasure\_share.png}
 
 Erasure encoding gives us the chance to control network durability in the face
 of unreliable \x{storage node}s. Erasure encoding schemes often are
@@ -1581,8 +1551,6 @@ See section \ref{appendix:RS} for a breakdown of how varying the erasure code
 parameters affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
-
-\todo{diagram 5\_piece.png}
 
 Because \x{stripe}s are already small, \x{erasure share}s are often much
 smaller, and the metadata to keep track of all of them separately would be
@@ -1604,8 +1572,15 @@ A \x{piece} is what
 we finally store on a storage node. We generate and attempt uploads to $n$
 storage nodes, but only $k$ nodes are required to recover the original file.
 
-\todo{piece ids are generated as the hmac of a root piece id and the storing
-node id}
+Satellites generate a brand new, randomly chosen \x{root piece ID} each time
+a new upload begins. The uplink will keep the \x{root piece ID} secret and send
+a \x{node-specific piece ID} to each storage node, formed by taking the HMAC of
+the root piece ID and the node's ID.
+
+Storage nodes namespace pieces by satellite ID. If a piece ID used by one
+satellite is reused by another satellite, each satellite can safely assume the
+their shared piece ID refers to a different piece than the other satellite, with
+different content and lifecycle.
 
 \subsection{Pointers}
 
@@ -1619,9 +1594,53 @@ encryption information, erasure coding details,
 the repair threshold amount that determines how much redundancy a \x{segment}
 must lose before triggering a repair, the amount of \x{pieces} that must be
 stored to consider a repair to be successful, and other details. The full
-definition of a pointer can be seen below. \todo{}
+definition of a pointer can be seen in figure \ref{fig:pointer}.
 
-\todo{code-based pointer definition. protobuf?}
+\begin{figure}
+\lstset{language=protobuf}
+\begin{lstlisting}
+message Pointer {
+  enum DataType { INLINE = 0; REMOTE = 1; }
+  DataType type = 1;
+
+  bytes inline_segment = 3;
+
+  RemoteSegment remote = 4;
+
+  google.protobuf.Timestamp creation_date = 6;
+  google.protobuf.Timestamp expiration_date = 7;
+  bytes metadata = 8;
+}
+
+message RemoteSegment {
+  RedundancyScheme redundancy = 1;
+  bytes piece_id = 2;
+  repeated RemotePiece remote_pieces = 3;
+
+  bytes merkle_root = 4;
+  int64 size = 5;
+}
+
+message RedundancyScheme {
+  enum SchemeType { RS = 0; }
+  SchemeType type = 1;
+
+  int32 min_req = 2;           // k
+  int32 total = 3;             // n
+  int32 repair_threshold = 4;  // m
+  int32 success_threshold = 5; // o
+
+  int32 erasure_share_size = 6;
+}
+
+message RemotePiece {
+  int32 piece_num = 1;
+  bytes node_id = 2;
+}
+\end{lstlisting}
+\caption{Pointer definition}
+\label{fig:pointer}
+\end{figure}
 
 \section{Metadata}\label{sec:concrete-metadata}
 
@@ -1673,29 +1692,36 @@ On the other hand, there are a few upsides:
   implementations of byzantine-fault tolerant consensus metadata storage.
   We can get a useful product to market without doing this work at all.
   This is a considerable advantage.
-\item {\bf Coordination Avoidance} - \todo{}
+\item {\bf Coordination Avoidance} - users only need to coordinate with
+  other users on their satellite. If a user has high throughput demands,
+  they can set up their own satellite and have no coordination overhead from
+  any other user. By allowing satellite operators to select their own database,
+  this would allow a user to choose a satellite with weaker consistency
+  semantics such as Highly Available Transactions \cite{hat} that reduce
+  coordination overhead within their own satellite and increase performance
+  even further.
 \end{itemize}
 
 Our launch goal is to allow customers to store their metadata in a database of
 their choosing. We expect and look forward to new systems and improvements
 specifically in this component of our framework.
 
-Please see Appendix \todo{} for more about why we've chosen to avoid trying to
-solve the problem of Byzantine distributed consensus for now. See Future work
-\todo{} for a discussion of medium to long term plans.
+Please see appendix \ref{chap:dist-consensus} for more about why we've chosen
+to avoid trying to solve the problem of Byzantine distributed consensus for
+now. See section \ref{sec:distributed-metadata} for a discussion of medium to
+long term plans.
 
 \section{Satellite}
 
-\todo{Point out that the satellite is a collection of subservices and does
-not compare to the storage node and the uplink in regards to the ease of
-running it. also focus that the subservices can run distributed over multiple
-locations.}
+The collection of services that hold this metadata is called the
+\x{satellite}. Users of the network will have accounts on a specific
+satellite instance, which will store their file metadata, manage authorization
+to data, keep track of storage node reliability, repair and maintain data when
+redundancy is reduced, and issue payments to storage nodes on the user's behalf.
+Notably, a specific satellite {\em instance} does not necessarily constitute one
+server. A satellite may be run as a collection of servers and be backed by
+a horizontally scalable trusted database for higher uptime.
 
-The services that holds this metadata is called the \x{satellite}. Users of the
-network will have accounts on a specific satellite instance, which will store
-their file metadata, manage authorization to data, keep track of storage
-node reliability, repair and maintain data when redundancy is reduced,
-and issue payments to storage nodes on the user's behalf.
 Storj implements a thin-client model that delegates trust around managing
 files' location metadata to the satellite service which manages data
 ownership. \x{Uplinks}
@@ -1705,10 +1731,6 @@ especially for an active set of files.
 The satellite service has been developed and released as open source software.
 Any individual or organization can run their own satellite to facilitate
 network access.
-
-A specific satellite {\em instance} does not necessarily constitute one
-server. A satellite may be run as a collection of servers and be backed by
-a horizontally scalable trusted database for higher uptime.
 
 The satellite is, at its core, one of the most complex and yet
 straightforward components of our initial release that fulfills our framework.
@@ -1720,7 +1742,7 @@ Data available through one satellite instance is
 not available through another satellite instance, though various levels of
 export and import are planned.
 
-The satellite is made up of these components:
+The satellite instance is made up of these components:
 \begin{itemize}
 \item A full node discovery cache (\ref{sec:concrete-node-discovery})
 \item An account management and authorization system
@@ -1813,8 +1835,6 @@ are only revealed to the user's chosen satellite, but not to the storage
 nodes. Storage nodes continue to have no information about the path and
 metadata of the pieces they store.
 
-Order-preserving path encryption is left for future work.
-
 \section{Authorization}\label{sec:concrete-authorization}
 
 Encryption protects the privacy of data while allowing for the identification
@@ -1841,8 +1861,6 @@ satellite ID. The client must retrieve valid signatures from the metadata
 service prior to operations with storage nodes.
 
 \section{Audits}\label{sec:concrete-audits}
-
-\todo{diagram}
 
 In a network with untrusted nodes, validating that nodes are returning data
 accurately and otherwise behaving as expected is vital to ensuring a properly
@@ -1917,7 +1935,7 @@ with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
 should be set for when uploads are successful and when repair is needed. See
-Appendix \todo{} for how we calculate these values given user inputs.
+appendix \todo{} for how we calculate these values given user inputs.
 
 A direct implication of this design is that for now, the satellite must
 constantly stay running. If the user's satellite stops running, repairs will
@@ -2027,7 +2045,7 @@ data to store and which satellite operators to work with.
 
 It's worth reiterating that failing too many uptime checks is a disqualifying
 event. Storage nodes can be taken down for maintenance, but if a storage node
-is offline too much, it can have an adverse impact on the network. See Appendix
+is offline too much, it can have an adverse impact on the network. See appendix
 \todo{} for why uptime is so important in our storage system.
 
 After a storage node is disqualified, the node must go back through the entire
@@ -2822,6 +2840,7 @@ data format will support merkle tree repair in the future.
 \section{Reputation sharing}
 \section{Garbage collection improvements}
 \section{Scalable cache/node discovery}\label{sec:future-cache}
+\section{Distributed metadata}\label{sec:distributed-metadata}
 
 \section{Accelerated payments}
 
@@ -2991,7 +3010,7 @@ responses can easily be identified.
 New storage nodes will be placed into a vetting process until enough audits
 have passed.
 
-\chapter{Distributed consensus}
+\chapter{Distributed consensus}\label{chap:dist-consensus}
 
 \section{Non-byzantine}
 
@@ -3119,8 +3138,8 @@ file systems}
 
 \chapter{Object Repair Costs}
 
-	As the saying goes, there is no free lunch. Erasure codes are pretty amazing, but they do come at a cost. The two biggest being additional network bandwidth for object repair and extra space overhead (which we call the expansion factor). Consequently a fundamental challenge is how to choose the system parameters that keep expansion and repair bandwidth to a minimum but also provide an acceptable level of durability. Luckily we are not alone in wondering about this and there is a good amount of prior research on the problem. "Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy" is an excellent guide and much of our work follows from their conclusions. The end result is a mathematical framework which determines network durability and repair bandwidth given Reed-Solomon parameters, average node lifetime, and reconstruction rate. The following is a summary of results and explanation of their implications. 
-    
+	As the saying goes, there is no free lunch. Erasure codes are pretty amazing, but they do come at a cost. The two biggest being additional network bandwidth for object repair and extra space overhead (which we call the expansion factor). Consequently a fundamental challenge is how to choose the system parameters that keep expansion and repair bandwidth to a minimum but also provide an acceptable level of durability. Luckily we are not alone in wondering about this and there is a good amount of prior research on the problem. "Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy" is an excellent guide and much of our work follows from their conclusions. The end result is a mathematical framework which determines network durability and repair bandwidth given Reed-Solomon parameters, average node lifetime, and reconstruction rate. The following is a summary of results and explanation of their implications.
+
 \section{Repair Bandwidth and Loss Rate Framework}
 \begin{table}[h]
 \centering
@@ -3150,16 +3169,11 @@ E_D&=n/k\\
 B_R&=BW_R/D\\
 \end{align*}
 
-\section{Node churn is bad for durability}
+\section{Node churn is bad for durability}\label{appendix:bandwidth-space-limits}
 	From the equations you see that repair bandwidth is impacted by node churn linearly, which is expected. Lower mean time to node failure triggers more frequent rebuilds and therefore more bandwidth usage. Loss rate is much more sensitive to high node churn, it increases exponentially with alpha. This necessitates very stable nodes, with lifetimes of several months, to achieve acceptable network durability. See appendix D for a more in depth discussion of node churn's affect on erasure code parameters.
-    
-    
-	
 
-\section{Repair bandwidth limits usable space}
+	Repair affects storage node's participation beyond their bandwidth usage, it also constrains the amount of usable disk space. Consider a storage node with 1 TB of available space, with a stated monthly bandwidth cap of 500 GB. If it's known (via the above framework) that a storage node can expect to repair 50\% of its data in a given month, and assuming each stored object is served at least once, then we can store no more than 333 GB on this node since anything more causes more bandwidth than allowed. In other words, paid bandwidth plus repair bandwidth must always be less than or equal to the cap.
 
-	Repair affects storage node's participation beyond their bandwidth usage, it also constrains the amount of usable disk space. Consider a storage node with 1 TB of available space, with a stated monthly bandwidth cap of 500 GB. If it's known (via the above framework) that a storage node can expect to repair 50\% of its data in a given month, and assuming each stored object is served at least once, then we can store no more than 333 GB on this node since anything more causes more bandwidth than allowed. In other words, paid bandwidth plus repair bandwidth must always be less than or equal to the cap. 
-    
     Higher repair rates equal lower effective storage size, but nodes serving paid data more frequently are more sensitive to the effect. In practice, the paid bandwidth rate will vary with the type of data being stored on each node. These ratios must be monitored closely to determine appropriate usable space limits as the network evolves over time.
 
 
@@ -3180,10 +3194,6 @@ B_R&=BW_R/D\\
 New todo items:
 \begin{itemize}
 \item Clean up intro
-\item Section \ref{sec:req-bandwidth} needs an appendix that explains how
-  bandwidth availability and repair traffic limit usable space.
-\item Section \ref{sec:framework-audits} needs an appendix on audit false
-  positive calculations.
 \end{itemize}
 
 Old todo items:
