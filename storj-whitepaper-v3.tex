@@ -1358,16 +1358,16 @@ certificate authority's public key. It can then be estimated how much work went
 into constructing the node ID by considering the number of 0 bits at the end of
 the ID. Satellites can configure a minimum proof of work required to pass an
 audit, such that over time, the network will require greater proofs of work
-due to natural user intervention. \todo{ref for future work}
+due to natural user intervention.
 
 For the few cases where a node cannot achieve a successful connection through a
 NAT or firewall (via STUN, uPnP, NATPmP, or similar techniques), manual
 intervention and port forwarding will be required. In the future, nodes unable
 to create a connection through their firewalls may rely on traffic proxying from
 other, more available nodes, for a fee. See the bandwidth allocation protocol
-(\ref{bap}) for a description of how fees work.
-
-\todo{node-introductions}
+(\ref{bap}) for a description of how fees work. Nodes can also provide
+assistance to other nodes for initial STUN setup, public address validation,
+and so on.
 
 \section{Node discovery}\label{sec:concrete-node-discovery}
 
@@ -1396,7 +1396,8 @@ of Kademlia.
 The caching service will attempt to talk to every storage node in the network
 on an ongoing basis, perhaps once per hour. We expect this to scale for the
 reasonable future, as ping operations are inexpensive, but admit a new solution
-may be necessary \todo{future work}. The caching service will then cache
+may be necessary (see section \ref{sec:future-cache}.
+The caching service will then cache
 the last known good address for each node, evicting nodes that it hasn't talked
 to after a certain period.
 Fortunately, caching address information for a network of 80k nodes
@@ -1573,8 +1574,8 @@ of the 40 \x{erasure share}s will be $1/20$th the size of the original
 \x{stripe}.
 
 
-See section \todo{} for a breakdown of how varying the erasure code parameters
-affects availability and redundancy.
+See section \ref{appendix:RS} for a breakdown of how varying the erasure code
+parameters affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
 
@@ -1717,7 +1718,6 @@ not available through another satellite instance, though various levels of
 export and import are planned.
 
 The satellite is made up of these components:
-
 \begin{itemize}
 \item A full node discovery cache (\ref{sec:concrete-node-discovery})
 \item An account management and authorization system
@@ -2819,6 +2819,7 @@ data format will support merkle tree repair in the future.
 \section{Reputation sharing}
 \section{Garbage collection improvements}
 \section{Accelerated payments}
+\section{Scalable cache/node discovery}\label{sec:future-cache}
 
 \todo{Viktor says:
 we can just create some kind of clearing system (as all payment processors have) with obligated deposits for services, so that will help us to prevent potential fraud (non-paying customers) from one side and allow us to process all transactions in most efficient and fast way. Because money movement will be just between virtual balances of users until the end of clearing session (we can do clearing once/twice/3 or 4 times per day depends on existing/projected statistics of withdrawals - need to discuss first). In the end of clearing session we/admin can finally process payment to user wallets. This will help us also reduce transaction costs and give us more transparency compare to typical money transfers when you do it in crypto.
