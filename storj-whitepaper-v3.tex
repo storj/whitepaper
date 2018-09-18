@@ -9,6 +9,7 @@
 \usepackage{microtype}
 \usepackage[T1]{fontenc}
 \usepackage{inconsolata}
+\usepackage{tabulary}
 
 \usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
 % references
@@ -51,7 +52,7 @@
 Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
-\date{\small\sffamily\color{white} v3.0, August 23, 2018\\
+\date{\small\sffamily\color{white} v3.0, September 17, 2018\\
 \small\color{white}\url{https://github.com/storj/whitepaper}
 }
 
@@ -69,46 +70,6 @@ Storj Labs, Inc.}
 \node[rotate=45,scale=15,text opacity=0.1]
 at (current page.center) {DRAFT};
 \end{tikzpicture}
-
-\todo{
-Remaining big todo items:
-\begin{itemize}
-\item Datascience: write an appendix about repair bandwidth based on node
-  churn and uptime
-\item Datascience: Write an appendix about how we select RS numbers
-\item Eng/marketing: Quality control/branding section - talk about how we
-  plan to ensure satellite quality by quality control evaluations, formal
-  partnerships, relationships, and not letting poor quality satellites
-  use the brand.
-\item tie framework back to design constraints
-\item tie concrete implementation back to framework
-\end{itemize}
-
-Remaining medium todo items:
-\begin{itemize}
-\item Anyone:
-  Clean up distributed consensus positioning in the appendix.
-\item Eng: General data repair framework description
-\item Eng: more macaroon details
-\item Eng: future work section about hot files
-\item make point about why rs is better than replication more clear,
-  contrasting with other approaches
-\item discuss when a storage node can limit download bandwidth to prevent
-  abuse
-\end{itemize}
-
-Remaining little todo items:
-\begin{itemize}
-\item Eng: Write a future work section about eliminating TLS handshakes
-\item Eng: Write about how piece ids are generated
-\item Eng: Future work section about reputation sharing
-\item Eng: Future work section about finding a better data structure than
- a bloom filter for gc
-\item Figure out latex theme licensing
-\item Make sure audits try to refresh the cache if there's a failure contacting
-  a node before flagging the node as down.
-\end{itemize}
-}
 
 \newpage
 
@@ -372,19 +333,13 @@ intended for high performance applications must continuously and aggressively
 optimize for low latency, both at an individual process scale, as well as for
 the system's entire architecture.
 
-\section{Bandwidth}
+\section{Bandwidth}\label{sec:req-bandwidth}
 
 Global bandwidth availability is increasing year after year; but unfortunately,
 access to
 high-bandwidth internet connections is unevenly distributed across the world.
 While some users can easily access symmetric, high-speed, unlimited bandwidth
 connections, others may have significant difficulty obtaining access to the same.
-
-\todo{Moby suggests:
-[Opinion] I think this paragraph would be better off if it was written more generally. In other words, get rid of specific references to countries (United States) and ISPs (Comcast).
-
-The same bandwidth limitations we'd like to account for in the US are present in other countries as well. Additionally, although Comcast sucks, I don't see any need to explicitly call them out in this section.
-}
 
 In the United States and other countries,
 the way many residential internet service providers (ISPs)
@@ -397,7 +352,7 @@ order of magnitude or two slower. The second challenge is that bandwidth is
 sometimes "capped" by the ISP at a fixed amount of allowed traffic per month.
 For example, in many
 US markets, the ISP Comcast imposes a one terabyte per month bandwidth cap
-with stiff fines for customers who go over this limit. \cite{comcast-cap}
+with stiff fines for customers who go over this limit \cite{comcast-cap}.
 An internet connection with a cap of 1 TB/month cannot average more than
 385 KB/s over the month without exceeding the monthly bandwidth allowance,
 even if the ISP advertises speeds of 10 MB/s or higher.
@@ -418,7 +373,7 @@ as possible, bandwidth usage must be aggressively minimized.
 Please see Appendix \todo{} for a discussion on how bandwidth availability
 and repair traffic limit usable space.
 
-\section{Redundancy}
+\section{Redundancy}\label{sec:req-redundancy}
 
 \todo{clear discussion about challenges with replication}
 
@@ -500,11 +455,9 @@ geographically distributed cloud storage. Perhaps some small operator
 has access to cheaper electricity than standard data centers or another small
 operator has access to cheaper cooling. Many of these small operator
 environments are not substantial enough to run an entire datacenter-like
-storage system, but we have found that in aggregate, enough small operator
-environments exist that their combination over the internet constitute
+storage system. However, we have found that in aggregate, enough small operator
+environments exist such that their combination over the internet constitutes
 significant opportunity and advantage for cheaper and faster storage.
-
-\todo{Egon suggests the previous sentence is too long}
 
 Operating a decentralized network requires node operators to contribute
 resources (e.g. network bandwidth, compute, storage, and energy) in exchange
@@ -533,9 +486,6 @@ system, many users worried about single-entity risk will have a viable
 alternative.
 With decentralized architecture, Storj could cease operating and the data
 would continue to be available.
-
-\todo{Kevin suggests for the previous paragraph:
-I think we need to tighten up this illustration of why trusting a singular entity incurs costs, creates counterparty, risk, etc.}
 
 We have decided to adopt a decentralized architecture because while there
 are tradeoffs, we believe decentralization addresses the core limitations,
@@ -635,15 +585,66 @@ entirely controllable by each user.
 
 \section{Marketplace and economics}
 
-\todo{kevin suggests the following paragraph get rewritten}
+Public cloud computing in general (and public cloud storage in particular) has
+proven to be an attractive business model for the large centralized cloud
+providers. Cloud computing is estimated to be a \$200B market in 2018
+\todo{citation needed}.
 
-Designing a decentralized storage network with the intent of creating and
-operating a business presents additional design constraints not faced when only
-pursuing an ideological goal of a purely decentralized application
-for the sake of decentralization.
-As a business entity, Storj Labs develops software to aggregate and resell
-unused storage space on devices owned and operated by unaffiliated third
-parties. This impacts design in a number of ways.
+The public cloud storage model has provided a compelling economic model to end
+users by enabling them to scale on demand and avoid the significant fixed
+costs associated with investments in facilities, power, and data center
+personnel. Public cloud storage has generally proven to be an economical,
+durable, and performant option for many end users, when compared to
+on-premise solutions.
+
+However, the public cloud storage model has, by its nature, led to a high
+degree of concentration. Fixed costs are born by the network operators, who
+invest billions of dollars in building out a network of data centers, and who
+then enjoy significant economies of scale. The combination of large upfront
+costs and economies of scale means that there is an extremely limited number
+of viable suppliers of public cloud storage (arguably, less than 5 major
+options worldwide). These few supplies are also the primary beneficiaries of
+the economic return.
+
+We believe that decentralized storage can provide a viable alternative to
+centralized cloud.
+
+In our design of Storj, we seek to create an economically advantageous
+situation for four different groups:
+
+\begin{description}
+\item[End users] - We must provide the same economically compelling
+  characteristics of public cloud. (No upfront costs, scale on demand).
+  In addition, end users must experience meaningfully better value for given
+  levels of capacity, durability, security, and performance.
+
+\item[Storage node operators] - It must be economically attractive for storage
+  node operators to help build out the network.
+  They must be paid fairly and transparently, and be able to make a
+  reasonable profit relative to any marginal costs they incur.
+  At a bare minimum, it should be economically advantageous to be a storage
+  node operator to utilize underused capacity, but we believe it should be
+  economically advantageous to create new capacity as well.
+  As node availability and reliability has a large impact on network
+  availability, cost, and reliabilty, it is a requirement that storage node
+  operators have sufficient incentive to maintain reliable and continuous
+  connections to the network.
+
+\item[Demand providers] - It must be economically attractive for developers and
+  businesses to drive customers and data onto the Storj network. We will design
+  the system to fairly and transparent deliver margin to partners. We believe
+  that there is a unique opportunity to provide open-source software (OSS)
+  companies and projects (who drive over $2/3$ of the public cloud workloads
+  today without receiving direct revenue) a source of sustainable revenue.
+
+\item[Network operator] - In order to sustain continued investment in code,
+  functionality, network maintainance, and demand generation, the network
+  operator must be able to retain a reasonable profit while charging end
+  users less than the public cloud providers and sharing margin with storage
+  node operators and demand providers.
+\end{description}
+
+Targeting these four groups constrains our design in a few ways.
 
 First, it is important to distinguish supply and demand in regards to the
 storage network; sharing resources with the network should be considered
@@ -657,10 +658,8 @@ be compensated fairly in an easily calculable way.
 This includes aligning the economic incentives of the network to ensure
 that the {\em rational} nodes on the network (the majority of operators) behave
 as similarly as possible to the expected behavior of {\em altruistic} nodes.
-Incentives should likewise be eliminated that elicit any {\em byzantine}
-behavior.
-
-\todo{Egon says the last sentence is unclear}
+Incentives that allow for or encourage {\em byzantine} behavior should likewise
+be eliminated.
 
 Third, to drive network growth and adoption, we must have a price-competitive
 product and attractive
@@ -696,11 +695,6 @@ New features and changes to the concrete implementations of framework
 components will be driven by applicability to specific object storage use cases
 and the relationship between features and performance to the price of storage
 and bandwidth relative to those use cases.
-
-\todo{ben golub wrote up the economic portion of the ospp talk. incorporate
-and add him to the author list!
-https://docs.google.com/document/d/1aEn1ACRayQE9JwHbqBCQSM9\_9Ot1H6NbEdyZVCmhFLU/edit
-}
 
 \chapter{Framework}\label{chap:framework}
 
@@ -804,7 +798,8 @@ ephemeral connection address, but unlike DNS, there is no centralized
 registration process.
 To achieve this, a network overlay can be
 built on top of our peer-to-peer communication protocol that provides this
-functionality. See Section \todo{ref} for implementation details.
+functionality. See Section \ref{sec:concrete-node-discovery} for
+implementation details.
 
 \section{Redundancy}
 
@@ -1011,7 +1006,7 @@ BIP32 \cite{bip32} will allow subtrees to be shared without sharing their
 parents, and will allow some files to be shared without sharing other files.
 \todo{ref to our hd scheme section}
 
-\section{Audits and reputation}
+\section{Audits and reputation}\label{sec:framework-audits}
 
 Incentivizing storage nodes to accurately store data is of paramount importance
 to
@@ -2280,7 +2275,7 @@ the satellite become temporarily inoperable.
 
 \todo{future work - shared reputation, satellite reputation}
 
-\section{Garbage collection}
+\section{Garbage collection}\label{sec:garbage-collection}
 
 When clients move or delete data, satellites will notify storage nodes
 that they are no longer required to store that data. However,
@@ -2873,11 +2868,11 @@ to any distributed storage system.
 \section{Spartacus}
 
 Spartacus attacks, or identity hijacking, are possible on unmodified Kademlia
-\cite{kademlia}.
+\cite{kad}.
 Any node may assume the identity of another node and receive some fraction of
 messages intended for that node by simply copying its node ID.
 This allows for targeted attacks against specific nodes and data.
-Spartacus attack mitigation is addressed in S/Kademlia \cite{s-kademlia} by
+Spartacus attack mitigation is addressed in S/Kademlia \cite{skad} by
 implementing Node IDs as public key hashes and requiring messages to be signed.
 A Spartacus attacker in this system would be unable to generate the
 corresponding private key, and thus unable to sign messages and participate in
@@ -2887,7 +2882,7 @@ the network.
 
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
 disrupt network operation by hijacking or dropping messages. Kademlia
-\cite{kademlia} is already somewhat resistant to Sybil attacks, because
+\cite{kad} is already somewhat resistant to Sybil attacks, because
 it relies on message redundancy and a concrete distance metric.
 A node's neighbors in the network are selected by
 node ID from an evenly distributed pool, and most messages are sent to at least
@@ -2896,7 +2891,7 @@ successfully isolates only 12.5\% of honest nodes. While reliability and
 performance will degrade, the network will still be functional unless a large
 portion of the network consists of colluding Sybil nodes.
 
-As an additional defense against sybil attacks, S/Kademlia \cite{s-kademlia}
+As an additional defense against sybil attacks, S/Kademlia \cite{skad}
 extends Kademlia with a proof of work scheme, which we have adopted. In our
 case, node IDs are hashed public keys of the node's identity.
 The number of trailing 0 bits in the node's ID corresponds to a configurable
@@ -2986,7 +2981,7 @@ responses.
 Without a periodic regeneration of these challenges, a storage node can begin
 to pass most audits without storing all of the requested data.
 Instead we request a random stripe of erasure shares from all storage nodes.
-We then run the Berlekamp-Welch algorithm\cite{berlekamp-welch} across all the
+We then run the Berlekamp-Welch algorithm\cite{bw} across all the
 erasure shares.
 When enough storage nodes return correct information, any faulty or missing
 responses can easily be identified.
@@ -3130,6 +3125,47 @@ file systems}
 A fundamental question for networks relying on erasure coding and repair is
 how to choose the best set of system parameters to obtain a desired level of
 reliability under a given constraint of bandwidth consumption.
+
+\todo{
+New todo items:
+\begin{itemize}
+\item Clean up intro
+\item Section \ref{sec:req-bandwidth} needs an appendix that explains how
+  bandwidth availability and repair traffic limit usable space.
+\item Section \ref{sec:req-redundancy} needs to be written to make the
+  replication-is-bad argument clear. Clean up framework redundancy section.
+\end{itemize}
+
+Old todo items:
+\begin{itemize}
+\item Datascience: write an appendix about repair bandwidth based on node
+  churn and uptime
+\item Datascience: Write an appendix about how we select RS numbers
+\item Eng/marketing: Quality control/branding section - talk about how we
+  plan to ensure satellite quality by quality control evaluations, formal
+  partnerships, relationships, and not letting poor quality satellites
+  use the brand.
+\item tie framework back to design constraints
+\item tie concrete implementation back to framework
+\item Anyone:
+  Clean up distributed consensus positioning in the appendix.
+\item Eng: General data repair framework description
+\item Eng: more macaroon details
+\item Eng: future work section about hot files
+\item make point about why rs is better than replication more clear,
+  contrasting with other approaches
+\item discuss when a storage node can limit download bandwidth to prevent
+  abuse
+\item Eng: Write a future work section about eliminating TLS handshakes
+\item Eng: Write about how piece ids are generated
+\item Eng: Future work section about reputation sharing
+\item Eng: Future work section about finding a better data structure than
+ a bloom filter for gc
+\item Figure out latex theme licensing
+\item Make sure audits try to refresh the cache if there's a failure contacting
+  a node before flagging the node as down.
+\end{itemize}
+}
 
 \newpage
 \bibliographystyle{unsrt}
