@@ -1,0 +1,65 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='600px' height='332.8px'>
+<style>/* <![CDATA[ */ text { text-shadow: -1px -1px 0 rgba(255,255,255,0.5),	1px -1px 0 rgba(255,255,255,0.5), 1px  1px 0 rgba(255,255,255,0.5), -1px  1px 0 rgba(255,255,255,0.5); } /* ]]> */ </style>
+<g transform='translate(0.5, 0.5)'>
+<g loov:index='0'>
+<g loov:index='-1'>
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='100.00,32.00 100.00,332.80 ' />
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='300.00,32.00 300.00,332.80 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-dasharray: 4;stroke-width: 2px;' points='500.00,32.00 500.00,332.80 ' />
+</g>
+<g>
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,48.00 100.00,64.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,64.00 104.95,65.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,64.00 104.63,61.63 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,80.00 300.00,96.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,96.00 295.37,93.63 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,96.00 295.05,97.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,112.00 500.00,128.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,128.00 495.37,125.63 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,128.00 495.05,129.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,144.00 500.00,153.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,153.60 495.30,151.38 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,153.60 495.11,155.36 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,156.80 500.00,172.80 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,172.80 495.37,170.43 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,172.80 495.05,174.40 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,208.00 500.00,230.40 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,230.40 495.45,227.89 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,230.40 495.00,231.84 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,240.00 500.00,262.40 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,262.40 495.45,259.89 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,262.40 495.00,263.84 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='500.00,169.60 300.00,201.60 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,201.60 311.67,204.38 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,201.60 310.22,195.31 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='500.00,201.60 300.00,233.60 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,233.60 311.67,236.38 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,233.60 310.22,227.31 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='500.00,246.40 300.00,278.40 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,278.40 311.67,281.18 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,278.40 310.22,272.11 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='500.00,284.80 300.00,316.80 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,316.80 311.67,319.58 ' />
+<polyline  style='stroke: #0000c8ff;fill: transparent;stroke-width: 3px;' points='300.00,316.80 310.22,310.51 ' />
+</g>
+<g loov:index='1'>
+<g transform='translate(100.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Satellite</text></g>
+<g transform='translate(300.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Client</text></g>
+<g transform='translate(500.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Storage Node</text></g>
+<g transform='translate(200.00,49)'><text transform="rotate(-4.57)" text-anchor="middle" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Request Allocation Check</text></g>
+<g transform='translate(200.00,81)'><text transform="rotate(4.57)" text-anchor="middle" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Signed Allocation Check</text></g>
+<g transform='translate(320.00,106)'><text transform="rotate(4.57)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Get [id, length, offset]</text></g>
+<g transform='translate(320.00,138)'><text transform="rotate(2.75)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Sign [5MB/20MB]</text></g>
+<g transform='translate(320.00,151)'><text transform="rotate(4.57)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Sign [10MB/20MB]</text></g>
+<g transform='translate(320.00,203)'><text transform="rotate(6.39)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Sign [15MB/20MB]</text></g>
+<g transform='translate(320.00,235)'><text transform="rotate(6.39)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Sign [20MB/20MB]</text></g>
+<g transform='translate(480.00,166)'><text transform="rotate(-9.09)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >5MB</text></g>
+<g transform='translate(480.00,198)'><text transform="rotate(-9.09)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >5MB</text></g>
+<g transform='translate(480.00,242)'><text transform="rotate(-9.09)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >5MB</text></g>
+<g transform='translate(480.00,281)'><text transform="rotate(-9.09)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >5MB</text></g>
+</g>
+</g>
+</g>
+</svg>

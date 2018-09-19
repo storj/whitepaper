@@ -1,0 +1,59 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='800px' height='352px'>
+<style>/* <![CDATA[ */ text { text-shadow: -1px -1px 0 rgba(255,255,255,0.5),	1px -1px 0 rgba(255,255,255,0.5), 1px  1px 0 rgba(255,255,255,0.5), -1px  1px 0 rgba(255,255,255,0.5); } /* ]]> */ </style>
+<g transform='translate(0.5, 0.5)'>
+<g loov:index='0'>
+<g loov:index='-1'>
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='100.00,32.00 100.00,352.00 ' />
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='300.00,32.00 300.00,352.00 ' />
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='500.00,32.00 500.00,352.00 ' />
+<polyline  style='stroke: #1e1e1eff;fill: transparent;stroke-dasharray: 4;stroke-width: 1px;' points='700.00,32.00 700.00,352.00 ' />
+</g>
+<g>
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,48.00 100.00,48.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,48.00 95.20,46.01 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,48.00 95.20,49.99 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,80.00 300.00,105.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,105.60 295.49,103.02 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,105.60 294.98,106.96 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,105.60 500.00,169.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,169.60 495.57,166.88 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,169.60 494.94,170.81 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,131.20 700.00,227.20 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='700.00,227.20 695.57,224.48 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='700.00,227.20 694.94,228.41 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='300.00,112.00 100.00,144.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,144.00 105.06,145.21 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,144.00 104.43,141.28 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='500.00,176.00 100.00,208.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,208.00 104.95,209.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,208.00 104.63,205.63 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='700.00,233.60 100.00,265.60 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,265.60 104.90,267.33 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,265.60 104.69,263.36 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,304.00 100.00,304.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,304.00 95.20,302.01 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,304.00 95.20,305.99 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,336.00 100.00,336.00 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,336.00 95.20,334.01 ' />
+<polyline  style='stroke: #000000ff;fill: transparent;stroke-width: 1.3px;' points='100.00,336.00 95.20,337.99 ' />
+</g>
+<g loov:index='1'>
+<g transform='translate(100.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Satellite</text></g>
+<g transform='translate(300.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Storage Node 1</text></g>
+<g transform='translate(500.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Storage Node 2</text></g>
+<g transform='translate(700.00,16)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 16px;fill: #000000ff;' >Storage Node 3</text></g>
+<g transform='translate(100.00,41)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Pick stripe to audit</text></g>
+<g transform='translate(120.00,75)'><text transform="rotate(7.29)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >get piece=1</text></g>
+<g transform='translate(140.00,105)'><text transform="rotate(9.09)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >get piece=2</text></g>
+<g transform='translate(160.00,134)'><text transform="rotate(9.09)" text-anchor="start" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >get piece=3</text></g>
+<g transform='translate(280.00,108)'><text transform="rotate(-9.09)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >data</text></g>
+<g transform='translate(460.00,172)'><text transform="rotate(-4.57)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >data</text></g>
+<g transform='translate(640.00,230)'><text transform="rotate(-3.05)" text-anchor="end" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >data</text></g>
+<g transform='translate(100.00,297)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Try Rebuild</text></g>
+<g transform='translate(100.00,329)'><text text-anchor="middle" alignment-baseline="middle"  style='font-size: 12px;fill: #000000ff;' >Store Result</text></g>
+</g>
+</g>
+</g>
+</svg>
