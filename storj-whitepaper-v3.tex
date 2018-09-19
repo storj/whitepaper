@@ -2878,32 +2878,40 @@ data format will support merkle tree repair in the future.
 \todo{show math of how durability increases when using cohorts instead of
   random node selection}
 
-\section{Improving user experience around metadata}
+\section{Improving user experience around metadata}\label{sec:distributed-metadata}
 
+In our initial concrete implementation, we place significant burdens on the
+satellite operator to maintain a good service level with high availability,
+high durability, regular payments, and regular backups. We expect a large
+degree of variation in quality of satellites, which led us to our quality
+control program (see section \ref{sec:qc}).
 
+Over time, users of satellites will want to reduce their dependence on satellite
+operators and enjoy more efficient data portability between satellites besides
+downloading and uploading their data manually. We plan to spend significant time
+on improving this user experience in a number of ways.
 
-\section{Reputation sharing}
+In the short term, we plan to build a metadata import/export system, so users
+can make backups of their metadata on their own and transfer their metadata
+between satellites.
 
-\section{Distributed metadata}\label{sec:distributed-metadata}
+In the medium term, we plan to reduce the size of these exports considerably
+and make as much of this backup process as automatic and seamless as possible.
+We expect to build a system to back up the major portion of the metadata
+periodically to the network directly.
 
-Over time, we plan to program the satellite out of the platform.
-The satellite's role on the network means that the network could be prone
-to some
-centralization if others outside of the Storj Labs team do not run their own
-satellites. The biggest challenge is achieving fast byzantine consensus,
-where storage nodes can interact with one another, share encoded pieces of
-files,
-and still operate within the performance levels users will expect from a
-platform that is competing with traditional cloud storage providers.
+In the long term, we plan to program the satellite out of the platform.
+We hope to eliminate satellite control of the metadata
+entirely via a viable Byzantine fault tolerant consensus algorithm, should
+one arise.
+The biggest challenge to this is achieving fast Byzantine fault tolerant
+consensus, where storage nodes can interact with one another, share encoded
+pieces of files, and still operate within the performance levels users will
+expect from a platform that is competing with traditional cloud storage
+providers. Our team will continue to research viable means to achieve this.
 
-Our team will be researching ways to store lots of small pieces of metadata
-in a distributed manner, even when those pieces are constantly changing. There
-currently is not a way to achieve this without significant investment in time,
-compute, and bandwidth. A practical byzantine fault tolerance algorithm could
-work. They are generally faster and use less disk space than blockchain
-protocols, however there is significant trade off around network usage and
-coordination contention, as there could be problematic overlap with two storage
-nodes trying to communicate with one another at the same time.
+See appendix \ref{chap:dist-consensus} for a discussion on why
+we aren't tackling this problem right away.
 
 \section{Accelerated payments}
 
