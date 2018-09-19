@@ -1223,8 +1223,6 @@ segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
 \x{storage nodes} the pieces of a \x{remote segment} were stored on.
 \end{description}
 
-\todo{pictures}
-
 \section{Storage node}
 
 The main duty of the storage node is to reliably store and return data.
@@ -1844,20 +1842,33 @@ and edit files, while users who are not authorized should not be able to do so.
 
 First, metadata operations should be authorized. Users should authenticate with
 their chosen metadata service, which should allow them
-access to various operations
-according to their authorization configuration.
+access to various operations according to their authorization configuration.
 
 Our initial metadata authorization scheme uses macaroons \cite{macaroons}.
 Each account has a root macaroon and operations are validated against a supplied
-macaroon's set of caveats.
+macaroon's set of caveats. Macaroons are a type of bearer token that authorizes
+the bearer to some restricted resource. Macaroons are especially interesting
+in that they allow for rich contextual decentralized delegation--macaroons
+provide the property that anyone can add restrictions in a way where those
+restrictions cannot later be removed.
 
-\todo{discuss macaroon-based path restrictions}
+Because we want to restrict satellite operations and satellites only have access
+to encrypted paths, our authorization scheme must work on encrypted paths. For
+access sharing to specific path prefixes, path separation boundaries between
+path components must remain across encryption.
+
+We use macaroons to restrict which operations can be applied and which
+encrypted paths they can be applied to. In this way, macaroons provide a
+mechanism to restrict delegated access to specific encrypted path prefixes,
+specific files, and specific operations (e.g., read only or append only).
+Our macaroons are further caveated with revocation tokens and optional
+expirations, which allow users to revoke macaroons programmatically.
 
 Once authorized with a metadata service, that metadata service has an associated
 {\em satellite ID} and is able to sign operations. All
 operations with storage nodes require a specific satellite ID and associated
 signature. A storage node should reject operations not signed by the appropriate
-satellite ID. The client must retrieve valid signatures from the metadata
+satellite ID. The uplink must retrieve valid signatures from the metadata
 service prior to operations with storage nodes.
 
 \section{Audits}\label{sec:concrete-audits}
@@ -1935,7 +1946,7 @@ with
 statistics from ongoing audits, will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
 should be set for when uploads are successful and when repair is needed. See
-appendix \todo{} for how we calculate these values given user inputs.
+appendix \ref{appendix:RS} for how we calculate these values given user inputs.
 
 A direct implication of this design is that for now, the satellite must
 constantly stay running. If the user's satellite stops running, repairs will
@@ -1950,8 +1961,8 @@ the formerly missing pieces get sent back out.
 While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers which offer free ingress
 make for an especially attractive hosting location for users of this system.
-We will describe a Distributed Repair method in the Future Works section
-\todo{ref} that
+See section \ref{sec:future-distributed-repair} for a planned distributed
+repair method that
 does not rely on the favorable pricing model of current hosting providers.
 
 \subsection{Merkle trees}
@@ -1978,8 +1989,8 @@ successfully without using extra redundancy for the same task.
 
 A full copy of the leaves of the Merkle tree of \x{pieces} (enough to generate
 the full tree) should be stored alongside each \x{piece} on each storage node,
-with the root in the \x{pointer}, such that the only additional central
-metadata storage required is just for the root.
+such that the only additional central metadata storage required is just for
+the root.
 
 Each repair should validate the tree before the \x{pointer} is updated to
 point to new locations.
@@ -2046,7 +2057,8 @@ data to store and which satellite operators to work with.
 It's worth reiterating that failing too many uptime checks is a disqualifying
 event. Storage nodes can be taken down for maintenance, but if a storage node
 is offline too much, it can have an adverse impact on the network. See appendix
-\todo{} for why uptime is so important in our storage system.
+\ref{appendix:uptime-importance} for why uptime is so important in our storage
+system.
 
 After a storage node is disqualified, the node must go back through the entire
 vetting process again. If the node decides to start over with a brand new
@@ -2080,7 +2092,7 @@ reputation scores. It is in the best interest of storage nodes to have good
 uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by satellites
 unfairly should not accept future data from those satellites. See the section
-\todo{} about quality control on how we plan to ensure satellites are
+\ref{sec:qc} about quality control for how we plan to ensure satellites are
 incentivized to treat storage nodes fairly.
 
 Initially, storage node reputation will be individually determined by each
@@ -2093,8 +2105,6 @@ reputation would then be determined globally.
 
 Propose adding https://drive.google.com/open?id=1gIZwbsrxhZIK97UcPu1a3Uc1ClqR3WWU
 }
-
-\todo{future work section about reputation sharing}
 
 \section{Payments}\label{sec:concrete-payments}
 
@@ -2180,15 +2190,6 @@ and for the repair,
 once that file falls below the file piece threshold needed for
 repair.
 
-\todo{users pay satellites}
-\todo{satellites roll up payments every day, but pay every month}
-
-\todo{Payment automation?}
-
-\todo{Payment wallets vs payment addresses. }
-
-\todo{}
-
 See the satellite reputation section for details on
 how storage nodes will know to trust satellites.
 
@@ -2214,7 +2215,7 @@ bandwidth used during storage operations (storage and retrievals of pieces)
 and does not apply to overlay traffic (Kademlia DHT) or other generic
 maintenance overhead.
 
-\todo{diagram, gory detail, protobufs, update references}
+\todo{diagrams, protobufs}
 
 When a client wants to perform an operation for $x$ bytes of bandwidth, it must
 first get authorization from a satellite
@@ -2292,8 +2293,6 @@ be required to pay Storj Labs for insurance. This insurance will allow Storj
 Labs to continue to pay storage node operators in place of the satellite should
 the satellite become temporarily inoperable.
 
-\todo{future work - shared reputation, satellite reputation}
-
 \section{Garbage collection}\label{sec:garbage-collection}
 
 When clients move or delete data, satellites will notify storage nodes
@@ -2345,11 +2344,6 @@ system, the
 bandwidth overhead for a storage node negotiating the list of its pieces
 will be efficient and small.
 
-\todo{See our future work section about undeletes in
-the case of bugs or mistaken file removal.}
-
-\todo{future work: is a bloom filter the best data structure?}
-
 \section{Uplink}
 
 The uplink provides an S3-compatible drop-in interface for users and
@@ -2364,7 +2358,7 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 For protocol details, see chapter \ref{chap:walkthroughs}.
 
-\section{Quality control and branding}
+\section{Quality control and branding}\label{sec:qc}
 
 The Storj Network has two essential software components that serve two distinct
 target margets:
@@ -2796,7 +2790,7 @@ nodes trying to communicate with one another at the same time.
 
 \section{Replacing TLS}\label{sec:future-work-tls}
 
-\section{Distributed repair}
+\section{Distributed repair}\label{sec:future-distributed-repair}
 
 As mentioned, the audit process checks continually for files whose Reed-Solomon
 erasure-encoded pieces have fallen below a certain threshold. When such a file
@@ -3188,39 +3182,25 @@ B_R&=BW_R/D\\
 
 \todo{calculate the risk of a false positive with an audit}
 
+\chapter{Importance of uptime}\label{appendix:uptime-importance}
+
+\todo{explain why uptime is so important}
+
 \chapter{TODO}
 
 \todo{
 New todo items:
 \begin{itemize}
-\item Clean up intro
-\end{itemize}
-
-Old todo items:
-\begin{itemize}
-\item Datascience: write an appendix about repair bandwidth based on node
-  churn and uptime
-\item Datascience: Write an appendix about how we select RS numbers
-\item Eng/marketing: Quality control/branding section - talk about how we
-  plan to ensure satellite quality by quality control evaluations, formal
-  partnerships, relationships, and not letting poor quality satellites
-  use the brand.
+\item Make intro match intro outline
+\item Fill in appendixes
+\item Fill in future work
+\item Remaining diagrams
 \item tie framework back to design constraints
-\item tie concrete implementation back to framework
-\item Anyone:
-  Clean up distributed consensus positioning in the appendix.
-\item Eng: General data repair framework description
-\item Eng: more macaroon details
-\item Eng: future work section about hot files
-\item make point about why rs is better than replication more clear,
-  contrasting with other approaches
+\item Clean up distributed consensus positioning in the appendix.
+  add reference to flexible paxos
+\item reputation section
 \item discuss when a storage node can limit download bandwidth to prevent
   abuse
-\item Eng: Write a future work section about eliminating TLS handshakes
-\item Eng: Write about how piece ids are generated
-\item Eng: Future work section about reputation sharing
-\item Eng: Future work section about finding a better data structure than
- a bloom filter for gc
 \item Figure out latex theme licensing
 \item Make sure audits try to refresh the cache if there's a failure contacting
   a node before flagging the node as down.
