@@ -1465,7 +1465,9 @@ how we repair data as its durability drops over time.
 
 \section{Structured file storage}\label{sec:structured-file-storage}
 
-\todo{diagram}
+\begin{center}
+\includegraphics[width=\textwidth]{diagram-drafts/data-flow-diagram.png}
+\end{center}
 
 \subsection{Files with extended attributes}
 
@@ -2232,6 +2234,22 @@ file pieces and to pay new storage nodes for storing the data.
 
 \subsection{Bandwidth allocation protocol}\label{bap}
 
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{diagram-drafts/bandwidth-allocation/bandwidth-get.pdf}
+\caption{Diagram of a get operation with the bandwidth allocation protocol}
+\label{fig:bap-get}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{diagram-drafts/bandwidth-allocation/bandwidth-put.pdf}
+\caption{Diagram of a put operation with the bandwidth allocation protocol}
+\label{fig:bap-put}
+\end{figure}
+
+\todo{protobufs?}
+
 A core component of our system requires knowing how much bandwidth is used
 between two peers, so we introduce a protocol we call the Bandwidth Allocation
 Protocol for correctly verifying that a certain amount of bandwidth was used
@@ -2242,8 +2260,6 @@ the cost of doing business. This bandwidth traffic measurement only tracks
 bandwidth used during storage operations (storage and retrievals of pieces)
 and does not apply to overlay traffic (Kademlia DHT) or other generic
 maintenance overhead.
-
-\todo{diagrams, protobufs}
 
 When a client wants to perform an operation for $x$ bytes of bandwidth, it must
 first get authorization from a satellite
