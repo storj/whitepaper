@@ -1514,6 +1514,32 @@ space to store a segment in order to participate in the network,
 and a client doesn't need
 to find nodes that have enough space for their large file.
 
+\x{Segments} are represented as \x{pointers}, so \x{files} are actually
+collections of \x{segment pointers}. The metadata database that stores
+\x{pointers} keeps track of \x{segment pointers} by \x{path}, so we adjust the
+\x{path} a small amount to help us keep track of \x{files} instead of
+\x{segments}.
+
+Every \x{file} has a \x{last segment}. The \x{last segment} is also in the
+position to know the size of the overall \x{file}, so the metadata about the
+overall \x{file} is stored along with the \x{last segment}. The \x{path} to
+the \x{last segment} is prepended with an {\tt /l} (for {\em last}), whereas
+other segments are prepended with an {\tt /s} and then their segment number.
+
+As an illustrative example, suppose a video is 65 MB and the maximum
+\x{segment} size is 32 MB. The video is stored at the logical encrypted path
+{\tt /5fbac179da/8510acf81}. There will be three \x{pointers} for this video
+\x{file}. The first \x{pointer} will represent the first 32 MB and will be
+stored at {\tt /s0/5fbac179da/8510acf81}, the second \x{pointer} will represent
+the next 32 MB and will be stored at {\tt /s1/5fbac179da/8510acf81}, and the
+last pointer will represent the final 1 MB and will be stored at
+{\tt /l/5fbac179da/8510acf81}. To efficiently list files with prefix
+{\tt /5fbac179da/} along with their metadata such as their overall file size,
+one only has to list segments with prefix {\tt /l/5fbac179da/}. To download a
+file, if the last segment does not already encompass the entire file, it will
+contain enough metadata to determine exactly how to obtain the other segments
+by path.
+
 \subsection{Segments as Stripes}
 
 In many situations it's important to access a subsection of a larger piece of
