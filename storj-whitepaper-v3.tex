@@ -1347,10 +1347,10 @@ and gRPC provides multiplexing and a convenient programmer interface.
 Over time, we will replace TLS with a more flexible secure transport
 framework such as the Noise Protocol Framework \cite{noise-proto} to
 reduce round trips due to connection handshakes in situations where the data is
-already encrypted and forward secrecy isn't necessary. See
-\ref{sec:future-work-tls} for more details.
+already encrypted and forward secrecy isn't necessary.
 
-When using TLS, every peer can ascertain the ID of the node with which it is
+When using authenticated communication such as TLS or Noise, every peer can
+ascertain the ID of the node with which it is
 speaking by validating the certificate chain and hashing its peer's
 certificate authority's public key. It can then be estimated how much work went
 into constructing the node ID by considering the number of 0 bits at the end of
@@ -1394,8 +1394,7 @@ of Kademlia.
 The caching service will attempt to talk to every storage node in the network
 on an ongoing basis, perhaps once per hour. We expect this to scale for the
 reasonable future, as ping operations are inexpensive, but admit a new solution
-may be necessary (see section \ref{sec:future-cache}.
-The caching service will then cache
+may be necessary in the future. The caching service will then cache
 the last known good address for each node, evicting nodes that it hasn't talked
 to after a certain period.
 Fortunately, caching address information for a network of 80k nodes
@@ -1826,12 +1825,15 @@ derivations.
 
 Path encryption is optional, as encrypted paths make efficient sorted path
 listing challenging. When path encryption is enabled (a per-bucket feature),
-objects are sorted by their encrypted path name, which is relatively unhelpful
-when interested in unencrypted paths. For this reason, users can opt in to
-disabling path encryption. When path encryption is disabled, unencrypted paths
+objects are sorted by their encrypted path name, which is still deterministic
+but otherwise relatively unhelpful when interested in unencrypted paths.
+For this reason, users can opt out of path encryption.
+When path encryption is disabled, unencrypted paths
 are only revealed to the user's chosen satellite, but not to the storage
 nodes. Storage nodes continue to have no information about the path and
 metadata of the pieces they store.
+In the future we may consider an order-preserving encryption scheme to try and
+achieve the best of both worlds.
 
 \section{Authorization}\label{sec:concrete-authorization}
 
@@ -2667,15 +2669,6 @@ When a user wants to list many files:
 \item The uplink will decrypt the return results and return them.
 \end{itemize}
 
-It's worth pointing out that because the satellite stores paths in sorted
-order, the order returned to the customer is sorted by the encrypted
-path element, which means that unencrypted paths will be in random but
-deterministic order. If a customer wants sorted paths and doesn't mind the
-satellite operator having access to unencrypted paths, the customer can opt
-into unencrypted (and thus lexicographically sorted) paths.
-
-\todo{future work section about order-preserving encryption}
-
 \section{Audit}
 
 The auditing process works as follows:
@@ -2757,38 +2750,51 @@ When a
   node's requested destination.
 \end{itemize}
 
-\chapter{Future Areas of Research}\label{chap:future-work}
+\chapter{Future work}\label{chap:future-work}
 
-\todo{ Storj is a work in progress, and many features are planned for future
-versions. There are relatively few examples of functional distributed systems at
-scale, and many areas of research are still open. }
+Storj is a work in progress, and many features are planned for future
+versions. In this section we discuss a few potential areas in which we want to
+consider improvements to our concrete implementation.
 
-\section{Improving user experience around metadata}
+\section{Hot files and content delivery}\label{sec:future-hot-files}
 
-\todo{automatic exports, backups, distributed consensus}
+Occasionally, users of our system may end up delivering files that are more
+popular than anticipated. While storage node operators might welcome the
+opportunity to be paid for more bandwidth usage for the data they already have,
+demand for these popular files might outstrip available bandwidth capacity,
+and a form of dynamic scaling is needed.
 
-\section{Fast byzantine consensus}
+Fortunately, satellites authorize all accesses to files via the bandwidth
+allocation protocol, and can therefore meter and rate limit access to popular
+files. If a file's demand starts to grow more than current resources can serve,
+the satellite has an opportunity to temporarily pause accesses if necessary,
+increase the redundancy of the file over more storage nodes, and then continue
+allowing access.
 
-Over time, we plan to program the satellite out of the platform.
-The satellite's role on the network means that the network could be prone
-to some
-centralization if others outside of the Storj Labs team do not run their own
-satellites. The biggest challenge is achieving fast byzantine consensus,
-where storage nodes can interact with one another, share encoded pieces of
-files,
-and still operate within the performance levels users will expect from a
-platform that is competing with traditional cloud storage providers.
+Reed Solomon erasure coding has a very useful property. Assume a $(k, n)$
+encoding, where any $k$ pieces are needed of $n$ total. For any non-negative
+integer number $x$, the first $n$ pieces of a $(k, n+x)$ encoding are the exact
+same pieces as a $(k, n)$ encoding. This means that redundancy can easily be
+scaled with little overhead.
 
-Our team will be researching ways to store lots of small pieces of metadata
-in a distributed manner, even when those pieces are constantly changing. There
-currently is not a way to achieve this without significant investment in time,
-compute, and bandwidth. A practical byzantine fault tolerance algorithm could
-work. They are generally faster and use less disk space than blockchain
-protocols, however there is significant trade off around network usage and
-coordination contention, as there could be problematic overlap with two storage
-nodes trying to communicate with one another at the same time.
+As a practical example, suppose a file was encoded via a $(20, 40)$ scheme,
+and a satellite discovers that it needs to double resources to meet demand.
+The satellite can download any 20 pieces of the 40, generate just the last 40
+pieces of a $(20, 80)$ scheme, store those new pieces on 40 new nodes, and now
+without affecting the original 40 nodes, the file is now stored as a $(20, 80)$
+scheme, where any 20 out of 80 pieces are needed. This now allows all requests
+to adequately load balance across 80.
+If demand outstrips supply again, only 20 pieces are needed to generate even
+more redundancy. In this manner, a satellite could temporarily increase
+redundancy to $(20, 1000)$, where requests are load balanced across 1,000 nodes,
+such that every piece of all 1,000 are unique, and any 20 of those pieces are
+all that is required to regenerate the original file.
 
-\section{Replacing TLS}\label{sec:future-work-tls}
+The satellite will need to pay storage nodes for the increased redundancy, so
+content delivery in this manner has increased at-rest costs during high
+demand, in addition to bandwidth costs. However, content delivery is often
+desired to be highly geographically redundant, which this scheme provides
+naturally.
 
 \section{Distributed repair}\label{sec:future-distributed-repair}
 
@@ -2825,16 +2831,37 @@ through the merkle tree root to prove the data was correct and properly
 repaired. We are currently taking the steps needed to ensure the network and our
 data format will support merkle tree repair in the future.
 
-\section{Order-preserving encryption}
-
-\todo{}
-
 \section{Cohorts}
-\section{Hot files}\label{sec:future-hot-files}
+
+\todo{show math of how durability increases when using cohorts instead of
+  random node selection}
+
+\section{Improving user experience around metadata}
+
+
+
 \section{Reputation sharing}
-\section{Garbage collection improvements}
-\section{Scalable cache/node discovery}\label{sec:future-cache}
+
 \section{Distributed metadata}\label{sec:distributed-metadata}
+
+Over time, we plan to program the satellite out of the platform.
+The satellite's role on the network means that the network could be prone
+to some
+centralization if others outside of the Storj Labs team do not run their own
+satellites. The biggest challenge is achieving fast byzantine consensus,
+where storage nodes can interact with one another, share encoded pieces of
+files,
+and still operate within the performance levels users will expect from a
+platform that is competing with traditional cloud storage providers.
+
+Our team will be researching ways to store lots of small pieces of metadata
+in a distributed manner, even when those pieces are constantly changing. There
+currently is not a way to achieve this without significant investment in time,
+compute, and bandwidth. A practical byzantine fault tolerance algorithm could
+work. They are generally faster and use less disk space than blockchain
+protocols, however there is significant trade off around network usage and
+coordination contention, as there could be problematic overlap with two storage
+nodes trying to communicate with one another at the same time.
 
 \section{Accelerated payments}
 
