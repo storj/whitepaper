@@ -83,11 +83,11 @@ the risk of data failures and outages while simultaneously increasing
 the security and privacy of object storage. It also
 allows market forces to optimize on less expensive ways to
 provide storage at a greater rate than any single entity could afford.
-Though there are many ways to build such a system, there are some specific
+although there are many ways to build such a system, there are some specific
 responsibilities any given implementation should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
-responsibilities and building our distributed storage network.
+responsibilities and for building our distributed storage network.
 Additionally, we describe an initial
 concrete implementation for the entire framework.
 
@@ -205,7 +205,7 @@ We've integrated these components to implement a decentralized object storage
 system that is secure, performant, and reliable.
 
 We have organized the rest of this paper into five additional
-chapters: chapter \ref{chap:design-constraints} discusses the design space
+chapters. Chapter \ref{chap:design-constraints} discusses the design space
 in which Storj operates. It also elaborates on specific constraints on which
 our optimization efforts are based.
 Chapter \ref{chap:framework} covers our framework, while chapter
@@ -229,8 +229,8 @@ we choose is as universal as possible, given the constraints.
 \section{S3 compatibility}
 
 At the time of this paper's publication, the most widely deployed cloud storage
-protocol is Amazon Web Services' (AWS) Simple Storage Service protocol, or S3 for
-short. Most cloud storage products provide some form of compatibility with the
+protocol is Amazon Web Services' (AWS) Simple Storage Service protocol (S3). 
+Most cloud storage products provide some form of compatibility with the
 S3 application program interface (API) architecture.
 
 Our objective is to aggressively compete in the wider cloud
