@@ -1303,7 +1303,7 @@ space and bandwidth usage over the last rolling 30 days.
 They will keep track of how much is remaining of both, and reject operations
 that do not have a valid signature from the appropriate satellite.
 
-\section{Node identity}
+\section{Node identity}\label{sec:node-id}
 
 During setup, nodes generate their own identity and certificates for use in
 the network.
@@ -2818,13 +2818,13 @@ integer number $x$, the first $n$ pieces of a $(k, n+x)$ encoding are the exact
 same pieces as a $(k, n)$ encoding. This means that redundancy can easily be
 scaled with little overhead.
 
-As a practical example, suppose a file was encoded via a $(20, 40)$ scheme,
+As a practical example, suppose a file was encoded via a $(k=20, n=40)$ scheme,
 and a satellite discovers that it needs to double resources to meet demand.
 The satellite can download any 20 pieces of the 40, generate just the last 40
-pieces of a $(20, 80)$ scheme, store those new pieces on 40 new nodes, and now
-without affecting the original 40 nodes, the file is now stored as a $(20, 80)$
-scheme, where any 20 out of 80 pieces are needed. This now allows all requests
-to adequately load balance across 80.
+pieces of a new $(k=20, n=80)$ scheme, store the new pieces on 40 new nodes,
+and without changing any data on the original 40 nodes, the file is stored
+as a $(k=20, n=80)$ scheme, where any 20 out of 80 pieces are needed.
+This allows all requests to adequately load balance across the 80 pieces.
 If demand outstrips supply again, only 20 pieces are needed to generate even
 more redundancy. In this manner, a satellite could temporarily increase
 redundancy to $(20, 1000)$, where requests are load balanced across 1,000 nodes,
@@ -2848,28 +2848,29 @@ repair process takes place on the satellite. The satellite downloads all
 the file fragments needed to repair the file, the file is rebuilt, and the
 previously missing pieces are sent to new storage nodes
 selected by the satellite.
-
 Long term, it would be better to create a technique where file repair takes
-place in a distributed manner on storage nodes, putting their excess central processing
-unit (CPU) cycles to work. This will be a first step to eliminating the satellite. This
-approach would also be more decentralized than file repair on satellites. It
-is also more efficient to execute this operation at the edge of the network.
+place in a distributed manner on storage nodes, putting their excess processor
+cycles to work.
 
 The system would need more checks and balances to ensure the storage node is
 correctly
 executing a repair and that the data inside the encrypted file is accurate.
-Merkle tree roots will greatly help with distributed repair. The storage
-node
-executing the repair would get approval from the satellite to repair a file,
-the satellite would share its merkle tree root with the storage node and
-notify
-which storage nodes should store the restored file pieces. The storage node
-would then
-download the file pieces needed for the repair from the storage nodes where they
-reside. The repair node would execute the repair and run the pieces
-through the merkle tree root to prove the data was correct and properly
-repaired. We are currently taking the steps needed to ensure the network and our
-data format will support merkle tree repair in the future.
+Luckily, our existing repair Merkle tree root greatly assists with this
+new distributed repair scheme.
+
+A basic outline is as follows. First, a storage node would volunteer to do
+a repair for a satellite, potentially in exchange for later payment. The
+satellite would choose a segment that needed repair, determine which pieces
+need to be replaced, and indicate to the volunteer repairing node which
+pieces should be regenerated and which new storage nodes they should be placed
+on. By having the satellite choose the new storage nodes, collusion risk is
+limited. Then, the repairing node would download the segment from the existing
+storage nodes with the blessing of the satellite, repair the missing pieces,
+and send the replacement pieces to the desired new storage nodes. The new
+storage nodes would return signed statements detailing the hash of the contents
+they received. The repairing node would return these signed statements to the
+satellite, and the satellite could then use the signed statements along with
+the piece Merkle tree root to confirm that the data was stored correctly.
 
 \section{Order-preserving encryption (OPE)}\label{section:OPE}
 
@@ -2878,11 +2879,11 @@ increasing security of the network and anonymity of stored data.
 However, this security comes with the trade-off of having file paths
 that are not listed in lexicographic order.
 To list paths in lexicographic order in the current implementation,
-a client may opt-in to using unencrypted file paths,
+a client may opt-out of using encrypted file paths,
 though this has the potential to decrease security
 and/or anonymity of the stored data.
 As part of our ongoing work,
-we research
+we are researching
 order-preserving encryption schemes
 \cite{Agrawal:2004:OPE:1007568.1007632} so that a user may have
 the ability to sort file paths lexicographically
@@ -2891,7 +2892,7 @@ We believe that a good starting point for research on OPE's
 should include \cite{7815719}, and \cite{10.1007/978-3-642-22792-9_33}.
 The reader is directed to those resources for further information
 on the benefits and drawbacks of OPE as it is known currently.
-Another approach is to consider the more recent fully
+Another approach is to consider the fully
 homomorphic encryption schemes found in \cite{gentry2015fully}
 which may provide a higher level of security than OPE's.
 This added security may come with other drawbacks,
@@ -2899,11 +2900,6 @@ such as higher computational complexity.
 Part of our future work in this area will require us to consider
 the benefits and drawbacks of various OPE- or FHE-type schemes
 when deciding on which schemes to implement, if any.
-
-\section{Cohorts}
-
-\todo{show math of how durability increases when using cohorts instead of
-  random node selection}
 
 \section{Improving user experience around metadata}\label{sec:distributed-metadata}
 
@@ -2913,7 +2909,7 @@ high durability, regular payments, and regular backups. We expect a large
 degree of variation in quality of satellites, which led us to our quality
 control program (see section \ref{sec:qc}).
 
-Over time, users of satellites will want to reduce their dependence on satellite
+Over time, clientelle of satellites will want to reduce their dependence on satellite
 operators and enjoy more efficient data portability between satellites besides
 downloading and uploading their data manually. We plan to spend significant time
 on improving this user experience in a number of ways.
@@ -2938,45 +2934,8 @@ expect from a platform that is competing with traditional cloud storage
 providers. Our team will continue to research viable means to achieve this.
 
 See appendix \ref{chap:dist-consensus} for a discussion on why
-we aren't tackling this problem right away.
+we aren't tackling the Byzantine fault tolerant consensus problem right away.
 
-\section{Accelerated payments}
-
-\todo{Viktor says:
-we can just create some kind of clearing system (as all payment processors have) with obligated deposits for services, so that will help us to prevent potential fraud (non-paying customers) from one side and allow us to process all transactions in most efficient and fast way. Because money movement will be just between virtual balances of users until the end of clearing session (we can do clearing once/twice/3 or 4 times per day depends on existing/projected statistics of withdrawals - need to discuss first). In the end of clearing session we/admin can finally process payment to user wallets. This will help us also reduce transaction costs and give us more transparency compare to typical money transfers when you do it in crypto.
-}
-
-\todo{
-User need to have a deposit on his account which will allow him to use the system. As we have pay-as-you-go payment model so the most fair and efficient way will be deposit model and build a clearing  around this deposits.
-So to start using Storj user need top up his accouunt for \$xyz amount of money, then he will see his total deposit and as soon as he will create his first bucket and/or upload first file we will start charge money from his deposit on the base of our clearing rules (once per day, hour, week, month). User will see in his consol history of all transactions, even real time which will allow him to manage and understand all the processes and money movements that is going on in his account.
-After satellite will do a session roll up  (per day) to not to lose a lot of on transaction fee we will hold needed amount of money on his deposit and will transfer it from holding account to satelite account and after to Stoj Nodes in the end of payroll period.
-If user will finish his deposit he will need to top up it more either we will block it and delete all his files and buckets during xyz (30 days) period. If user top up his balance during this xyz (30 days) period he will need to pay breach fee, to cover to satelite possible loses that he may has because of this sitution and cover possible risk from the users who have the same breach situations.
-
-TODO satellites roll up payments every day, but pay every month
-Everyday roll up mechanism will looks like a standart clearing mechanism in authorized payment institutions. So it will looks like:
-
-Diagramm
-
-where satelite move money from user's deposit account to user's hold account where they stored until the clearing session and transfer then to satellite account and in the end of the month transfer money to Storj Nodes and leave some service fee on their account.
-
-This kind of mechanizm will help Storj to do payments instantly, under small comissions and in the most fair wait for users, satelites and Storj Nodes as well.
-
-
-TODO Payment automation?
-To create automatic payments we need to give all processing rights to satellite, where satellite can accept deposits of users on his address and create subwallets (or even 2 - main wallet and wallet for intraday clearing session where we will hold payments for each data movement) for each user and operate with them.
-So automation will looks like:
-Diagram where satile accept all money and manage them inside users subwallets
-}
-
-\todo{
-The final transaction from satellite to node can be done, when node will collect minimal amount of money to be withdraw (it need to be at least 100 times more expensive than actual transaction cost in Ethereum network at this time, for example or Satellite can set up minimal withdraw amount during setting up of his bridge).
-To start store the data user need to top up his balance (deposit) in the systme. This deposit will be stored and managed all accounting things on the Satelite side to have one clearing house with data base of all money movement and future obligations.
-}
-
-\todo{the cost per a lot of small transactions in ETH Blockchain is far more expensive than doing just one big aggregated transaction.
-But we can do another way of doing mass payments - we can update a users balance on the client side but not do real STORJ transfer until user will ask satellite to do that. So in that case most of the users will only withdraw money when they will collect some reasonable amount of money. But till then there will be no Blockchain transactions at all, that will help satellite to decrease his transaction costs. Also maybe we can allow satellite to set up minimum withdrawal amount to decrease the transaction cost.
-We need to know that in 1-2 years there will be not just one our satellite but bunch of others , and we need to think from their prospective, how it will be more useful for external administrator to manage all this things and make money on it.
-}
 \newpage \appendix
 
 \chapter{Attacks}
@@ -3012,15 +2971,17 @@ performance will degrade, the network will still be functional unless a large
 portion of the network consists of colluding Sybil nodes.
 
 As an additional defense against sybil attacks, S/Kademlia \cite{skad}
-extends Kademlia with a proof of work scheme, which we have adopted. In our
-case, node IDs are hashed public keys of the node's identity.
-The number of trailing 0 bits in the node's ID corresponds to a configurable
-proof of work value.
-Satellites can adjust required node identity generation difficulty minimums,
-allowing for them to control how stringent or how relaxed they want joining
-their network to be.
+extends Kademlia with a proof of work scheme, which we have adopted. See section
+\ref{sec:node-id} for more details.
 
-\todo{discuss vetting period}
+Our storage node reputation system involves a prolonged initial vetting
+period nodes must complete before they are trusted with significant amounts
+of data. This vetting system, discussed more in section
+\ref{sec:concrete-reputation}, prevents a large influx of new nodes from taking
+incoming data from existing reputable storage nodes without first proving
+their longevity.
+
+\todo{discuss payment escrow}
 
 \section{Eclipse}
 
@@ -3029,21 +2990,22 @@ graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
 attacks can be hard to identify, as malicious nodes can be made to function
 normally in most cases, only eclipsing certain important messages or
 information. Storj addresses eclipse attacks by using public key hashes as node
-IDs. In order to eclipse any node in the network, the attacker must repeatedly
-generate key pairs until it finds $k$ keys whose hashes are closer to the
-targeted node than its nearest non-malicious neighbor, and must defend that
-position against any new nodes with closer IDs. This is, in essence, a
-proof-of-work problem whose difficulty is proportional to the number of nodes in
-the network.
+IDs, signatures based on those public keys, and multiple disjoint network
+lookups as prescriped by S/Kademlia.
 
-It follows that the best way to defend against eclipse attacks is to increase
-the number of nodes in the network. For large networks it becomes prohibitively
-expensive to perform an eclipse attack. Furthermore, any node that suspects it
-has been eclipsed may trivially generate a new keypair and node ID, thus
-restarting the proof-of-work challenge.
+The larger the network is, the harder it will
+be to prevent a node from finding a portion of the network uncontrolled by
+an attacker.
+As long as a storage node or satellite has been introduced to a portion of
+the network that is not controlled by the attacker at any point, the public
+key hashes and signatures ensure that man-in-the-middle attacks are impossible,
+and multiple disjoint network lookups ensure that Kademlia routing is
+prohibitively expensive to bias.
 
-S/Kademlia additionally assists in preventing eclipse attacks by ensuring
-multiple concurrent disjoint lookup paths through the network.
+To avoid an eclipse attack, all that remains
+is to make sure new nodes are appropriately introduced to at least one
+well-behaved node on the network during the bootstrapping process.
+To that end, Storj Labs will run some well known, verified bootstrap nodes.
 
 \section{Honest Geppetto}
 
@@ -3054,7 +3016,8 @@ he pulls the strings on each puppet to execute a hostage attack with the data
 involved, or simply drops each storage node from the network. The best defense
 against this attack is to create a network of sufficient scale that this attack
 is ineffective. In the meantime, this can be partially prevented by relatedness
-analysis of storage nodes. Bayesian inference across downtime, latency, and other
+analysis of storage nodes. Bayesian inference across downtime, latency, network
+route, and other
 attributes can be used to assess the likelihood that two storage nodes are
 operated by the same organization, and satellites can and should attempt to
 distribute pieces across as many unrelated storage nodes as possible.
@@ -3077,7 +3040,8 @@ nodes.
 The client can only interact with the storage node by sending a signed
 restricted allocation.
 The restriction limits the risk to a very low amount.
-The storage node has to deliver in order to get more restricted allocations.
+The storage node has to comply with the protocol as expected in order to get
+more restricted allocations.
 Storage nodes and satellites will commence a vetting process that limits their
 exposure.
 Storage nodes are allowed to decline requests from untrusted satellites.
@@ -3100,8 +3064,8 @@ A typical Merkle proof verification requires pre-generated challenges and
 responses.
 Without a periodic regeneration of these challenges, a storage node can begin
 to pass most audits without storing all of the requested data.
-Instead we request a random stripe of erasure shares from all storage nodes.
-We then run the Berlekamp-Welch algorithm\cite{bw} across all the
+Instead, we request a random stripe of erasure shares from all storage nodes.
+We run the Berlekamp-Welch algorithm\cite{bw} across all the
 erasure shares.
 When enough storage nodes return correct information, any faulty or missing
 responses can easily be identified.
@@ -3226,8 +3190,8 @@ proof-of-work difficulty, in addition to requiring all participants to keep a
 full copy of all change histories (like other blockchain-based
 solutions).
 
-Another attempt at solving the issue is the Merkle directed acyclic graph, or
-Merkledag. The IPFS specification describes them as ``a directed acyclic graph whose edges are merkle-links'' which ``allow the branching of a datastructure and subsequent merging, as in the version control system git. More generally, merkledags simplify the construction of Secure CRDTs, which enable distributed, convergent, commutative computation in an authenticated, secure way.'' \cite{ipfs-merkledag}
+\todo{explain that consensus is needed for conflict resolution which is needed
+by s3 compatibility}
 
 \chapter{Object Repair Costs}
 
@@ -3307,17 +3271,17 @@ New todo items:
 \begin{itemize}
 \item Make intro match intro outline
 \item Fill in appendixes
-\item Fill in future work
-\item Remaining diagrams
 \item tie framework back to design constraints
 \item Clean up distributed consensus positioning in the appendix.
   add reference to flexible paxos
-\item reputation section
 \item discuss when a storage node can limit download bandwidth to prevent
   abuse
 \item Figure out latex theme licensing
 \item Make sure audits try to refresh the cache if there's a failure contacting
   a node before flagging the node as down.
+\item Payments should be request-initiated. Storage node requests payout from
+  satellite/smart contract - satellite/smart contract does not pay out unless
+  requested to avoid fees.
 \end{itemize}
 }
 
