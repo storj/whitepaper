@@ -896,9 +896,11 @@ Downloads are similarly improved. Since more redundancy exists
 than is needed, downloads can be served from the fastest peers, eliminating a
 wait for temporarily slow or offline peers.
 
-\begin{center}
+\begin{figure}
+\centering
 \includegraphics[width=\textwidth]{diagram-drafts/redundancy.png}
-\end{center}
+\caption{Various outcomes during upload and download}
+\end{figure}
 
 The goal is a protocol that allows for every request to be satisfiable by the
 fastest nodes participating in any given transaction, without needing to wait
@@ -1115,6 +1117,12 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \subsection{Actors/Entities}
 
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{diagram-drafts/peers.eps}
+\caption{The three different peer classes}
+\end{figure}
+
 \begin{description}
 \item[Client] A user that would like to upload or download data from the network.
 
@@ -1145,6 +1153,12 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 \end{description}
 
 \subsection{Data}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{diagram-drafts/data-flow-diagram.png}
+\caption{Files, segments, stripes, erasure shares, and pieces}
+\end{figure}
 
 \begin{description}
 \item[Bucket] A  {\em bucket} is an unbounded, but named
@@ -1303,7 +1317,12 @@ It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
 a brand new node ID.
 
-\todo{diagram}
+\begin{figure}
+\centering
+\includegraphics[width=.8\textwidth]{diagram-drafts/identity.eps}
+\caption{The different keys and certificates that compose a storage node's
+overall identity.}
+\end{figure}
 
 The node's unique ID will be determined by hashing the DER-encoded public key
 of the certificate authority.
@@ -1455,10 +1474,6 @@ Also see section \ref{sec:concrete-data-repair} for a discussion about
 how we repair data as its durability drops over time.
 
 \section{Structured file storage}\label{sec:structured-file-storage}
-
-\begin{center}
-\includegraphics[width=\textwidth]{diagram-drafts/data-flow-diagram.png}
-\end{center}
 
 \subsection{Files with extended attributes}
 
