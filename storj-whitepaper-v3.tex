@@ -297,8 +297,8 @@ network for an additional hour is an {\em increasing}
 function of uptime (Figure \ref{fig:kad-uptime} \cite{kad}).
 In other words, the longer a node is a
 participant in the network, the more likely it is to continue
-participating. This gives our system a strong incentive to prefer long-lived
-and stable nodes.
+participating. This gives our system a strong incentive to prefer long-lived, 
+stable nodes.
 
 \begin{figure}
 \centering
@@ -418,7 +418,7 @@ a decentralized object store for larger files.
 While future improvements may enable
 database-like use cases, object storage is the predominant use case described in
 this paper. We made protocol design decisions with the assumption that the
-vast majority of stored objects will be four megabytes or larger.
+vast majority of stored objects will be 4MB or larger.
 
 It is worth noting that this will not negatively impact use cases that
 require reading lots of files smaller than a megabyte. Users can address this
@@ -979,7 +979,7 @@ mechanism.
 To support rich access management features, the same encryption key should not
 be used for every file, as having access to one file would result in access
 to decryption keys for all files. Instead, each file should be encrypted with
-a unique key. This would allow users to share access to certain selected files
+a unique key. This should allow users to share access to certain selected files
 without giving up encryption details for others.
 
 Because each file should be encrypted differently with different keys and
@@ -1059,7 +1059,7 @@ There are many other ways data might get lost in the network besides node churn 
 reclamation. However, these issues are less serious than full node
 churn issues such as power loss, internet connectivity intermittency, complete disk failure,
 and software shutdown or removal.
-Our spot-check based audits will incentivize storage nodes to reliabily store
+Our spot-check based audits will incentivize storage nodes to reliably store
 data
 while estimating the rate at which data is actually stored reliably.
 Therefore, our repair system only seeks to solve the node churn problem, also
@@ -1074,7 +1074,7 @@ ecosystem of both supply and demand. Of course, decentralized payment systems
 are still in their infancy in a number of ways.
 
 For our framework to achieve low latency and high throughput, we must
-avoid naively placing a blockchain-based solution in the storage hotpath.
+avoid naively placing a blockchain-based solution in the storage hot path.
 This means that an adequately performant storage system cannot afford to
 wait for blockchain operations. When operations should be measured in
 milliseconds, waiting for a cluster of nodes to probabilistically come to
@@ -1116,7 +1116,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 \subsection{Actors/Entities}
 
 \begin{description}
-\item[Client] A user that would like to upload or download data from the network.
+\item[Client] A user that will upload or download data from the network.
 
 \item[Peer class] A cohesive collection of network services and
   responsibilities. There are three different peer classes that represent
@@ -1184,7 +1184,7 @@ is stored on.
 
 \item[Inline Segment] An {\em inline segment} is a segment that is small
 enough where the data it represents takes less space than the corresponding
-data a remote segment would need to keep track of which nodes had the data.
+data a remote segment will need to keep track of which nodes had the data.
 In these cases, the data is stored ``inline'' instead of being stored on nodes.
 
 \item[Stripe] A {\em stripe} is a further subdivision of a segment. A
@@ -1296,8 +1296,8 @@ the network.
 This node ID is used for node discovery and routing.
 
 Each node will operate its own certificate authority, which requires a
-public/private keypair and a self-signed certificate. The certificate
-authority's private key should ideally be kept in cold storage to prevent key
+public/private key pair and a self-signed certificate. The certificate
+authority's private key will ideally be kept in cold storage to prevent key
 compromise.
 It's important that the certificate authority private key be managed with good
 operational security as key rotation for the certificate authority will require
@@ -1318,10 +1318,10 @@ This cost is meant to make Sybil attacks prohibitively expensive and time
 consuming.
 
 Each node will have a revocable leaf certificate and key pair that is signed by
-the node's certificate authority. Nodes use the leaf keypair for
+the node's certificate authority. Nodes use the leaf key pair for
 communication. Each leaf has a signed timestamp that satellites
 keep track of per node. Should the leaf become compromised, the node can issue
-a new leaf with a later timestamp. Interested peers should make note of newly
+a new leaf with a later timestamp. Interested peers will make note of newly
 seen leaf timestamps and reject connections from nodes with earlier leaves.
 
 Nodes use leaves from their root certificate for communication with other
@@ -1396,7 +1396,7 @@ IP address (16 bytes for IPv6), port (2 bytes), and timestamp (4 bytes).
 $80000\cdot(32+16+2+4)/(1024\cdot 1024) \approx 4.12$
 }.
 
-Based on this design, the cache should not be expected to be a primary source
+Based on this design, the cache will not be expected to be a primary source
 of truth, and results in the cache may be stale. Due to our redundant
 storage strategy, the storage network will be resilient against an expected
 degree of node churn and staleness.
@@ -1411,7 +1411,7 @@ loss of performance but not correctness.
 We plan to host and help set up some well-known community-run overlay caches.
 These caches will perform the duty of quickly returning address information
 for a given node ID if the node has been online recently. Kademlia will be the
-long-lived source of truth and could be used directly in many situations.
+long-lived source of truth and will be used directly in many situations.
 
 With each message shared on the network, nodes will include their available
 disk space, bandwidth availability, STORJ wallet address, and any other
@@ -1442,7 +1442,7 @@ as soon as $o$ pieces have finished uploading, remaining pieces up to $n$ are
 canceled.
 Furthermore, $o$ is chosen such that storing $o$ pieces is all that is
 needed to achieve the desired durability goals; $n$ is thus chosen such that
-storing $n$ pieces would be excess durability.
+storing $n$ pieces will be excess durability.
 
 The amount of long tail uploads we can tolerate is $n-o$, and thus is the amount
 of slow nodes to which we are immune.  The amount of nodes that can go
@@ -1475,7 +1475,7 @@ these ``extended attributes.''
 \subsection{Files as Segments}
 
 The highest level subdivision of a file is called a ``segment.''
-Files should be designed for both small and large data.
+Files will be designed for both small and large data.
 A file may be small enough that it consists of only one segment.
 If that segment is smaller than the metadata required to store it on the
 network, the data will be stored inline with the metadata. We call this an
@@ -1527,10 +1527,10 @@ the next 32 MB and will be stored at {\tt /s1/5fbac179da/8510acf81}, and the
 last pointer will represent the final 1 MB and will be stored at
 {\tt /l/5fbac179da/8510acf81}. To efficiently list files with prefix
 {\tt /5fbac179da/} along with their metadata such as their overall file size,
-one only has to list segments with prefix {\tt /l/5fbac179da/}. To download a
-file, if the last segment does not already encompass the entire file, it will
-contain enough metadata to determine exactly how to obtain the other segments
-by path.
+one only has to list segments with prefix {\tt /l/5fbac179da/}. In order to download a
+file, the last segment is needed. If the last segment does not already encompass the entire file, it 
+(the last segment) will contain enough metadata to determine exactly how to obtain the other 
+segments of the file by path.
 
 \subsection{Segments as Stripes}
 
@@ -1567,7 +1567,7 @@ parameters affects availability and redundancy.
 \subsection{Erasure Shares as Pieces}
 
 Because stripes are already small, erasure shares are often much
-smaller, and the metadata to keep track of all of them separately would be
+smaller, and the metadata to keep track of all of them separately will be
 immense relative to their size.
 All $n$ erasure shares have a well-defined index associated
 with them. More specifically, erasure coding is entirely deterministic. For
@@ -1662,7 +1662,7 @@ The metadata storage system in the Storj network predominantly stores
 the pointer database to store and retrieve pointers by path to perform actions.
 
 The most trivial implementation for the metadata storage functionality we
-require would be to simply have each user use their preferred trusted database,
+require will be to simply have each user use their preferred trusted database,
 such as MongoDB, MariaDB, Couchbase, SQLite, Cassandra\cite{cassandra},
 Spanner\cite{spanner}, or CockroachDB, to name a few. In many cases, this will
 be acceptable for specific users, provided those users are managing appropriate
@@ -1709,7 +1709,7 @@ On the other hand, there are a few upsides:
   other users on their satellite. If a user has high throughput demands,
   they can set up their own satellite and have no coordination overhead from
   any other user. By allowing satellite operators to select their own database,
-  this would allow a user to choose a satellite with weaker consistency
+  this will allow a user to choose a satellite with weaker consistency
   semantics, such as Highly Available Transactions \cite{hat}, that reduce
   coordination overhead within their own satellite and increase performance
   even further.
@@ -1796,7 +1796,7 @@ would to a traditional object store but to a lesser degree. Future updates
 will allow for various distributions of responsibilities, and thus levels of
 trust, between customer applications and satellites. This shifts significant
 operational burdens from the application developer to the service-provider.
-This would also allow developers to pay for storage with standard payment
+This will also allow developers to pay for storage with standard payment
 mechanisms, like credit cards, rather than managing a cryptocurrency wallet.
 Storj Labs Inc. plans to provide this service.
 
@@ -1855,11 +1855,11 @@ achieve the best of both worlds.
 
 Encryption protects the privacy of data while allowing for the identification
 of tampering, but authorization allows for the prevention of tampering by
-disallowing clients. Users who are authorized should be able to add, remove,
-and edit files, while users who are not authorized should not have those abilities.
+disallowing clients. Users who are authorized will be able to add, remove,
+and edit files, while users who are not authorized will not have those abilities.
 
-Metadata operations should be authorized. Users should authenticate with
-their chosen metadata service, which should allow them
+Metadata operations will be authorized. Users will authenticate with
+their chosen metadata service, which will allow them
 access to various operations according to their authorization configuration.
 
 Our initial metadata authorization scheme uses macaroons \cite{macaroons}.
@@ -1885,7 +1885,7 @@ expirations, which allow users to revoke macaroons programmatically.
 Once authorized with a metadata service, that metadata service has an associated
 {\em satellite ID} and is able to sign operations. All
 operations with storage nodes require a specific satellite ID and associated
-signature. A storage node should reject operations not signed by the appropriate
+signature. A storage node will reject operations not signed by the appropriate
 satellite ID. The uplink must retrieve valid signatures from the metadata
 service prior to operations with storage nodes.
 
@@ -1943,9 +1943,9 @@ When a storage node changes state from recently online to offline, this can
 trigger a lookup in a reverse index within a user's metadata database, identifying
 {\em all segment pointers} that were stored on that node.
 For every segment that drops below the appropriate minimum safety
-threshold, $m$, the segment should be downloaded and reconstructed, and the
-missing pieces should be regenerated and uploaded to new nodes. Finally, the
-{\em pointer} should be updated to include the new information.
+threshold, $m$, the segment will be downloaded and reconstructed, and the
+missing pieces will be regenerated and uploaded to new nodes. Finally, the
+{\em pointer} will be updated to include the new information.
 
 As storage nodes go offline -- taking their file pieces with them -- it will
 be necessary for the missing pieces to be rebuilt once the entire file's pieces
@@ -1961,8 +1961,8 @@ recovered pieces to new storage nodes.
 Users will choose their desired durability with their chosen metadata service,
 which may impact price and other things. This desired durability (along with 
 statistics from ongoing audits) will directly inform what Reed-Solomon erasure
-code choices should be made for new and repaired files, and what thresholds
-should be set for when uploads are successful and when repair is needed. See
+code choices will be made for new and repaired files, and what thresholds
+will be set for when uploads are successful and when repair is needed. See
 appendix \ref{appendix:RS} for how we calculate these values given user inputs.
 
 A direct implication of this design is that, for now, the satellite must
@@ -1989,9 +1989,9 @@ just needs to process as many files as possible, but it doesn't matter if
 a specific file takes longer. Throughput is much more important than
 latency during repair. However, repair
 is still a costly operation due to significant bandwidth and CPU usage
-impacting a single operator, so repair work should be minimized.
+impacting a single operator, so repair work will be minimized.
 As a result, when repairing a segment,
-only the minimum number of pieces required should be downloaded.
+only the minimum number of pieces required will be downloaded.
 Unfortunately, this means that
 without full redundancy, erasure codes will be less effective at catching
 errors. Furthermore, the fallback safety mechanism that the user has for detecting
@@ -1999,17 +1999,17 @@ errors (authenticated encryption) is unavailable to the repair system (no
 decryption keys).
 
 Because full segments are repaired at a time, hashes of
-each {\em piece} should be stored in the system via a Merkle tree
+each {\em piece} will be stored in the system via a Merkle tree
 \cite{merkle-tree}, storing the root of the tree in the {\em pointer}. This allows
 the repair system to correctly assess whether or not repair has been completed
 successfully without using extra redundancy for the same task.
 
 A full copy of the leaves of the Merkle tree of pieces (enough to generate
-the full tree) should be stored alongside each {\em piece} on each storage node.
+the full tree) will be stored alongside each {\em piece} on each storage node.
 Therefore, the only additional central metadata storage required is just for
 the root.
 
-Each repair should validate the tree before the {\em pointer} is updated to
+Each repair will validate the tree before the {\em pointer} is updated to
 point to new locations.
 
 \section{Storage node reputation}\label{sec:concrete-reputation}
@@ -2017,7 +2017,7 @@ point to new locations.
 Reputation metrics on decentralized networks are a critical part of
 enabling cooperation
 between nodes
-where progress would be challenging otherwise. Reputation metrics
+where progress will be challenging otherwise. Reputation metrics
 are used to ensure that bad actors
 within the network are eliminated as participants, improving security,
 reliability, and durability.
@@ -2068,7 +2068,7 @@ be moved to new storage nodes.
 Likewise, if a client attempts to download a piece from a storage node that
 the node should have and the node fails to return it, the
 node will be disqualified. Importantly, storage nodes will be allowed to reject
-and fail uploads without penalty, as nodes should be allowed to choose which
+and fail uploads without penalty, as nodes will be allowed to choose which
 satellite operators to work with and which data to store.
 
 It's worth reiterating that failing too many uptime checks is a disqualifying
@@ -2099,7 +2099,7 @@ selects two options entirely at random, and then chooses the more qualified
 between those two.
 
 On the Storj network, preferential storage node reputation is only used to
-select where new data should be stored, both during repair and during the
+select where new data will be stored, both during repair and during the
 upload of new files, unlike disqualifying events.
 If a storage node's preferential reputation decreases, its file pieces will not
 be moved or repaired to other nodes.
@@ -2108,15 +2108,15 @@ There is no process planned in our system for storage nodes to contest their
 reputation scores. It is in the best interest of storage nodes to have good
 uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by satellites
-unfairly should not accept future data from those satellites. See the section
+unfairly will not accept future data from those satellites. See the section
 \ref{sec:qc} about quality control for how we plan to ensure satellites are
 incentivized to treat storage nodes fairly.
 
 Initially, storage node reputation will be individually determined by each
-satellite. If a node is disqualified by one satellite, it could still
+satellite. If a node is disqualified by one satellite, it will still
 store data for other satellites. Reputation will not be shared between
 satellites. Over time, as we plan to eliminate satellites,
-reputation would then be determined globally.
+reputation will then be determined globally.
 
 \todo{dr ben says:
 
@@ -2133,7 +2133,7 @@ provide on the network.
 
 Previous distributed systems have handled payments as hard-coded contracts.
 For example, the previous Storj network utilized 90-day contracts to maintain
-data on the network. After that period of time, the file would be deleted.
+data on the network. After that period of time, the file will be deleted.
 Other distributed storage platforms use 15-day renewable contracts that delete
 data if the user does not login every 15 days. Others use 30-day contracts.
 Moving forward, our network will not use contracts to manage payments and file
@@ -2152,7 +2152,7 @@ the month, per the satellite's records.
 If a storage node misses a delete command due to the node being
 offline, it will be storing more data than the satellite credits it for.
 Storage nodes are not paid for storing such file pieces, but they
-would eventually be cleaned up through the garbage collection process.
+will eventually be cleaned up through the garbage collection process.
 Because of the
 way delete commands are issued, and because storage nodes are not expected to be
 online at all times, storage nodes may be storing file pieces that were slated
@@ -2171,7 +2171,7 @@ and the storage nodes it believes are storing these pieces. Each day,
 the satellite adds another day's worth
 of credits to each storage node for every file
 piece
-it should be storing. The satellite
+it will be storing. The satellite
 also tracks file downloads in its database.
 At the end of the month, each satellite
 adds up all bandwidth and storage payments each storage node has earned and
@@ -2311,9 +2311,9 @@ satellites have the best payment record.
 
 Storage nodes will be able to configure the maximum amount of data they will
 store for an untrusted satellite, and will build historical data on whether
-that satellite should be trusted further in the future.
+that satellite will be trusted further in the future.
 Storage node operators will also retain manual control on what satellites they
-would like to trust, or don't trust, if desired.
+will trust, or don't trust, if desired.
 
 Storage node operators can elect to automatically trust a Storj Labs
 provided collection of recommended satellites that adhere to a strict set of
@@ -2321,7 +2321,7 @@ quality controls.
 To protect storage node operators, if a satellite operator wants to be
 included in the Storj Recommended Satellites list, the satellite operator may
 be required to pay Storj Labs for insurance. This insurance will allow Storj
-Labs to continue to pay storage node operators in place of the satellite should
+Labs to continue to pay storage node operators in place of the satellite, should
 the satellite become temporarily inoperable.
 
 \section{Garbage collection}\label{sec:garbage-collection}
@@ -2331,7 +2331,7 @@ that they are no longer required to store that data. However,
 storage nodes will sometimes be temporarily unavailable and will miss delete
 messages. In these cases, unneeded data is considered
 {\em garbage}. Payers only pay for data that they expect to be stored. Storage
-nodes with lots of garbage will earn less than they would
+nodes with lots of garbage will earn less than they will
 otherwise unless a garbage collection system is employed. For this reason, we
 introduce garbage collection to free up space on storage nodes.
 
@@ -2341,7 +2341,7 @@ leaves no additional garbage. Whereas, a {\em conservative} garbage collector ma
 leave some small proportion of garbage around given some other tradeoffs,
 often with the aim of improving performance.
 As long as a conservative garbage collector is used in our system, the cost of
-storage owed to a storage node should be high enough to amortize the cost of
+storage owed to a storage node will be high enough to amortize the cost of
 storing the garbage.
 
 When delete messages are issued via the client, the metadata system (and thus a
@@ -2384,7 +2384,7 @@ storage directly. The uplink is a simple service layer on top of libstorj,
 which is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The uplink should run co-located with wherever data is generated, and will
+The uplink will run co-located with wherever data is generated, and will
 communicate directly with storage nodes so as to avoid central bandwidth costs.
 
 For protocol details, see chapter \ref{chap:walkthroughs}.
@@ -2678,8 +2678,8 @@ When a user wants to copy a file:
 Importantly, it is okay if the storage nodes de-duplicate storage, or only
 store one actual copy of the data. All that matters is that the storage node
 can identify the data by both the old and new piece ID. If one of the piece
-IDs receives a delete operation, the other piece ID should continue working.
-Only after both pieces are deleted should node free the space.
+IDs receives a delete operation, the other piece ID will continue working.
+Only after both pieces are deleted will node free the space.
 
 \section{List}
 
@@ -2848,7 +2848,7 @@ node
 executing the repair would get approval from the satellite to repair a file,
 the satellite would share its merkle tree root with the storage node and
 notify
-which storage nodes should store the restored file pieces. The storage node
+which storage nodes will store the restored file pieces. The storage node
 would then
 download the file pieces needed for the repair from the storage nodes where they
 reside. The repair node would execute the repair and run the pieces
