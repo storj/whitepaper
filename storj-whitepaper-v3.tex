@@ -331,7 +331,7 @@ the system's entire architecture.
 
 \section{Bandwidth}\label{sec:req-bandwidth}
 
-Global bandwidth availability is increasing year after year; but, unfortunately,
+Global bandwidth availability is increasing year after year. Unfortunately,
 access to
 high-bandwidth internet connections is unevenly distributed across the world.
 While some users can easily access symmetric, high-speed, unlimited bandwidth
@@ -360,9 +360,9 @@ With device failure and churn guaranteed, any decentralized system will have a
 corresponding amount of repair traffic. As a result, it is important to account
 for the bandwidth required not only for data storage and retrieval but also
 for data maintenance and repair. Designing a
-storage system that is careless with bandwidth usage would give undue
+storage system that is careless with bandwidth usage would not only give undue
 preference to storage node operators with access to unlimited high-speed
-bandwidth and centralize the system to some degree. In order to keep the storage
+bandwidth but also centralize the system to some degree. In order to keep the storage
 system as decentralized as possible and working in as many environments
 as possible, bandwidth usage must be aggressively minimized.
 
@@ -422,7 +422,7 @@ vast majority of stored objects will be four megabytes or larger.
 
 It is worth noting that this will not negatively impact use cases that
 require reading lots of files smaller than a megabyte. Users can address this
-with a packing strategy, by aggregating and storing many small files as one
+with a packing strategy by aggregating and storing many small files as one
 large file.
 The protocol supports seeking and streaming, which will allow users to download small files
 without requiring full retrieval of the aggregated object.
@@ -457,7 +457,7 @@ This effectively increases the available capacity while at the same time
 driving costs down.
 
 Our decentralization goals are also driven by our desire to detangle
-fundamental infrastructure (such as storage) from the hands of a few major
+fundamental infrastructure, such as storage, from the hands of a few major
 entities.
 We believe that there exists inherent risk in trusting a single entity,
 company, or organization with a significant fraction of the world's data.
@@ -480,7 +480,7 @@ We have decided to adopt a decentralized architecture because, despite the trade
 risks, and cost factors that result from centralized cloud storage.
 Within this context,
 decentralization results in a globally distributed singleton network that can
-serve a wide range of storage use cases from archival to CDN, whereas
+serve a wide range of storage use cases from archival to CDN. Whereas,
 centralized storage systems require different architectures, implementations,
 and infrastructure to address each of those same use cases.
 
@@ -495,7 +495,7 @@ We adopt the Byzantine, Altruistic, Rational (BAR) model \cite{bar} to discuss
 participants in the network.
 {\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
 any reason. Some examples include nodes that are broken or nodes that
-are actively trying to sabotage the protocol. In general, a Byzantine node is
+are actively trying to sabotage the protocol. In general, a \textit{Byzantine} node is
 one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
 Inevitable hardware failures aside, {\em Altruistic} nodes
@@ -531,7 +531,7 @@ This observation happens at all scales and applies not only to distributed
 networks but also to
 concurrent threads of execution coordinating within the same computer.
 As soon as coordination is needed, actors in the system will need to wait for
-other actors, and waiting due to coordination issues can be significantly
+other actors, and waiting -- due to coordination issues -- can be significantly
 costly.
 
 While many types of operations in a network may require coordination
@@ -548,8 +548,8 @@ database is able to be 10 times faster than both Cassandra and Redis in their
 corresponding environments and 700 to 800 times faster than
 performance-focused in-memory databases such as Masstree or TBB
 \cite{anna, anna-announce}.
-Not all coordination can be avoided, but new frameworks such as Invariant
-Confluence \cite{i-confluence} allow system architects to understand when
+Not all coordination can be avoided, but new frameworks (such as Invariant
+Confluence \cite{i-confluence}) allow system architects to understand when
 coordination is required for consistency and correctness. As evidenced
 by Anna's performance successes, it is most efficient to avoid coordination
 where possible.
@@ -577,7 +577,7 @@ providers. Cloud computing is estimated to be a \$186.4 billion dollar market
 in 2018, and reach \$302.5 billion by 2021 \cite{gartner-cloud-growth}.
 
 The public cloud storage model has provided a compelling economic model to end
-users. Not only does it enable end users to scale on demand but it also allows them to avoid the significant fixed costs of facilities, power, and data center
+users. Not only does it enable end users to scale on demand but also it allows them to avoid the significant fixed costs of facilities, power, and data center
 personnel. Public cloud storage has generally proven to be an economical,
 durable, and performant option for many end users when compared to
 on-premise solutions.
@@ -617,16 +617,16 @@ situation for four different groups:
 
 \item[Demand providers] - It must be economically attractive for developers and
   businesses to drive customers and data onto the Storj network. We will design
-  the system to fairly and transparent deliver margin to partners. We believe
+  the system to fairly and transparently deliver margin to partners. We believe
   that there is a unique opportunity to provide open-source software (OSS)
-  companies and projects (who drive over two-thirds of the public cloud workloads
-  today without receiving direct revenue) a source of sustainable revenue.
+  companies and projects, which drive over two-thirds of the public cloud workloads
+  today without receiving direct revenue, a source of sustainable revenue.
 
-\item[Network operator] - In order to sustain continued investment in code,
-  functionality, network maintainance, and demand generation, the network
-  operator must be able to retain a reasonable profit while charging
-  end users less than the public cloud providers and sharing margin with storage
-  node operators and demand providers.
+\item[Network operator] - To sustain continued investment in code, 
+functionality, network maintenance, and demand generation, the network 
+operator must be able to retain a reasonable profit. They must maintain this profit while 
+not only charging end users less than the public cloud providers but also margin sharing 
+with storage node operators and demand providers.
 \end{description}
 
 Targeting these four groups constrains our design in a few ways.
@@ -650,11 +650,11 @@ Third, to drive network growth and adoption, we must have a price-competitive
 product and attractive
 opportunities available for demand-side partners. To create additional
 incentives for partners or customers to bring data to the network,
-the price charged for storage and bandwidth, combined with the other
-benefits of decentralized storage, must be
+the price charged for storage and bandwidth -- combined with the other
+benefits of decentralized storage -- must be
 more compelling and economically beneficial than competing storage solutions.
 
-The network must be able to account for ensuring efficient and timely billing
+The network must be able to account for ensuring efficient, timely billing
 and payment processes as well as regulatory compliance for tax and other reporting.
 Decentralized application architectures have seen growing adoption of
 cryptocurrencies for use in the transmission of value in
@@ -663,15 +663,15 @@ In this case, Storj has implemented the STORJ token.
 This presents the additional requirement that the network be able to process
 an extremely large volume of cryptocurrency transactions.
 
-Building a network of contributors will increase the ability to bring new
+By building a network of contributors, we will increase the ability to bring new
 capabilities to market faster.
-Because Storj is open source, the network must account for the operation of
+Storj is open source; therefore, the network must account for the operation of
 servers by unaffiliated third parties. It must also be able to coordinate payment
 as well as aggregate reputation data between numerous external network
 components.
 
 Due to the global network of supply and demand for storage and bandwidth, the
-network must be able to transact in virtually any form of value whether that it
+network must be able to transact in virtually any form of value, whether that it
 be fiat currency, cryptocurrency, or some other form of barter.
 
 Lastly, the Storj roadmap will be aligned with the economic drivers of the
@@ -744,7 +744,7 @@ Aside from reliably storing data, nodes should provide
 network bandwidth and appropriate responsiveness.
 Storage nodes are selected to store data based on various criteria: ping time,
 latency, throughput, bandwidth caps, sufficient disk space,
-geographic location, uptime, history of responding accurately to audits, etc.
+geographic location, uptime, history of responding accurately to audits, and so forth.
 In return for their service, nodes are rewarded for their participation via
 payments.
 
@@ -843,7 +843,7 @@ $k$ & $n$ & Exp. factor & P(D) \\ \hline
 \end{tabular}
 \end{center}
 
-To see how this table was calculated, first we'll start
+To see how this table was calculated, we'll start
 with the simplifying assumption that $p$ is the monthly node
 churn rate (that is, the fraction of nodes that will go offline in a month on
 average). We can then model durability
@@ -934,7 +934,7 @@ Every time an
 object is added, edited, or removed, one or more entries in this metadata
 storage system will need to be adjusted. As a result, there could be heavy churn
 in this metadata system, and across the entire userbase the metadata itself
-could end up being sizeable.
+could end up being sizable.
 For example, suppose in
 a few years this system stores 1 total exabyte of data, where the average object
 size is 50MB and our erasure code is such that $n=40$. This metadata will need
@@ -957,9 +957,9 @@ avoidance between users (see section \ref{sec:coordination-avoidance}).
 
 Aside from scale requirements, to implement S3 compatibility,
 the desired API is straightforward and
-simple: \x{Put} (store a pointer given a path), \x{Get} (retrieve a pointer
+simple: {\em Put} (store a pointer given a path), {\em Get} (retrieve a pointer
 given a path),
-\x{List} (paginated, deterministic listing of existing paths), and \x{Delete}
+{\em List} (paginated, deterministic listing of existing paths), and {\em Delete}
 (remove a path).
 
 \section{Encryption}
@@ -984,7 +984,7 @@ without giving up encryption details for others.
 
 Because each file should be encrypted differently with different keys and
 potentially different algorithms, the metadata about that encryption must
-be stored somewhere in a way that is secure and reliable. This metadata,
+be stored somewhere in a manner that is secure and reliable. This metadata,
 along with other metadata about the file, including its path, will
 be stored in the previously discussed metadata storage system, encrypted
 by a deterministic, hierarchical encryption scheme.
@@ -1049,8 +1049,8 @@ then repair at-risk data.
 
 We're taking a huge shortcut with the assumption that
 probabilistic audits are enough for us to estimate the likelihood that a node
-will have the data it should have. We can use the audits
-along with node uptime (which is much more efficient than audits)
+will have the data it should. We can use the audits
+along with node uptime, which is much more efficient than audits,
 to calculate when a file is at risk.
 We don't consider any types of availability other than node availability when
 determining which files to repair.
@@ -1120,7 +1120,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \item[Peer class] A cohesive collection of network services and
   responsibilities. There are three different peer classes that represent
-  services in our network: \x{storage nodes}, \x{satellites}, and \x{uplinks}.
+  services in our network: {\em storage nodes}, {\em satellites}, and {\em uplinks}.
   Peer classes   tend to be run separately by different operators.
 
 \item[Storage node] This peer class participates in the node discovery
@@ -1147,71 +1147,71 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 \subsection{Data}
 
 \begin{description}
-\item[Bucket] A \x{bucket} is an unbounded, but named
-collection of \x{file}s identified by \x{path}s. Each \x{path} represents one
-\x{file}, and every \x{file} has a unique \x{path} within a bucket.
+\item[Bucket] A  {\em bucket} is an unbounded, but named
+collection of files identified by paths. Each path represents one
+file, and every file has a unique path within a bucket.
 
-\item[Path] A \x{path} is a unique identifier for a \x{file} within a
-\x{bucket}. A \x{path} is a string of bytes that begins with a forward
+\item[Path] A {\em path} is a unique identifier for a file within a
+bucket. A {\em path} is a string of bytes that begins with a forward
 slash byte and ends with something besides a forward slash byte. Forward
-slashes (referred to as the \x{path separator}) separate \x{path components}.
-An example path might be \code{/etc/hosts}, where the \x{path components} are
+slashes (referred to as the path separator) separate path components.
+An example {\em path} might be \code{/etc/hosts}, where the path components are
 \code{etc} and \code{hosts}.
-We encrypt \x{paths} before they ever leave the customer's application's
+We encrypt paths before they ever leave the customer's application's
 computer.
 
-\item[File or Object] A \x{file} (or \x{object} or \x{stream}) is an ordered
-collection of 0 or more \x{segment}s. \x{segment}s have a fixed maximum size.
-The more bytes the \x{file} has, the more \x{segment}s there tend to be.
+\item[File or Object] A {\em file} (or object or stream) is an ordered
+collection of 0 or more segments. Segments have a fixed maximum size.
+The more bytes the {\em file} has, the more segments there tend to be.
 
-A \x{file} also supports a limited amount of key/value user-defined fields
+A {\em file} also supports a limited amount of key/value user-defined fields
 called extended attributes.
 
-Like \x{path}s, the data contained in a \x{file} is encrypted before it ever
+Like paths, the data contained in a {\em file} is encrypted before it ever
 leaves the client computer.
 
-\item[Extended attribute] An extended attribute is a user defined key/value
-field that is associated with a file. Extended attributes are stored encrypted.
+\item[Extended attribute] An {\em extended attribute} is a user defined key/value
+field that is associated with a file. {\em Extended attributes} are stored encrypted.
 
-\item[Segment] A \x{segment} represents a single array of bytes, between 0 and a
-user-configurable maximum \x{segment} size. Breaking large \x{file}s into
-multiple \x{segment}s provides a number of security and scalability advantages.
+\item[Segment] A {\em segment} represents a single array of bytes, between 0 and a
+user-configurable maximum {\em segment} size. Breaking large files into
+multiple {\em segments} provides a number of security and scalability advantages.
 
-\item[Remote Segment] A \x{remote segment} is a larger \x{segment} that will be
-encoded and distributed across the network. A \x{remote segment} is larger than
+\item[Remote Segment] A {\em remote segment} is a larger segment that will be
+encoded and distributed across the network. A {\em remote segment} is larger than
 the metadata required to keep track of its bookkeeping, such as the nodes it
 is stored on.
 
-\item[Inline Segment] An \x{inline segment} is a \x{segment} that is small
+\item[Inline Segment] An {\em inline segment} is a segment that is small
 enough where the data it represents takes less space than the corresponding
-data a \x{remote segment} would need to keep track of which nodes had the data.
+data a remote segment would need to keep track of which nodes had the data.
 In these cases, the data is stored ``inline'' instead of being stored on nodes.
 
-\item[Stripe] A \x{stripe} is a further subdivision of a \x{segment}. A
-\x{stripe} is a fixed amount of bytes that is used as an encryption and erasure
-encoding boundary size. Erasure encoding happen on \x{stripe}s individually,
-whereas encryption may happen on a small multiple of stripes at a time. All
-\x{segments} are encrypted, but only \x{remote segments} are erasure encoded.
-A \x{stripe} is the unit on which audits are performed.
+\item[Stripe] A {\em stripe} is a further subdivision of a segment. A
+{\em stripe} is a fixed amount of bytes that is used as an encryption and erasure
+encoding boundary size. Erasure encoding happen on {\em stripes} individually; 
+whereas, encryption may happen on a small multiple of {\em stripes at a time}. All
+segments are encrypted, but only remote segments are erasure encoded.
+A {\em stripe} is the unit on which audits are performed.
 
-\item[Erasure Share] When a \x{segment} is a \x{remote segment}, its \x{stripe}s
-will get erasure encoded. When a \x{stripe} is erasure encoded, it generates
-multiple pieces called \x{erasure share}s. Only a subset of the \x{erasure
-share}s are needed to recover the original \x{stripe}, but each \x{erasure
-share} has an index identifying which \x{erasure share} it is (e.g., the first,
+\item[Erasure Share] When a segment is a remote segment, its stripes
+will get erasure encoded. When a stripe is erasure encoded, it generates
+multiple pieces called {\em erasure shares}. Only a subset of the {\em erasure
+shares} are needed to recover the original stripe, but each {\em erasure
+share} has an index identifying which {\em erasure share} it is (e.g., the first,
 the second, etc.).
 
-\item[Piece] When a \x{remote segment}'s \x{stripe}s are erasure encoded into
-\x{erasure share}s, the \x{erasure share}s for that \x{remote segment} with the
-same index are concatenated together, and that concatenated group of \x{erasure
-share}s is called a \x{piece}. If there are $n$ \x{erasure share}s after erasure
-encoding a \x{stripe}, there are $n$ \x{piece}s after processing a \x{remote
-segment}. The $i$th \x{piece} is the concatenation of all of the $i$th
-\x{erasure shares} from that \x{segment}'s \x{stripe}s.
+\item[Piece] When a remote segment's stripes are erasure encoded into
+erasure shares, the erasure shares for that remote segment with the
+same index are concatenated together, and that concatenated group of erasure
+shares is called a {\em piece}. If there are $n$ erasure shares after erasure
+encoding a stripe, there are $n$ {\em pieces} after processing a remote
+segment. The $i$th {\em piece} is the concatenation of all of the $i$th
+erasure shares from that segment's stripes.
 
-\item[Pointer] A \x{pointer} is a data structure that either contains the
-\x{inline segment} data, or keeps track of which
-\x{storage nodes} the pieces of a \x{remote segment} were stored on.
+\item[Pointer] A {\em pointer} is a data structure that either contains the
+inline segment data, or keeps track of which
+storage nodes the pieces of a remote segment were stored on.
 \end{description}
 
 \section{Storage node}
@@ -1228,12 +1228,12 @@ hard drive space is available, and what is their desired STORJ token
 wallet address.
 
 Because Storj is optimized for larger files, storage nodes have no reason to do
-anything more complicated here than store \x{pieces} directly on disk. Storage
+anything more complicated here than store pieces directly on disk. Storage
 node software can store the piece data in any way as long as it can be
 retrieved later on demand.
 
-Storage nodes also keep track of optional per-\x{piece} ``time-to-live'', or TTL.
-\x{Pieces} may be stored with a specific TTL expiry where data is expected to
+Storage nodes also keep track of optional per-piece ``time-to-live'', or TTL.
+Pieces may be stored with a specific TTL expiry where data is expected to
 be deleted after the expiration date. If no TTL is provided, data is expected
 to be stored indefinitely. This means storage nodes have a database of
 expiration
@@ -1336,7 +1336,7 @@ Transport Layer Security protocol (TLS) on top of the $\mu$TP
 ordered delivery (like TCP would); TLS provides privacy and authentication;
 and gRPC provides multiplexing and a convenient programmer interface.
 Over time, we will replace TLS with a more flexible secure transport
-framework such as the Noise Protocol Framework \cite{noise-proto} to
+framework (such as the Noise Protocol Framework \cite{noise-proto}) to
 reduce round trips due to connection handshakes in situations where the data is
 already encrypted and forward secrecy isn't necessary.
 
@@ -1371,9 +1371,9 @@ The Kademlia distributed hash table (DHT) is a key/value store with a built-in n
 We utilize Kademlia as our primary source of truth for DNS-like
 functionality for node lookup, while ignoring the key/value storage aspects of
 Kademlia.
-Using only Kademlia for node lookup eliminates the need for some other
-functionality Kademlia would otherwise require, such as owner-based key
-republishing, neighbor-based key republishing, storage and retrieval of values,
+Using only Kademlia for node lookup, eliminates the need for some other
+functionality Kademlia would otherwise require (such as owner-based key
+republishing) neighbor-based key republishing, storage and retrieval of values,
 and so forth. Furthermore, we avoid a number of known attacks by using the
 S/Kademlia \cite{skad} extensions where appropriate.
 
@@ -1425,7 +1425,7 @@ needs on the cache.
 
 We use the Reed-Solomon erasure code \cite{rs}. For each object that we store
 we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
-The standard Reed-Solomon numbers are $k$ and $n$ are the standard , where $k$ is the minimum
+The standard Reed-Solomon numbers are $k$ and $n$, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
 
@@ -1445,7 +1445,7 @@ needed to achieve the desired durability goals; $n$ is thus chosen such that
 storing $n$ pieces would be excess durability.
 
 The amount of long tail uploads we can tolerate is $n-o$, and thus is the amount
-of slow nodes in which we are immune.  The amount of nodes that can go
+of slow nodes to which we are immune.  The amount of nodes that can go
 temporarily offline at the same time without triggering a repair is $o-m$. The
 safety buffer to avoid losing the data between the time we recognize it requires
 a repair and the actual repair is executed is $m-k$.
@@ -1468,34 +1468,34 @@ example, the Windows file system, New Technology File System (NTFS), supports a 
 ``resource forks,'' and the Linux file system, fourth extended file system (EXT4), supports
 ``extended attributes.'' Most importantly for
 our purposes, AWS S3 supports ``object metadata'' \cite{s3-object-meta}. This ability to support arbitrarily named sets of keys-value pairs improves
-compatibility with other storage platforms. Every \x{file} will include a
+compatibility with other storage platforms. Every file will include a
 limited set of arbitrary key-value pairs to support object metadata. We call
 these ``extended attributes.''
 
 \subsection{Files as Segments}
 
 The highest level subdivision of a file is called a ``segment.''
-\x{Files} should be designed for both small and large data.
-A \x{file} may be small enough that it consists of only one segment.
-If that \x{segment} is smaller than the metadata required to store it on the
+Files should be designed for both small and large data.
+A file may be small enough that it consists of only one segment.
+If that segment is smaller than the metadata required to store it on the
 network, the data will be stored inline with the metadata. We call this an
 ``inline segment.''
 
-For larger \x{files}, the data will be broken
-into one or more large \x{remote segment}s. Segmenting in this manner offers
+For larger files, the data will be broken
+into one or more large remote segments. Segmenting in this manner offers
 numerous advantages to security, privacy, performance, and availability. The
 last segment of a file stored remotely contains the extended attributes of
 the file and other useful information, such as the number of segments in the
 file, the size of the segments, and file encryption details.
 
-Maximum \x{segment} size is a configurable parameter. To preserve privacy, we
-recommend that \x{segment} sizes be standardized as a byte multiple, such as
+Maximum segment size is a configurable parameter. To preserve privacy, we
+recommend that segment sizes be standardized as a byte multiple, such as
 32 MB or 64 MB.
 Standardized sizes help frustrate attempts to determine the content of a given
-\x{segment} and can help obscure the flow of data through the network.
-Smaller \x{segment}s may be padded with zeroes or random data.
+segment and can help obscure the flow of data through the network.
+Smaller segments may be padded with zeroes or random data.
 
-Segmenting large files (e.g. videos) and distributing the \x{segment}s
+Segmenting large files (e.g. videos) and distributing the segments
 across the network, reduces the impact of content delivery on any
 given node.
 Bandwidth demands are distributed more evenly across the network.
@@ -1506,23 +1506,23 @@ space to store a segment to participate in the network,
 and a client doesn't need
 to find nodes that have enough space for their large file.
 
-\x{Segments} are represented as \x{pointers}, so \x{files} are actually
-collections of \x{segment pointers}. The metadata database that stores
-\x{pointers} keeps track of \x{segment pointers} by \x{path}, so we adjust the
-\x{path} a small amount to help us keep track of \x{files} instead of
-\x{segments}.
+Segments are represented as pointers, so files are actually
+collections of segment pointers. The metadata database that stores
+pointers keeps track of segment pointers by path, so we adjust the
+path a small amount to help us keep track of files instead of
+segments.
 
-Every \x{file} has a \x{last segment}. The \x{last segment} is also in the
-position to know the size of the overall \x{file}, so the metadata about the
-overall \x{file} is stored along with the \x{last segment}. The \x{path} to
-the \x{last segment} is prepended with an {\tt /l} (for {\em last}), whereas
+Every file has a last segment. The last segment is also in the
+position to know the size of the overall file, so the metadata about the
+overall file is stored along with the last segment. The path to
+the last segment is prepended with an {\tt /l} (for {\em last}), whereas
 other segments are prepended with an {\tt /s} and then their segment number.
 
 As an illustrative example, suppose a video is 65 MB and the maximum
-\x{segment} size is 32 MB. The video is stored at the logical encrypted path
-{\tt /5fbac179da/8510acf81}. There will be three \x{pointers} for this video
-\x{file}. The first \x{pointer} will represent the first 32 MB and will be
-stored at {\tt /s0/5fbac179da/8510acf81}, the second \x{pointer} will represent
+segment size is 32 MB. The video is stored at the logical encrypted path
+{\tt /5fbac179da/8510acf81}. There will be three pointers for this video
+file. The first pointer will represent the first 32 MB and will be
+stored at {\tt /s0/5fbac179da/8510acf81}, the second pointer will represent
 the next 32 MB and will be stored at {\tt /s1/5fbac179da/8510acf81}, and the
 last pointer will represent the final 1 MB and will be stored at
 {\tt /l/5fbac179da/8510acf81}. To efficiently list files with prefix
@@ -1540,10 +1540,10 @@ where only a subset of the data is needed for read operations.
 To support these operations,
 it's useful to be able to decode and decrypt small parts of a file.
 
-A \x{stripe} defines a subset of a segment and should be no more than a
+A stripe defines a subset of a segment and should be no more than a
 couple of kilobytes large. Erasure encoding
-a single \x{stripe} at a time allows us to read small portions of a
-large \x{segment} without retrieving the entire \x{segment} first.
+a single stripe at a time allows us to read small portions of a
+large segment without retrieving the entire segment first.
 It also allows us to stream data into the
 network without staging it beforehand, and it enables a number of other useful
 features.
@@ -1566,29 +1566,29 @@ parameters affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
 
-Because \x{stripe}s are already small, \x{erasure share}s are often much
+Because stripes are already small, erasure shares are often much
 smaller, and the metadata to keep track of all of them separately would be
 immense relative to their size.
-All $n$ \x{erasure share}s have a well-defined index associated
+All $n$ erasure shares have a well-defined index associated
 with them. More specifically, erasure coding is entirely deterministic. For
 a fixed stripe and any given $n$, the $i$th share of an erasure
 code will always be the same.
 Instead of keeping track of all of the
-erasure shares separately, we pack all of the \x{erasure share}s with the
-same index into a \x{piece}.
-In a $(k, n)$ scheme, there are $n$ \x{piece}s, where each
-\x{piece} $i$ is the ordered concatenation of all of the \x{erasure share}s with
-index $i$. As a result, where each \x{erasure share} is $1/k$th of a
-\x{stripe}, each \x{piece} is $1/k$th of a \x{segment}, and only $k$
-\x{piece}s are needed to recover the full \x{segment}.
+erasure shares separately, we pack all of the erasure shares with the
+same index into a piece.
+In a $(k, n)$ scheme, there are $n$ pieces, where each
+piece $i$ is the ordered concatenation of all of the erasure shares with
+index $i$. As a result, where each erasure share is $1/k$th of a
+stripe, each piece is $1/k$th of a segment, and only $k$
+pieces are needed to recover the full segment.
 
-A \x{piece} is what
+A piece is what
 we finally store on a storage node. We generate and attempt uploads to $n$
 storage nodes, but only $k$ nodes are required to recover the original file.
 
-Satellites generate a brand-new, randomly chosen \x{root piece ID} each time
-a new upload begins. The uplink will keep the \x{root piece ID} secret and send
-a \x{node-specific piece ID} to each storage node, formed by taking the Hash-based
+Satellites generate a brand-new, randomly chosen {\em root piece ID} each time
+a new upload begins. The uplink will keep the {\em root piece ID} secret and send
+a {\em node-specific piece ID} to each storage node, formed by taking the Hash-based
 Message Authentication Code (HMAC) of the root piece ID and the node's ID.
 
 Storage nodes namespace pieces by satellite ID. If a piece ID used by one
@@ -1597,15 +1597,15 @@ to a different piece than the other satellite, with different content and lifecy
 
 \subsection{Pointers}
 
-The data owner will need knowledge of how a \x{remote segment} is broken up and
-where in the network the \x{piece}s are located to recover it. This is contained
-in the \x{pointer} data structure, and the owner can secure the \x{pointer} as
+The data owner will need knowledge of how a {\em remote segment} is broken up and
+where in the network the {\em pieces} are located to recover it. This is contained
+in the pointer data structure, and the owner can secure the pointer as
 they wish.
 
-A \x{pointer} includes which nodes are storing: the \x{pieces},
+A pointer includes which nodes are storing: the pieces,
 encryption information, erasure coding details,
-the repair threshold amount that determines how much redundancy a \x{segment}
-must lose before triggering a repair, the amount of \x{pieces} that must be
+the repair threshold amount that determines how much redundancy a segment
+must lose before triggering a repair, the amount of pieces that must be
 stored to consider a repair to be successful, and other details. The full
 definition of a pointer can be seen in figure \ref{fig:pointer}.
 
@@ -1658,7 +1658,7 @@ message RemotePiece {
 \section{Metadata}\label{sec:concrete-metadata}
 
 The metadata storage system in the Storj network predominantly stores
-\x{pointers}. Other individual components of the Storj network communicate with
+{\em pointers}. Other individual components of the Storj network communicate with
 the pointer database to store and retrieve pointers by path to perform actions.
 
 The most trivial implementation for the metadata storage functionality we
@@ -1727,8 +1727,8 @@ long term plans.
 \section{Satellite}
 
 The collection of services that hold this metadata is called the
-\x{satellite}. Users of the network will have accounts on a specific
-satellite instance, which will store their file metadata, manage authorization
+{\em satellite}. Users of the network will have accounts on a specific
+satellite instance, which will store: their file metadata, manage authorization
 to data, keep track of storage node reliability, repair and maintain data when
 redundancy is reduced, and issue payments to storage nodes on the user's behalf.
 Notably, a specific satellite {\em instance} does not necessarily constitute one
@@ -1737,7 +1737,7 @@ a horizontally scalable trusted database for higher uptime.
 
 Storj implements a thin-client model that delegates trust around managing
 files' location metadata to the satellite service which manages data
-ownership. \x{Uplinks}
+ownership. {\em Uplinks}
 are thus able to support the widest possible array of client applications, while
 Satellites require high uptime and potentially significant infrastructure,
 especially for an active set of files.
@@ -1808,14 +1808,14 @@ AES-GCM cipher and the Salsa20 and Poly1305 combination NaCl calls ``Secretbox''
 if anything has tampered with the data. Data encryption keys are chosen by the
 uplink randomly.
 
-Data is encrypted in blocks of small batches of \x{stripes}, recommended to be
+Data is encrypted in blocks of small batches of stripes, recommended to be
 4KB or less \cite{nacl-packetlen}. While the same encryption key is used for
-every \x{stripe} in a \x{segment}, \x{segments} may have
+every stripe in a segment, segments may have
 different encryption keys. However, the nonce for each encryption
 batch must be monotonically incrementing from the previous batch throughout the
-entire \x{stream}. The nonce wraps around to 0 if the counter reaches the
+entire stream. The nonce wraps around to 0 if the counter reaches the
 maximum representable nonce. The starting nonce for the stream is chosen at
-random and is stored with the \x{stream}'s metadata.
+random and is stored with the stream's metadata.
 The starting nonce for the next segment
 is the incremented ending nonce from the previous segment. If multipart upload
 is used, such as multiple segments are uploaded in parallel, the starting nonce
@@ -1823,13 +1823,13 @@ for each segment can be calculated from the starting nonce of the stream, the
 segment number, and the number of encryption blocks in each segment.
 
 This scheme protects the
-content of the data from the \x{storage node} housing the data. The data owner
+content of the data from the storage node housing the data. The data owner
 retains complete control over the encryption key, and thus over access to the
 data.
 
 Paths are also encrypted with authenticated encryption, but the nonce and key
 must be deterministic, determined entirely from a root secret combined with the
-unencrypted path. Each \x{path component} is encrypted separately.
+unencrypted path. Each path component is encrypted separately.
 The first path component is encrypted with a key and nonce derived from the
 root secret. A new secret is derived from the root secret and the unencrypted
 name of the first path component. This new secret is used to derive the
@@ -1840,7 +1840,7 @@ nonce are derived from this new secret. HMAC-SHA512 is used for all key
 derivations.
 
 Path encryption is optional, as encrypted paths make efficient sorted path
-listing challenging. When path encryption is enabled, a per-bucket feature,
+listing challenging. When path encryption is enabled (a per-bucket feature),
 objects are sorted by their encrypted path name, which is deterministic
 but otherwise relatively unhelpful
 when interested in unencrypted paths. For this reason, users can opt out of
@@ -1848,7 +1848,7 @@ path encryption. When path encryption is disabled, unencrypted paths
 are only revealed to the user's chosen satellite, but not to the storage
 nodes. Storage nodes continue to have no information about the path and
 metadata of the pieces they store.
-In the future we may consider an order-preserving encryption scheme to try and
+In the future, we may consider an order-preserving encryption scheme to try and
 achieve the best of both worlds.
 
 \section{Authorization}\label{sec:concrete-authorization}
@@ -1894,8 +1894,8 @@ service prior to operations with storage nodes.
 In a network with untrusted nodes, validating that nodes are returning data
 accurately and otherwise behaving as expected is vital to ensuring a properly
 functioning system. Audits are a way to confirm that nodes have the data they
-claim to have. Auditors, such as satellites, will send \textit{a challenge} to a
-storage node and expect a valid response. \textit{A challenge} is a request to the
+claim to have. Auditors, such as satellites, will send a {\em challenge} to a
+storage node and expect a valid response. A {\em challenge} is a request to the
 storage node in order to to prove it has the data.
 
 Some distributed storage systems, including the previous release of Storj
@@ -1916,12 +1916,12 @@ reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
 via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
 We are already using Reed-Solomon erasure coding
-\cite{rs} on small ranges, \x{stripes}, so we use it to issue challenges and
+\cite{rs} on small ranges, {\em stripes}, so we use it to issue challenges and
 verify responses as well.
 
-To perform an audit, we first choose a \x{stripe}. We request that
-\x{stripe}'s \x{erasure shares} from all storage nodes responsible. We then run
-the Berlekamp-Welch algorithm \cite{bw} across all the \x{erasure shares}. When
+To perform an audit, we first choose a {\em stripe}. We request that
+{\em stripe's erasure shares} from all storage nodes responsible. We then run
+the Berlekamp-Welch algorithm \cite{bw} across all the {\em erasure shares}. When
 enough storage nodes return correct information, any faulty or missing responses
 can easily be identified. These audit failures will be stored and saved in the
 reputation system.
@@ -1941,27 +1941,26 @@ The node discovery system has caches in place that have reasonably accurate and
 up-to-date information about which storage nodes have been online recently.
 When a storage node changes state from recently online to offline, this can
 trigger a lookup in a reverse index within a user's metadata database, identifying
-all \x{segment} \x{pointers} that were stored on that node.
-For every \x{segment} that drops below the appropriate minimum safety
+{\em all segment pointers} that were stored on that node.
+For every segment that drops below the appropriate minimum safety
 threshold, $m$, the segment should be downloaded and reconstructed, and the
 missing pieces should be regenerated and uploaded to new nodes. Finally, the
-\x{pointer} should be updated to include the new information.
+{\em pointer} should be updated to include the new information.
 
 As storage nodes go offline -- taking their file pieces with them -- it will
 be necessary for the missing pieces to be rebuilt once the entire file's pieces
 fall below the predetermined threshold $m$. If a node goes offline, the
 satellite will mark that nodes' file pieces as missing.
 Once enough file pieces are lost, the satellite will download the
-remaining file pieces from their corresponding storage nodes, using those
+remaining file pieces from their corresponding storage nodes and use those
 pieces
 to rebuild the file's missing, encrypted, erasure encoded pieces.
 Once the repair process is complete, the satellite will send the
 recovered pieces to new storage nodes.
 
 Users will choose their desired durability with their chosen metadata service,
-which may impact price and other things. This desired durability, along
-with
-statistics from ongoing audits, will directly inform what Reed-Solomon erasure
+which may impact price and other things. This desired durability (along with 
+statistics from ongoing audits) will directly inform what Reed-Solomon erasure
 code choices should be made for new and repaired files, and what thresholds
 should be set for when uploads are successful and when repair is needed. See
 appendix \ref{appendix:RS} for how we calculate these values given user inputs.
@@ -2000,17 +1999,17 @@ errors (authenticated encryption) is unavailable to the repair system (no
 decryption keys).
 
 Because full segments are repaired at a time, hashes of
-each \x{piece} should be stored in the system via a Merkle tree
-\cite{merkle-tree}, storing the root of the tree in the \x{pointer}. This allows
+each {\em piece} should be stored in the system via a Merkle tree
+\cite{merkle-tree}, storing the root of the tree in the {\em pointer}. This allows
 the repair system to correctly assess whether or not repair has been completed
 successfully without using extra redundancy for the same task.
 
-A full copy of the leaves of the Merkle tree of \x{pieces}, enough to generate
-the full tree, should be stored alongside each \x{piece} on each storage node.
+A full copy of the leaves of the Merkle tree of pieces (enough to generate
+the full tree) should be stored alongside each {\em piece} on each storage node.
 Therefore, the only additional central metadata storage required is just for
 the root.
 
-Each repair should validate the tree before the \x{pointer} is updated to
+Each repair should validate the tree before the {\em pointer} is updated to
 point to new locations.
 
 \section{Storage node reputation}\label{sec:concrete-reputation}
@@ -2252,7 +2251,7 @@ maintenance overhead.
 When a client wants to perform an operation for $x$ bytes of bandwidth, it must
 first get authorization from a satellite
 that it has enough funds and is authorized to perform that operation.
-The \x{satellite} will return an {\em unrestricted
+The satellite will return an {\em unrestricted
 bandwidth allocation} message. This message will include the identity of the
 satellite, the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized, and the direction the bytes will flow
@@ -2405,17 +2404,16 @@ Storj will differentiate these software components and the experience design
 for each segment by separating the supply side of our business from the
 demand side.
 
-We will retain\url{storj.io} as the place for contributing extra storage and
+We will retain \url{storj.io} as the place for contributing extra storage and
 bandwidth to the Storj Network. This includes storage node setup, documentation,
-FAQs, and tutorials. Users of both brands will also be able to access our
-source code and community through \url{storj.io}.
-
+frequently asked questions (FAQs), and tutorials. Users of both brands will also be able to 
+access our source code and community through \url{storj.io}
 The demand side of our business will be directed through \url{tardigrade.io}.
 This experience will be focused toward our partners and customers who purchased
 decentralized storage and bandwidth from the network with the expectation of
 high durability, resilience, and reliability, backed by an industry-leading
 service level agreement (SLA). This includes any offers, free trials, satellite
-selection, documentation, frequently asked questions (FAQs), tutorials, and so forth.
+selection, documentation, FAQs, tutorials, and so forth.
 
 The ``Tardigrade'' brand will serve as a satellite quality credentialing system.
 For a satellite to be considered a ``Tardigrade quality'' satellite, it must
@@ -2491,7 +2489,7 @@ Third, the uplink will take this information and begin parallel connections to
 \begin{itemize}
 \item The uplink will begin breaking the segment into stripes and then
   erasure encode each stripe.
-\item The generated erasure shares will be concatenated into \x{pieces} as they
+\item The generated erasure shares will be concatenated into {\em pieces} as they
   transfer to each storage node in parallel.
 \item The erasure encoding will be configured to over-encode to more pieces
   than needed. This will eliminate the long tail effect and lead to a
@@ -2512,7 +2510,7 @@ ID; and the delegating satellite ID.
   the satellite. Otherwise it will throw away all relevant request data.
 \item The uplink encrypts the random encryption key it chose for this file
   utilizing a deterministic hierarchical key.
-\item The uplink will upload a \x{pointer} object back to the satellite, which
+\item The uplink will upload a {\em pointer} object back to the satellite, which
   contains the following information:
   \begin{itemize}
   \item Which storage nodes were ultimately successful
@@ -2665,7 +2663,7 @@ When a user wants to copy a file:
   \end{itemize}
 \item For every segment pointer, the uplink:
   \begin{itemize}
-  \item decrypts the metadata with an encryption key derived from the path,
+  \item decrypts the metadata with an encryption key derived from the path.
   \item changes the path to the new destination.
   \item invokes a copy operation on each of the storage nodes from the pointer
     to duplicate the piece with a new piece ID.
