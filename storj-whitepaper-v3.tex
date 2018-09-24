@@ -476,7 +476,7 @@ alternative.
 With decentralized architecture, Storj could cease operating and the data
 would continue to be available.
 
-We have decided to adopt a decentralized architecture because, despite the tradeoffs, we believe decentralization addresses the core limitations,
+We have decided to adopt a decentralized architecture because, despite the trade-offs, we believe decentralization addresses the core limitations,
 risks, and cost factors that result from centralized cloud storage.
 Within this context,
 decentralization results in a globally distributed singleton network that can
@@ -571,7 +571,7 @@ ledger. For us to achieve exabyte scale that is entirely controllable by each us
 
 \section{Marketplace and economics}
 
-Public cloud computing in general, and public cloud storage in particular, has
+Public cloud computing, and public cloud storage in particular, has
 proven to be an attractive business model for the large centralized cloud
 providers. Cloud computing is estimated to be a \$186.4 billion dollar market
 in 2018, and reach \$302.5 billion by 2021 \cite{gartner-cloud-growth}.
@@ -593,6 +593,11 @@ the economic return.
 
 We believe that decentralized storage can provide a viable alternative to
 centralized cloud.
+
+However, to compel partners or customers to bring data to the network,
+the price charged for storage and bandwidth -- combined with the other
+benefits of decentralized storage -- must be
+more compelling and economically beneficial than competing storage solutions.
 
 In our design of Storj, we seek to create an economically advantageous
 situation for four different groups:
@@ -629,55 +634,14 @@ not only charging end users less than the public cloud providers but also margin
 with storage node operators and demand providers.
 \end{description}
 
-Targeting these four groups constrains our design in a few ways.
-
-First, it is important to distinguish supply and demand in regards to the
-storage network; sharing resources with the network should be considered
-separately from storing data on the network. This is because
-the overwhelming majority of potential partners and customers who will
-pay to store data on the
-network do not also have a corresponding supply of storage space to share.
-
-Second, individuals providing the supply of unused storage must
-be compensated fairly in an easily calculable way.
-This includes aligning the economic incentives of the network to ensure
-that the {\em rational} nodes on the network (the majority of operators) behave
-as similarly as possible to the expected behavior of {\em altruistic} nodes.
-Incentives that allow for or encourage {\em byzantine} behavior should likewise
-be eliminated.
-
-Third, to drive network growth and adoption, we must have a price-competitive
-product and attractive
-opportunities available for demand-side partners. To create additional
-incentives for partners or customers to bring data to the network,
-the price charged for storage and bandwidth -- combined with the other
-benefits of decentralized storage -- must be
-more compelling and economically beneficial than competing storage solutions.
-
-The network must be able to account for ensuring efficient, timely billing
+Additionally, the network must be able to account for ensuring efficient, timely billing
 and payment processes as well as regulatory compliance for tax and other reporting.
-Decentralized application architectures have seen growing adoption of
-cryptocurrencies for use in the transmission of value in
-exchange for utilization of shared resources on the network.
-In this case, Storj has implemented the STORJ token.
-This presents the additional requirement that the network be able to process
-an extremely large volume of cryptocurrency transactions.
-
-By building a network of contributors, we will increase the ability to bring new
-capabilities to market faster.
-Storj is open source; therefore, the network must account for the operation of
-servers by unaffiliated third parties. It must also be able to coordinate payment
-as well as aggregate reputation data between numerous external network
-components.
-
-Due to the global network of supply and demand for storage and bandwidth, the
-network must be able to transact in virtually any form of value, whether that it
-be fiat currency, cryptocurrency, or some other form of barter.
+To be as globally versatile as possible with payments, our network must be robust to accommodate several types of transactions (such as cryptocurrency, bank payments, and other forms of barter).
 
 Lastly, the Storj roadmap will be aligned with the economic drivers of the
 network.
 New features and changes to the concrete implementations of framework
-components will be driven by applicability to specific object storage use cases
+components must be driven by applicability to specific object storage use cases
 and the relationship between features and performance to the price of storage
 and bandwidth relative to those use cases.
 
@@ -1712,7 +1676,7 @@ On the other hand, there are a few upsides:
   covers all required use cases.
 \item {\bf Control} - the user is in complete control of all of their data.
   There is still no organizational single point of failure. The user is free
-  to choose whatever metadata store with whatever tradeoffs they prefer. Like
+  to choose whatever metadata store with whatever trade-offs they prefer. Like
   Mastodon\cite{mastodon}, this solution is still decentralized. Furthermore, in a
   catastrophic scenario, this design is no worse than most other technologies or
   techniques application developers frequently use (databases).
@@ -2353,7 +2317,7 @@ introduce garbage collection to free up space on storage nodes.
 A garbage collection algorithm is a method for freeing no-longer used resources.
 A {\em precise} garbage collector collects all garbage exactly and
 leaves no additional garbage. Whereas, a {\em conservative} garbage collector may
-leave some small proportion of garbage around given some other tradeoffs,
+leave some small proportion of garbage around given some other trade-offs,
 often with the aim of improving performance.
 As long as a conservative garbage collector is used in our system, the cost of
 storage owed to a storage node will be high enough to amortize the cost of
@@ -2380,7 +2344,7 @@ structure tailored to each node on a periodic schedule, a satellite can give a
 storage node the ability to clean up garbage data to a configurable tolerance.
 
 The data structures need to be tuned to eliminate garbage down to an acceptable
-level, given the tradeoff of additional bandwidth and faster collection.
+level, given the trade-off of additional bandwidth and faster collection.
 Because this garbage collection system is probabilistic, storage nodes have a
 strong incentive to stay online to witness as many delete messages as possible.
 If a storage node misses a handful of delete messages due to an outage, the
@@ -2794,7 +2758,7 @@ When a
 \chapter{Future work}\label{chap:future-work}
 
 Storj is a work in progress, and many features are planned for future
-versions. In this section we discuss a few potential areas in which we want to
+versions. In this chapter we discuss a few potential areas in which we want to
 consider improvements to our concrete implementation.
 
 \section{Hot files and content delivery}\label{sec:future-hot-files}
@@ -2822,7 +2786,7 @@ As a practical example, suppose a file was encoded via a $(k=20, n=40)$ scheme,
 and a satellite discovers that it needs to double resources to meet demand.
 The satellite can download any 20 pieces of the 40, generate just the last 40
 pieces of a new $(k=20, n=80)$ scheme, store the new pieces on 40 new nodes,
-and without changing any data on the original 40 nodes, the file is stored
+and -- without changing any data on the original 40 nodes -- store the file 
 as a $(k=20, n=80)$ scheme, where any 20 out of 80 pieces are needed.
 This allows all requests to adequately load balance across the 80 pieces.
 If demand outstrips supply again, only 20 pieces are needed to generate even
@@ -2862,8 +2826,8 @@ A basic outline is as follows. First, a storage node would volunteer to do
 a repair for a satellite, potentially in exchange for later payment. The
 satellite would choose a segment that needed repair, determine which pieces
 need to be replaced, and indicate to the volunteer repairing node which
-pieces should be regenerated and which new storage nodes they should be placed
-on. By having the satellite choose the new storage nodes, collusion risk is
+pieces should be regenerated and on which new storage nodes they should be placed. 
+By having the satellite choose the new storage nodes, collusion risk is
 limited. Then, the repairing node would download the segment from the existing
 storage nodes with the blessing of the satellite, repair the missing pieces,
 and send the replacement pieces to the desired new storage nodes. The new
@@ -2920,8 +2884,8 @@ between satellites.
 
 In the medium term, we plan to reduce the size of these exports considerably
 and make as much of this backup process as automatic and seamless as possible.
-We expect to build a system to back up the major portion of the metadata
-periodically to the network directly.
+We expect to build a system to periodically back up the major portion of the metadata
+directly to the network.
 
 In the long term, we plan to program the satellite out of the platform.
 We hope to eliminate satellite control of the metadata
@@ -2931,7 +2895,7 @@ The biggest challenge to this is achieving fast Byzantine fault tolerant
 consensus, where storage nodes can interact with one another, share encoded
 pieces of files, and still operate within the performance levels users will
 expect from a platform that is competing with traditional cloud storage
-providers. Our team will continue to research viable means to achieve this.
+providers. Our team will continue to research viable means to achieve this end.
 
 See appendix \ref{chap:dist-consensus} for a discussion on why
 we aren't tackling the Byzantine fault tolerant consensus problem right away.
@@ -3005,7 +2969,7 @@ prohibitively expensive to bias.
 To avoid an eclipse attack, all that remains
 is to make sure new nodes are appropriately introduced to at least one
 well-behaved node on the network during the bootstrapping process.
-To that end, Storj Labs will run some well known, verified bootstrap nodes.
+To that end, Storj Labs will run some well-known, verified bootstrap nodes.
 
 \section{Honest Geppetto}
 
@@ -3019,7 +2983,7 @@ is ineffective. In the meantime, this can be partially prevented by relatedness
 analysis of storage nodes. Bayesian inference across downtime, latency, network
 route, and other
 attributes can be used to assess the likelihood that two storage nodes are
-operated by the same organization, and satellites can and should attempt to
+operated by the same organization. Satellites can and should attempt to
 distribute pieces across as many unrelated storage nodes as possible.
 
 \section{Hostage bytes}
@@ -3109,7 +3073,7 @@ In the CAP theorem, consistency means that every read receives the most recent
 write or an error, so an inconsistent answer means the system returned something
 besides the most recent write without obviously failing. More generally, there
 are a number of {\em consistency models} that may be acceptable by making
-various tradeoffs. Linearizability, sequential consistency, causal consistency,
+various trade-offs. Linearizability, sequential consistency, causal consistency,
 PRAM consistency, eventual consistency, read-after-write consistency, etc., are
 all models for discussing how a history of events appears to various
 participants in a distributed system.\footnote{If differing consistency models
@@ -3128,7 +3092,7 @@ default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 
 Linearizability in a distributed system is often much more desirable
 than serializability \cite{Highly-Available-Seldom-Consistent}, as it is
-useful as a building block for many higher level data structures and operations
+useful as a building block for many higher level data structures and operations,
 such as distributed locks and other coordination techniques. Initially, early
 efforts centered around two-phase commit, then three-phase commit, which both
 suffered due to issues similar to the two generals' problem. Things were looking
@@ -3156,7 +3120,7 @@ now exist, with ongoing work to improve the situation
 further \cite{epaxos,paxos-flexible}. Arguably, part of Google's early success
 was in spending the time to build their internal Paxos-as-a-service distributed
 lock system, Chubby \cite{chubby}. Most of Google's most famous internal data
-storage tools such as Bigtable \cite{bigtable} depend on Chubby for
+storage tools, such as Bigtable \cite{bigtable}, depend on Chubby for
 correctness. Spanner \cite{spanner} -- perhaps one of the most incredible
 distributed databases in the world -- is mainly just two-phase commit on top of
 multiple Paxos groups.
@@ -3182,8 +3146,8 @@ HoneybadgerBFT\cite{honeybadger}, Algorand\cite{algorand}, Casper\cite{casper},
 Tangle\cite{tangle}, Avalanche\cite{avalanche}, PARSEC\cite{parsec}, and
 others\cite{mickens-bft}).
 Each of these algorithms make some
-additional tradeoffs that non-Byzantine distributed consensus algorithms don't
-require to deal with the potential for uncooperative nodes. For example,
+additional trade-offs, that non-Byzantine distributed consensus algorithms don't
+require, to deal with the potential for uncooperative nodes. For example,
 PBFT \cite{pbft} causes a significant amount of network overhead. Bitcoin
 \cite{bitcoin} intentionally limits the transaction rate with changing
 proof-of-work difficulty, in addition to requiring all participants to keep a
@@ -3195,7 +3159,7 @@ by s3 compatibility}
 
 \chapter{Object Repair Costs}
 
-	As the saying goes, there is no free lunch. Erasure codes are pretty amazing, but they do come at a cost. The two biggest being additional network bandwidth for object repair and extra space overhead (which we call the expansion factor). Consequently a fundamental challenge is how to choose the system parameters that keep expansion and repair bandwidth to a minimum but also provide an acceptable level of durability. Luckily we are not alone in wondering about this and there is a good amount of prior research on the problem. ``Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy'' \cite{p2p-lazy} is an excellent guide and much of our work follows from their conclusions. The end result is a mathematical framework which determines network durability and repair bandwidth given Reed-Solomon parameters, average node lifetime, and reconstruction rate. The following is a summary of results and explanation of their implications.
+	As the saying goes, there is no free lunch. Erasure codes are pretty amazing, but they do come at a cost. The two largest being additional network bandwidth for object repair and extra space overhead (which we call the expansion factor). Consequently, a fundamental challenge is how to not only choose the system parameters that keep expansion and repair bandwidth to a minimum but also provide an acceptable level of durability. Fortunately, we are not alone in wondering about this, and there is a good amount of prior research on the problem. ``Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy'' \cite{p2p-lazy} is an excellent guide, and much of our work follows from their conclusions. The end result is a mathematical framework which determines network durability and repair bandwidth given Reed-Solomon parameters, average node lifetime, and reconstruction rate. The following is a summary of results and explanation of their implications.
 
 \section{Repair Bandwidth and Loss Rate Framework}
 \begin{table}[h]
@@ -3227,7 +3191,7 @@ B_R&=BW_R/D\\
 \end{align*}
 
 \section{Node churn is bad for durability}\label{appendix:bandwidth-space-limits}
-	From the equations you see that repair bandwidth is impacted by node churn linearly, which is expected. Lower mean time to node failure triggers more frequent rebuilds and therefore more bandwidth usage. Loss rate is much more sensitive to high node churn, it increases exponentially with alpha. This necessitates very stable nodes, with lifetimes of several months, to achieve acceptable network durability. See appendix D for a more in depth discussion of node churn's affect on erasure code parameters.
+	The equations demonstrate that repair bandwidth is impacted by node churn linearly, which is expected. Lower mean time to node failure triggers more frequent rebuilds and, therefore, more bandwidth usage. Loss rate is much more sensitive to high node churn; it increases exponentially with alpha. This necessitates very stable nodes, with lifetimes of several months, to achieve acceptable network durability. See appendix D for a more in depth discussion of node churn's affect on erasure code parameters.
 
 	Repair affects storage node's participation beyond their bandwidth usage, it also constrains the amount of usable disk space. Consider a storage node with 1 TB of available space, with a stated monthly bandwidth cap of 500 GB. If it's known (via the above framework) that a storage node can expect to repair 50\% of its data in a given month, and assuming each stored object is served at least once, then we can store no more than 333 GB on this node since anything more causes more bandwidth than allowed. In other words, paid bandwidth plus repair bandwidth must always be less than or equal to the cap.
 
@@ -3248,7 +3212,7 @@ that a storage node is maintaining stored pieces faithfully.
 We use the reputation distribution -- or a modified version of such --
 as the Bayesian prior. As an aside, we remark that this makes it doubly important
 for nodes to obtain and maintain good reputations,
-as the reputation distribution is not only used directly as it pertains to uptime,
+as the reputation distribution is not only used directly as it pertains to uptime
 but also indirectly in the form of the Bayesian prior for audit confidence levels.
 For the sampling distribution, we use the Binomial distribution with
 success probability $p=\frac{a_s}{a_t+1}$ where $a_s$ is the number of
