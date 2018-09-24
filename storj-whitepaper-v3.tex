@@ -146,37 +146,21 @@ input, and suggestions.
 
 \chapter{Introduction}\label{chap:intro}
 
-\begin{itemize}
-\item Decentralized storage solves some big problems and
-  addresses a specific market in which we are interested (chapter \ref{chap:intro}).
-\item To best address this market, our product must satisfy specific constraints
-  (chapter \ref{chap:design-constraints}).
-\item We believe a specific framework is required to best satisfy these
-  constraints (chapter \ref{chap:framework}).
-  We will not need a v4 as this framework is fairly fundamental to our space.
-\item We propose a concrete implementation (chapters \ref{chap:concrete} and
-  \ref{chap:walkthroughs}).
-  Our concrete implementation is just one potential solution within our
-  framework.
-\item We plan to improve our implementation within the framework over time
-  (chapter \ref{chap:future-work}).
-\end{itemize}
-
 The Internet is a massive decentralized and distributed network consisting of
 billions of devices which are not controlled by a single group or entity.
-Much of the data available through the Internet is quite centralized and is currently stored with a handful of technology companies that have the
+Much of the data currently available through the Internet is quite centralized and is currently stored with a handful of technology companies that have the
 experience and capital to build massive data centers capable of handling this
 vast amount of information.
-In recent years, we have seen colossal infrastructure data breaches, periods of
-unavailability on a grand scale, storage costs failing to decrease in line with
-demand, and a struggle to keep up with user demand for faster data and larger
-formats.
+A few of the challenges faced by data centers are: data breaches, periods of
+unavailability on a grand scale, storage costs, and expanding and upgrading quickly enough to meet user demand for faster data and larger formats.
 
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
 Decentralized storage can do this because its architecture matches the real
 Internet better, which itself is decentralized, as opposed to massive
-centralized data centers. This model can address the rapidly
+centralized data centers. News coverage of data breaches over the past few year has shown us that the frequency of data breaches has been increasing. Decentralized storage's process of protecting data will make data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of a data center. 
+
+This model can address the rapidly
 expanding amount of data for which current solutions struggle.
 With an anticipated 44 zettabytes of data expected to exist by 2020 and a
 market that will grow to \$92 billion USD in the same time frame
@@ -267,6 +251,176 @@ Figure \ref{fig:s3-api-code} to be implemented.
 \caption{Minimum S3 API}
 \label{fig:s3-api-code}
 \end{figure}
+
+\section{Security and privacy}
+
+One of the primary focuses of the Storj network is to ensure that its users'
+data privacy is protected. This important element is
+built into the design of the client services, network services, and other related services.
+
+Any object storage platform in our market should ensure both the privacy and
+security of data stored; however,
+decentralized storage platforms include an additional layer of
+complexity and risk associated with the storage of data on inherently
+untrusted nodes. Because decentralized storage platforms cannot take many
+of the same shortcuts data center based approaches can (e.g. firewalls, DMZs,
+etc.), decentralized storage must be designed from the ground up to support
+enhanced security and privacy at all levels of the system.
+
+Data security encompasses a wide range of concerns including:
+identity and access management, prevention of tampering or unauthorized
+modification, prevention of ransomware attacks, system vulnerabilities, and
+malicious insiders. Data privacy concerns, however, include: storage of data
+without providing access to the underlying data and its metadata by
+Storj Labs, third-party operators of system components, and malicious actors.
+
+Certain categories of data are subject to specific regulatory compliance.
+For example, legislation in the United States includes
+the Health Insurance Portability and
+Accountability Act (HIPAA) which has requirements for data center
+compatibility. European countries have to consider the General Data Protection
+Regulation (GDPR) regarding
+how individual information must be protected and secured. There
+are many other regulations in other sectors regarding user's data privacy.
+
+Open source software
+provides the level of transparency and assurance needed to prove that the
+behaviors of the system are as advertised. Customers should be able to
+evaluate that our software is implemented correctly, is resistant to
+attack vectors (known or unknown), is secure, and otherwise fulfills all
+of the customers' requirements.
+
+\section{Decentralization}
+
+Informally, a decentralized application is a service that has no single
+operator. Furthermore, no single entity should be solely responsible for the
+cost associated with running the service.
+
+One of the main motivations for preferring decentralization is to drive
+down infrastructure costs for maintenance, utilities, and bandwidth.
+We believe that there
+are significant underutilized resources both at the edge of the network and at
+the margin for many smaller operators. In our experience building decentralized
+storage networks, we have found a long tail of resources that are presently
+unused or underused that could provide affordable and
+geographically distributed cloud storage. Conceivably some small operator
+has access to less expensive electricity than standard data centers or another small
+operator has access to less expensive cooling. Many of these small operator
+environments are not substantial enough to run an entire datacenter-like
+storage system. However, we have found that in aggregate, enough small operator
+environments exist such that their combination over the internet constitutes
+significant opportunity and advantage for less expensive and faster storage.
+
+Operating a decentralized network requires node operators to contribute
+resources (e.g. network bandwidth, compute, storage, and energy) in exchange
+for compensation (i.e. the opportunity to earn revenue).
+In most instances, an increase in demand for a decentralized service drives
+increase in adoption and proliferation of storage nodes.
+This effectively increases the available capacity while at the same time
+driving costs down.
+
+Our decentralization goals are also driven by our desire to detangle
+fundamental infrastructure, such as storage, from the hands of a few major
+entities.
+We believe that there exists inherent risk in trusting a single entity,
+company, or organization with a significant fraction of the world's data.
+In fact, we believe that there is an implicit cost associated with the risk of
+trusting any third party with custodianship of personal data.
+
+To illustrate, we find that there exists an array of unfavorable
+and costly outcomes which may result from trusting a single entity.
+Some possible costly outcomes include changes to the company's roadmap that could result in the product
+becoming less useful, changes to the company's position on data collection that could
+cause it to sell customer metadata to advertisers, or even the company could go
+out of business or otherwise could fail to keep customer data safe.
+By creating an equivalent or better decentralized
+system, many users worried about single-entity risk will have a viable
+alternative.
+With decentralized architecture, Storj could cease operating and the data
+would continue to be available.
+
+We have decided to adopt a decentralized architecture because, despite the trade-offs, we believe decentralization addresses the core limitations,
+risks, and cost factors that result from centralized cloud storage.
+Within this context,
+decentralization results in a globally distributed singleton network that can
+serve a wide range of storage use cases from archival to CDN. Whereas,
+centralized storage systems require different architectures, implementations,
+and infrastructure to address each of those same use cases.
+
+\section{Marketplace and economics}
+
+Public cloud computing, and public cloud storage in particular, has
+proven to be an attractive business model for the large centralized cloud
+providers. Cloud computing is estimated to be a \$186.4 billion dollar market
+in 2018, and reach \$302.5 billion by 2021 \cite{gartner-cloud-growth}.
+
+The public cloud storage model has provided a compelling economic model to end
+users. Not only does it enable end users to scale on demand but also it allows them to avoid the significant fixed costs of facilities, power, and data center
+personnel. Public cloud storage has generally proven to be an economical,
+durable, and performant option for many end users when compared to
+on-premise solutions.
+
+However, the public cloud storage model has, by its nature, led to a high
+degree of concentration. Fixed costs are born by the network operators, who
+invest billions of dollars in building out a network of data centers and
+then enjoy significant economies of scale. The combination of large upfront
+costs and economies of scale means that there is an extremely limited number
+of viable suppliers of public cloud storage (arguably, fewer than five major
+options worldwide). These few suppliers are also the primary beneficiaries of
+the economic return.
+
+We believe that decentralized storage can provide a viable alternative to
+centralized cloud.
+
+However, to compel partners or customers to bring data to the network,
+the price charged for storage and bandwidth -- combined with the other
+benefits of decentralized storage -- must be
+more compelling and economically beneficial than competing storage solutions.
+
+In our design of Storj, we seek to create an economically advantageous
+situation for four different groups:
+
+\begin{description}
+\item[End users] - We must provide the same economically compelling
+  characteristics of public cloud with no upfront costs and scale on demand.
+  In addition, end users must experience meaningfully better value for given
+  levels of capacity, durability, security, and performance.
+
+\item[Storage node operators] - It must be economically attractive for storage
+  node operators to help build out the network.
+  They must be paid fairly, transparently, and be able to make a
+  reasonable profit relative to any marginal costs they incur.
+  It should be economically advantageous to be a storage
+  node operator not only by utilizing underused capacity but also by creating new capacity.
+  Since node availability and reliability has a large impact on network
+  availability, cost, and reliability, it is required that storage node
+  operators have sufficient incentive to maintain reliable and continuous
+  connections to the network.
+
+\item[Demand providers] - It must be economically attractive for developers and
+  businesses to drive customers and data onto the Storj network. We must design
+  the system to fairly and transparently deliver margin to partners. We believe
+  that there is a unique opportunity to provide open-source software (OSS)
+  companies and projects, which drive over two-thirds of the public cloud workloads
+  today without receiving direct revenue, a source of sustainable revenue.
+
+\item[Network operator] - To sustain continued investment in code,
+functionality, network maintenance, and demand generation, the network
+operator must be able to retain a reasonable profit. They must maintain this profit while
+not only charging end users less than the public cloud providers but also margin sharing
+with storage node operators and demand providers.
+\end{description}
+
+Additionally, the network must be able to account for ensuring efficient, timely billing
+and payment processes as well as regulatory compliance for tax and other reporting.
+To be as globally versatile as possible with payments, our network must be robust to accommodate several types of transactions (such as cryptocurrency, bank payments, and other forms of barter).
+
+Lastly, the Storj roadmap must be aligned with the economic drivers of the
+network.
+New features and changes to the concrete implementations of framework
+components must be driven by applicability to specific object storage use cases
+and the relationship between features and performance to the price of storage
+and bandwidth relative to those use cases.
 
 \section{Device failure and churn}
 
@@ -369,43 +523,7 @@ as possible, bandwidth usage must be aggressively minimized.
 Please see appendix \ref{appendix:bandwidth-space-limits} for a discussion on how
 bandwidth availability and repair traffic limit usable space.
 
-\section{Security and privacy}
 
-One of the primary focuses of the Storj network is to ensure that its users'
-data privacy is protected. This important element is
-built into the design of the client services, network services, and other related services.
-
-Any object storage platform in our market should ensure both the privacy and
-security of data stored; however,
-decentralized storage platforms include an additional layer of
-complexity and risk associated with the storage of data on inherently
-untrusted nodes. Because decentralized storage platforms cannot take many
-of the same shortcuts data center based approaches can (e.g. firewalls, DMZs,
-etc.), decentralized storage must be designed from the ground up to support
-enhanced security and privacy at all levels of the system.
-
-Data security encompasses a wide range of concerns including:
-identity and access management, prevention of tampering or unauthorized
-modification, prevention of ransomware attacks, system vulnerabilities, and
-malicious insiders. Data privacy concerns, however, include: storage of data
-without providing access to the underlying data and its metadata by
-Storj Labs, third-party operators of system components, and malicious actors.
-
-Certain categories of data are subject to specific regulatory compliance.
-For example, legislation in the United States includes
-the Health Insurance Portability and
-Accountability Act (HIPAA) which has requirements for data center
-compatibility. European countries have to consider the General Data Protection
-Regulation (GDPR) regarding
-how individual information must be protected and secured. There
-are many other regulations in other sectors regarding user's data privacy.
-
-Open source software
-provides the level of transparency and assurance needed to prove that the
-behaviors of the system are as advertised. Customers should be able to
-evaluate that our software is implemented correctly, is resistant to
-attack vectors (known or unknown), is secure, and otherwise fulfills all
-of the customers' requirements.
 
 \section{Object size}
 
@@ -426,63 +544,6 @@ with a packing strategy by aggregating and storing many small files as one
 large file.
 The protocol supports seeking and streaming, which will allow users to download small files
 without requiring full retrieval of the aggregated object.
-
-\section{Decentralization}
-
-Informally, a decentralized application is a service that has no single
-operator. Furthermore, no single entity should be solely responsible for the
-cost associated with running the service.
-
-One of the main motivations for preferring decentralization is to drive
-down infrastructure costs for maintenance, utilities, and bandwidth.
-We believe that there
-are significant underutilized resources both at the edge of the network and at
-the margin for many smaller operators. In our experience building decentralized
-storage networks, we have found a long tail of resources that are presently
-unused or underused that could provide affordable and
-geographically distributed cloud storage. Conceivably some small operator
-has access to less expensive electricity than standard data centers or another small
-operator has access to less expensive cooling. Many of these small operator
-environments are not substantial enough to run an entire datacenter-like
-storage system. However, we have found that in aggregate, enough small operator
-environments exist such that their combination over the internet constitutes
-significant opportunity and advantage for less expensive and faster storage.
-
-Operating a decentralized network requires node operators to contribute
-resources (e.g. network bandwidth, compute, storage, and energy) in exchange
-for compensation (i.e. the opportunity to earn revenue).
-In most instances, an increase in demand for a decentralized service drives
-increase in adoption and proliferation of storage nodes.
-This effectively increases the available capacity while at the same time
-driving costs down.
-
-Our decentralization goals are also driven by our desire to detangle
-fundamental infrastructure, such as storage, from the hands of a few major
-entities.
-We believe that there exists inherent risk in trusting a single entity,
-company, or organization with a significant fraction of the world's data.
-In fact, we believe that there is an implicit cost associated with the risk of
-trusting any third party with custodianship of personal data.
-
-To illustrate, we find that there exists an array of unfavorable
-and costly outcomes which may result from trusting a single entity.
-Some possible costly outcomes include changes to the company's roadmap that could result in the product
-becoming less useful, changes to the company's position on data collection that could
-cause it to sell customer metadata to advertisers, or even the company could go
-out of business or otherwise could fail to keep customer data safe.
-By creating an equivalent or better decentralized
-system, many users worried about single-entity risk will have a viable
-alternative.
-With decentralized architecture, Storj could cease operating and the data
-would continue to be available.
-
-We have decided to adopt a decentralized architecture because, despite the trade-offs, we believe decentralization addresses the core limitations,
-risks, and cost factors that result from centralized cloud storage.
-Within this context,
-decentralization results in a globally distributed singleton network that can
-serve a wide range of storage use cases from archival to CDN. Whereas,
-centralized storage systems require different architectures, implementations,
-and infrastructure to address each of those same use cases.
 
 \section{Byzantine fault tolerance}
 
@@ -505,7 +566,7 @@ is in their net best interest.
 
 Some distributed storage systems (e.g. AWS S3, Azure Blob Storage)
 operate in an environment
-where all nodes are considered altruistic. For example, sans hardware failure
+where all nodes are considered [\em altruistic]. For example, sans hardware failure
 or security breaches, Amazon's storage nodes
 are not going to do anything besides what they were explicitly programmed to do,
 because Amazon owns and runs all of them.
@@ -568,82 +629,6 @@ Surprisingly, many decentralized storage platforms are working towards
 architectures that require significant amounts of coordination,
 where most if not all operations must be accounted for by a single global
 ledger. For us to achieve exabyte scale that is entirely controllable by each user, it is a fundamental requirement to limit hotpath coordination domains to small spheres.
-
-\section{Marketplace and economics}
-
-Public cloud computing, and public cloud storage in particular, has
-proven to be an attractive business model for the large centralized cloud
-providers. Cloud computing is estimated to be a \$186.4 billion dollar market
-in 2018, and reach \$302.5 billion by 2021 \cite{gartner-cloud-growth}.
-
-The public cloud storage model has provided a compelling economic model to end
-users. Not only does it enable end users to scale on demand but also it allows them to avoid the significant fixed costs of facilities, power, and data center
-personnel. Public cloud storage has generally proven to be an economical,
-durable, and performant option for many end users when compared to
-on-premise solutions.
-
-However, the public cloud storage model has, by its nature, led to a high
-degree of concentration. Fixed costs are born by the network operators, who
-invest billions of dollars in building out a network of data centers and
-then enjoy significant economies of scale. The combination of large upfront
-costs and economies of scale means that there is an extremely limited number
-of viable suppliers of public cloud storage (arguably, fewer than five major
-options worldwide). These few suppliers are also the primary beneficiaries of
-the economic return.
-
-We believe that decentralized storage can provide a viable alternative to
-centralized cloud.
-
-However, to compel partners or customers to bring data to the network,
-the price charged for storage and bandwidth -- combined with the other
-benefits of decentralized storage -- must be
-more compelling and economically beneficial than competing storage solutions.
-
-In our design of Storj, we seek to create an economically advantageous
-situation for four different groups:
-
-\begin{description}
-\item[End users] - We must provide the same economically compelling
-  characteristics of public cloud with no upfront costs and scale on demand.
-  In addition, end users must experience meaningfully better value for given
-  levels of capacity, durability, security, and performance.
-
-\item[Storage node operators] - It must be economically attractive for storage
-  node operators to help build out the network.
-  They must be paid fairly, transparently, and be able to make a
-  reasonable profit relative to any marginal costs they incur.
-  At a bare minimum, it should be economically advantageous to be a storage
-  node operator to utilize underused capacity. Nonetheless, we believe it should be
-  economically advantageous to create new capacity as well.
-  Since node availability and reliability has a large impact on network
-  availability, cost, and reliability, it is required that storage node
-  operators have sufficient incentive to maintain reliable and continuous
-  connections to the network.
-
-\item[Demand providers] - It must be economically attractive for developers and
-  businesses to drive customers and data onto the Storj network. We will design
-  the system to fairly and transparently deliver margin to partners. We believe
-  that there is a unique opportunity to provide open-source software (OSS)
-  companies and projects, which drive over two-thirds of the public cloud workloads
-  today without receiving direct revenue, a source of sustainable revenue.
-
-\item[Network operator] - To sustain continued investment in code,
-functionality, network maintenance, and demand generation, the network
-operator must be able to retain a reasonable profit. They must maintain this profit while
-not only charging end users less than the public cloud providers but also margin sharing
-with storage node operators and demand providers.
-\end{description}
-
-Additionally, the network must be able to account for ensuring efficient, timely billing
-and payment processes as well as regulatory compliance for tax and other reporting.
-To be as globally versatile as possible with payments, our network must be robust to accommodate several types of transactions (such as cryptocurrency, bank payments, and other forms of barter).
-
-Lastly, the Storj roadmap will be aligned with the economic drivers of the
-network.
-New features and changes to the concrete implementations of framework
-components must be driven by applicability to specific object storage use cases
-and the relationship between features and performance to the price of storage
-and bandwidth relative to those use cases.
 
 \chapter{Framework}\label{chap:framework}
 
