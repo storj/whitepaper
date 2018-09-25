@@ -847,8 +847,8 @@ redundancy, the remaining additional uploads can be canceled. This cancellation 
 upload to continue as fast as the fastest nodes in a set, instead of waiting
 for the slowest nodes.
 Downloads are similarly improved. Since more redundancy exists
-than is needed, downloads can use fastest peers to download the starting pieces, slower
-nodes help with the later pieces.
+than is needed, downloads can use the fastest peers to download the starting pieces and slower
+nodes to help with the later pieces.
 
 \begin{figure}
 \centering
@@ -2359,7 +2359,7 @@ If the upload is aborted for any reason, the storage node will keep the
 largest restricted bandwidth allocation it received from the client uplink on
 behalf of the satellite. It will throw away all other relevant request data.
 
-Next,
+Next:
 
 \begin{itemize}
 \item The uplink encrypts the random encryption key it chose for this file
@@ -2367,12 +2367,12 @@ Next,
 \item The uplink will upload a {\em pointer} object back to the satellite, which
   contains the following information:
   \begin{itemize}
-  \item Which storage nodes were ultimately successful
-  \item What encrypted path was chosen for this segment
-  \item Which erasure code algorithm was used
-  \item The chosen piece ID
-  \item The encrypted encryption key and other metadata
-  \item A signature
+  \item which storage nodes were ultimately successful
+  \item what encrypted path was chosen for this segment
+  \item which erasure code algorithm was used
+  \item the chosen piece ID
+  \item the encrypted encryption key and other metadata
+  \item a signature
   \end{itemize}
 \end{itemize}
 
@@ -2384,10 +2384,10 @@ segment.
 \begin{itemize}
 \item The last segment stored in the stream will contain additional metadata:
   \begin{itemize}
-  \item How many segments the stream contained
-  \item How large the segments are, in bytes
-  \item The starting nonce of the first segment
-  \item File extended attributes and other metadata.
+  \item how many segments the stream contained
+  \item how large the segments are, in bytes
+  \item the starting nonce of the first segment
+  \item file extended attributes and other metadata
   \end{itemize}
 \end{itemize}
 
@@ -2402,7 +2402,7 @@ If an upload happens via the Amazon S3 multipart upload interface, each
 
 When a user wants to download a file, first the user sends a request for
 data to the uplink.
-  The uplink tries to reduce the number of round trips to the satellite
+  The uplink then tries to reduce the number of round trips to the satellite
   by speculatively requesting the pointers for the first few segments in
   addition to the pointer for the last segment. The uplink needs the last
   segment to learn the size of the object, the size and number of segments,
@@ -2410,14 +2410,14 @@ data to the uplink.
 
 For every segment pointer requested, the satellite will:
   \begin{itemize}
-  \item Validate that the uplink has access to download the segment pointer
-    and has enough funds to pay for the download.
-  \item Generate an unrestricted bandwidth allocation for each piece that
-    makes up the segment.
-  \item Look up the contact information for the storage nodes listed in the
-  pointer.
-  \item Return the requested segment pointer, the bandwidth allocations, and
-    node contact info for each piece.
+  \item validate that the uplink has access to download the segment pointer
+    and has enough funds to pay for the download
+  \item generate an unrestricted bandwidth allocation for each piece that
+    makes up the segment
+  \item look up the contact information for the storage nodes listed in the
+  pointer
+  \item return the requested segment pointer, the bandwidth allocations, and
+    node contact info for each piece
   \end{itemize}
 
 The uplink will determine whether more segments are necessary for the
@@ -2446,16 +2446,16 @@ The storage nodes will later send the largest restricted
 \section{Delete}
 
 When a user wants to delete a file, the delete operation is first recieved
-by the uplink. The uplink requests all of the segment pointers for the file.
+by the uplink. The uplink then requests all of the segment pointers for the file.
 
 For every segment pointer, the satellite will:
   \begin{itemize}
-  \item Validate that the uplink has access to delete the segment pointer.
-  \item Generate a signed agreement for the deletion of the segment, so the
-    storage node knows the satellite is expecting the delete to proceed.
-  \item Look up the contact information for the storage nodes listed in the
-  pointer.
-  \item Return the segments, the agreements, and contact information.
+  \item validate that the uplink has access to delete the segment pointer
+  \item generate a signed agreement for the deletion of the segment, so the
+    storage node knows the satellite is expecting the delete to proceed
+  \item look up the contact information for the storage nodes listed in the
+  pointer
+  \item return the segments, the agreements, and contact information
   \end{itemize}
 
 For all of the remote segments, the uplink will
@@ -2491,16 +2491,16 @@ Then, the uplink requests all of the segment pointers of that file.
 
 For every segment pointer, the satellite:
   \begin{itemize}
-  \item validates that the uplink has access to download it.
-  \item returns the requested segment metadata.
+  \item validates that the uplink has access to download it
+  \item returns the requested segment metadata
   \end{itemize}
 
 For every segment pointer, the uplink:
   \begin{itemize}
-  \item decrypts the metadata with an encryption key derived from the path.
-  \item calculates the path at the new destination.
+  \item decrypts the metadata with an encryption key derived from the path
+  \item calculates the path at the new destination
   \item re-encrypts the metadata with a new encryption key derived from the
-    new path.
+    new path
   \end{itemize}
 
  The uplink requests that the satellite add
@@ -2519,23 +2519,23 @@ Then the uplink requests all of the segment pointers of the file.
 
 For every segment pointer, the satellite:
   \begin{itemize}
-  \item validates that the uplink has access to download it.
+  \item validates that the uplink has access to download it
   \item looks up the contact information for the storage nodes listed in the
-    pointer.
+    pointer
   \item returns the requested segment metadata, a new root piece ID, and
-    contact information.
+    contact information
   \end{itemize}
 
 For every segment pointer, the uplink:
   \begin{itemize}
-  \item decrypts the metadata with an encryption key derived from the path.
-  \item changes the path to the new destination.
+  \item decrypts the metadata with an encryption key derived from the path
+  \item changes the path to the new destination
   \item invokes a copy operation on each of the storage nodes from the pointer
-    to duplicate the piece with a new piece ID.
+    to duplicate the piece with a new piece ID
   \item waits for the storage nodes to respond that they have duplicated the
-    data.
+    data
   \item re-encrypts the metadata with a new encryption key derived from the
-    new path.
+    new path
   \end{itemize}
 
 Finally, the uplink uploads all modified segment pointers to the satellite.
@@ -2629,13 +2629,13 @@ A worker process will take segment pointers off the repair queue. When
 The payment process works as follows:
 
 \begin{itemize}
-\item First, a satellite will choose a roll-up period. This is a period of
+\item First, satellite will choose a roll-up period. This is a period of
   time -- defaulting to a day -- that payment for data at rest is calculated.
-\item Each roll-up period, a satellite will consider all of the files it
+\item During each roll-up period, a satellite will consider all of the files it
   believes are currently stored on each storage node. Satellites will keep track
 of payments owed to each storage node for each rollup period, based on
 the data kept on each storage node.
-\item Periodically, storage nodes will send in bandwidth allocation reports.
+\item Finally, storage nodes will periodically send in bandwidth allocation reports.
 \end{itemize}
 
 When a
@@ -2724,7 +2724,7 @@ they received. The repairing node would return these signed statements to the
 satellite, and the satellite could then use the signed statements along with
 the piece Merkle tree root to confirm that the data was stored correctly.
 
-\section{Order-preserving encryption (OPE)}\label{section:OPE}
+\section{Order-preserving encryption}\label{section:OPE}
 
 Our protocol currently encrypts paths by default,
 increasing security of the network and anonymity of stored data.
@@ -2736,7 +2736,7 @@ though this has the potential to decrease security
 and/or anonymity of the stored data.
 As part of our ongoing work,
 we are researching
-order-preserving encryption schemes
+order-preserving encryption (OPE) schemes
 \cite{Agrawal:2004:OPE:1007568.1007632} so that a user may have
 the ability to sort file paths lexicographically
 while still maintaining data anonymity and security.
@@ -2745,7 +2745,7 @@ should include \cite{7815719}, and \cite{10.1007/978-3-642-22792-9_33}.
 The reader is directed to those resources for further information
 on the benefits and drawbacks of OPE as it is known currently.
 Another approach is to consider the fully
-homomorphic encryption schemes found in \cite{gentry2015fully}
+homomorphic encryption (FHE) schemes found in \cite{gentry2015fully}
 which may provide a higher level of security than OPE's.
 This added security may come with other drawbacks,
 such as higher computational complexity.
@@ -2873,7 +2873,7 @@ that a storage node is maintaining stored pieces faithfully.
 We use the reputation distribution -- or a modified version of such --
 as the Bayesian prior. As an aside, we remark that this makes it doubly important
 for nodes to obtain and maintain good reputations,
-as the reputation distribution is not only used directly as it pertains to uptime
+as the reputation distribution is used not only directly as it pertains to uptime
 but also indirectly in the form of the Bayesian prior for audit confidence levels.
 For the sampling distribution, we use the Binomial distribution with
 success probability $p=\frac{a_s}{a_t+1}$ where $a_s$ is the number of
@@ -2884,6 +2884,17 @@ assuming that by well-behaved we mean that each audit comes back successfully.
 Then we take the audit false positive risk to be $1-P$,
 where $P$ is the posterior distribution obtained after taking the
 prior and sampling distributions into account.
+
+\begin{table}[H]\centering
+\begin{tabular}{| c | c | c| c | c|}\hline
+Successes&Trials&Mean&Lower&Upper\\\hline 
+80&100&0.80&0.71&0.87 \\
+85&100&0.85&0.76&0.91\\
+90&100&0.90&0.82&0.95\\
+95&100&0.95&0.89&0.98 \\
+99&100&0.99&0.95&0.99 \\\hline
+\end{tabular}
+\end{table}
 
 \chapter{Choosing erasure parameters}
 \label{appendix:RS}
@@ -2903,11 +2914,11 @@ Computerized data storage systems began by necessity with single computers
 storing and retrieving data on their own. Unfortunately, in environments where
 the system must continue operating at all times, a single computer failure can
 grind an important process to a halt. As a result, researchers have often
-sought after ways to enable groups of computers to manage data
+sought ways to enable groups of computers to manage data
 without any specific computer being required for operation. Spreading ownership
 of data across multiple computers could increase uptime in the face of failures,
 increase throughput by spreading work across more processors, and so forth.
-This research field has been long and challenging, but fortunately, it has led
+This research field has been long and challenging; but, fortunately, it has led
 to some really exciting technology.
 
 The biggest issue with getting a group of computers to agree is that messages
@@ -2957,8 +2968,8 @@ default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 
 Linearizability in a distributed system is often much more desirable than more
 weakly consistent models, as it is
-useful as a building block for many higher level data structures and operations,
-such as distributed locks and other coordination techniques. Initially, early
+useful as a building block for many higher level data structures and operations
+(such as distributed locks and other coordination techniques). Initially, early
 efforts to build linearizable distributed consensus centered around two-phase
 commit, then three-phase commit, which both
 suffered due to issues similar to the two generals' problem. Things were looking
@@ -3062,7 +3073,7 @@ the network.
 Sybil attacks involve the creation of large amounts of nodes in an attempt to
 disrupt network operation by hijacking or dropping messages. Kademlia
 \cite{kad} is already somewhat resistant to Sybil attacks, because
-it relies on message redundancy and a concrete distance metric.
+it relies on both message redundancy and a concrete distance metric.
 A node's neighbors in the network are selected by
 node ID from an evenly distributed pool, and most messages are sent to at least
 $k$ neighbors. If a Sybil attacker controls 50\% of the network, it
@@ -3084,7 +3095,7 @@ their longevity.
 \section{Eclipse}
 
 An eclipse attack attempts to isolate a node or set of node in the network
-graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
+graph by ensuring that all outbound connections reach malicious nodes. Eclipse
 attacks can be hard to identify, as malicious nodes can be made to function
 normally in most cases, only eclipsing certain important messages or
 information. Storj addresses eclipse attacks by using public key hashes as node
