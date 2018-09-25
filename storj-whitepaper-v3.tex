@@ -2857,137 +2857,107 @@ we aren't tackling the Byzantine fault tolerant consensus problem right away.
 
 \newpage \appendix
 
-\chapter{Attacks}
+\chapter{Object Repair Costs}
 
-As with any distributed system, a variety of attack vectors exist. Many of these
-are common to all distributed systems. Some are storage-specific and will apply
-to any distributed storage system.
+A fundamental challenge in our system is how to not only choose the system
+parameters that keep the expansion factor and repair bandwidth to a minimum but
+also provide an acceptable level of durability.
 
-\section{Spartacus}
+Fortunately, we are not alone in wondering about this, and there is a good
+amount of prior research on the problem.
+``Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy'' \cite{p2p-lazy} is an excellent guide, and much of our work follows from their conclusions.
+The end result is a mathematical framework which determines network durability
+and repair bandwidth given Reed-Solomon parameters, average node lifetime, and
+reconstruction rate.
 
-Spartacus attacks, or identity hijacking, are possible on unmodified Kademlia
-\cite{kad}.
-Any node may assume the identity of another node and receive some fraction of
-messages intended for that node by simply copying its node ID.
-This allows for targeted attacks against specific nodes and data.
-Spartacus attack mitigation is addressed in S/Kademlia \cite{skad} by
-implementing Node IDs as public key hashes and requiring messages to be signed.
-A Spartacus attacker in this system would be unable to generate the
-corresponding private key, and thus unable to sign messages and participate in
-the network.
+The following is a summary of results and explanation of their implications.
 
-\section{Sybil}
+\section{Repair Bandwidth and Loss Rate Framework}
 
-Sybil attacks involve the creation of large amounts of nodes in an attempt to
-disrupt network operation by hijacking or dropping messages. Kademlia
-\cite{kad} is already somewhat resistant to Sybil attacks, because
-it relies on message redundancy and a concrete distance metric.
-A node's neighbors in the network are selected by
-node ID from an evenly distributed pool, and most messages are sent to at least
-$k$ neighbors. If a Sybil attacker controls 50\% of the network, it
-successfully isolates only 12.5\% of honest nodes. While reliability and
-performance will degrade, the network will still be functional unless a large
-portion of the network consists of colluding Sybil nodes.
+\begin{center}
+\begin{tabular}{| c | c |}\hline
+Variable & Description\\\hline
+$MTTF$ & Mean time to failure \\
+$\alpha$ & 1/$MTTF$\\
+$MRT$ & Mean reconstruction time \\
+$\gamma$ & 1/$MRT$\\
+$D$&Total bytes on the network\\
+$n$ & Total number of pieces per segment (RS encoding)\\
+$k$ & Pieces needed to rebuild a segment (RS encoding)\\
+$m$ & Repair threshold\\
+$LR$ & Loss rate\\
+1-$LR$ & Durability\\
+$E_D$ & Expansion factor\\
+$B_R$ & Ratio of data that is repair bandwidth\\
+\hline
+\end{tabular}
+\end{center}
 
-As an additional defense against sybil attacks, S/Kademlia \cite{skad}
-extends Kademlia with a proof of work scheme, which we have adopted. See section
-\ref{sec:node-id} for more details.
+\begin{align*}
+&&BW_R&=\frac{\alpha D(n-m+k)}{k\ln(n/m)}&\\
+&&LR&=\frac{1}{(m+1)\ln(n/m)}\frac{m!}{(k-1)!}\left(\frac{\alpha}{\gamma}\right)^{m-k+2}&\\
+&&E_D&=n/k&\\
+&&B_R&=BW_R/D&\\
+\end{align*}
 
-Our storage node reputation system involves a prolonged initial vetting
-period nodes must complete before they are trusted with significant amounts
-of data. This vetting system, discussed more in section
-\ref{sec:concrete-reputation}, prevents a large influx of new nodes from taking
-incoming data from existing reputable storage nodes without first proving
-their longevity.
+\section{Node churn is bad for durability}\label{appendix:bandwidth-space-limits}
 
-\section{Eclipse}
+The equations demonstrate that repair bandwidth is impacted by node churn
+linearly, which is expected.
+Lower mean time to node failure triggers more frequent rebuilds and,
+therefore, more bandwidth usage.
+Loss rate is much more sensitive to high node churn; it increases
+exponentially with $\alpha$.
+This necessitates very stable nodes, with lifetimes of several months, to
+achieve acceptable network durability.
+See appendix \ref{appendix:RS} for a more in depth discussion of node churn's
+affect on erasure code parameters.
 
-An eclipse attack attempts to isolate a node or set of node in the network
-graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
-attacks can be hard to identify, as malicious nodes can be made to function
-normally in most cases, only eclipsing certain important messages or
-information. Storj addresses eclipse attacks by using public key hashes as node
-IDs, signatures based on those public keys, and multiple disjoint network
-lookups as prescriped by S/Kademlia.
+Repair affects storage nodes' participation beyond their bandwidth usage; it
+also constrains the amount of usable disk space.
+Consider a storage node with 1 TB of available space, with a stated monthly
+bandwidth cap of 500 GB.
+If it's known (via the above framework) that a storage node can expect to
+repair 50\% of its data in a given month, and assuming each stored object
+is served at least once, then we can store no more than 333 GB on this node
+since anything more than that causes more bandwidth than allowed.
+In other words, paid bandwidth plus repair bandwidth must always be less than
+or equal to the cap.
 
-The larger the network is, the harder it will
-be to prevent a node from finding a portion of the network uncontrolled by
-an attacker.
-As long as a storage node or satellite has been introduced to a portion of
-the network that is not controlled by the attacker at any point, the public
-key hashes and signatures ensure that man-in-the-middle attacks are impossible,
-and multiple disjoint network lookups ensure that Kademlia routing is
-prohibitively expensive to bias.
+Higher repair rates equal lower effective storage size, but nodes serving paid
+data more frequently are more sensitive to the effect.
+In practice, the paid bandwidth rate will vary with the type of data being
+stored on each node.
+These ratios must be monitored closely to determine appropriate usable space
+limits as the network evolves over time.
 
-To avoid an eclipse attack, all that remains
-is to make sure new nodes are appropriately introduced to at least one
-well-behaved node on the network during the bootstrapping process.
-To that end, Storj Labs will run some well-known, verified bootstrap nodes.
+\chapter{Audit false positive risk}\label{appendix:audit-false-positive}
 
-\section{Honest Geppetto}
+\todo{i think this section either needs actual calculations or should be removed}
 
-In this attack,
-the attacker operates a large number of ``puppet'' storage nodes on the network,
-accumulating trust and contracts over time. Once a certain threshold is reached,
-he pulls the strings on each puppet to execute a hostage attack with the data
-involved, or simply drops each storage node from the network. The best defense
-against this attack is to create a network of sufficient scale that this attack
-is ineffective. In the meantime, this can be partially prevented by relatedness
-analysis of storage nodes. Bayesian inference across downtime, latency, network
-route, and other
-attributes can be used to assess the likelihood that two storage nodes are
-operated by the same organization. Satellites can and should attempt to
-distribute pieces across as many unrelated storage nodes as possible.
+We rely on a Bayesian approach to determine the probability
+that a storage node is maintaining stored pieces faithfully.
+We use the reputation distribution -- or a modified version of such --
+as the Bayesian prior. As an aside, we remark that this makes it doubly important
+for nodes to obtain and maintain good reputations,
+as the reputation distribution is not only used directly as it pertains to uptime
+but also indirectly in the form of the Bayesian prior for audit confidence levels.
+For the sampling distribution, we use the Binomial distribution with
+success probability $p=\frac{a_s}{a_t+1}$ where $a_s$ is the number of
+successful audits and $a_t$ is the number of total audits.
+We observe that for a well-behaved node, this probability starts at 0.5
+and tends to 1 as the number of successful audits increases,
+assuming that by well-behaved we mean that each audit comes back successfully.
+Then we take the audit false positive risk to be $1-P$,
+where $P$ is the posterior distribution obtained after taking the
+prior and sampling distributions into account.
 
-\section{Hostage bytes}
+\chapter{Choosing erasure parameters}
+\label{appendix:RS}
 
-The hostage byte attack is a storage-specific attack where malicious storage
-nodes
-refuse to transfer pieces, or portions of pieces, in order to extort additional
-payments from clients. The Reed-Solomon encoding ought to be sufficient to
-defeat attacks of this sort (as the client can simply download the necessary
-number of pieces from other nodes) unless multiple malicious nodes collude to
-gain control of many pieces of the same file. The same mitigations discussed
-under the Honest Geppetto attack can apply here to help avoid this situation.
-
-\section{Cheating storage nodes, clients, or satellites}
-
-The bandwidth allocation protocol minimizes the risk for client and storage
-nodes.
-The client can only interact with the storage node by sending a signed
-restricted allocation.
-The restriction limits the risk to a very low amount.
-The storage node has to comply with the protocol as expected in order to get
-more restricted allocations.
-Storage nodes and satellites will commence a vetting process that limits their
-exposure.
-Storage nodes are allowed to decline requests from untrusted satellites.
-
-\section{Faithless storage nodes and satellites}
-
-While storage nodes and satellites are built to require authentication via
-signatures before serving download requests, it is reasonable to imagine a
-modification of the storage node or satellite that will provide downloads to
-any paying requestor.
-Even in a network with a faithless satellite, data privacy is not significantly
-compromised.
-Strong client-side encryption protects the contents of the file from
-inspection.
-Storj is not designed to protect against compromised clients.
-
-\section{Defeated audit attacks}
-
-A typical Merkle proof verification requires pre-generated challenges and
-responses.
-Without a periodic regeneration of these challenges, a storage node can begin
-to pass most audits without storing all of the requested data.
-Instead, we request a random stripe of erasure shares from all storage nodes.
-We run the Berlekamp-Welch algorithm\cite{bw} across all the
-erasure shares.
-When enough storage nodes return correct information, any faulty or missing
-responses can easily be identified.
-New storage nodes will be placed into a vetting process until enough audits
-have passed.
+\input{RS-appendix-files/model.tex}
+\input{RS-appendix-files/numexp.tex}
+\input{RS-appendix-files/conc.tex}
 
 \chapter{Distributed consensus}\label{chap:dist-consensus}
 
@@ -3122,7 +3092,7 @@ participants to keep a full copy of all change histories.
 
 \section{Why we're avoiding Byzantine distributed consensus}
 
-Ultimately, all of the existing solutions fall short of our goal of avoiding
+Ultimately, all of the existing solutions fall short of our goal of minimizing
 coordination (see section \ref{sec:coordination-avoidance}). Flexible Paxos
 \cite{paxos-flexible} does significantly better than normal Paxos in the
 steady-state for avoiding coordination, but is completely unusable in a
@@ -3135,107 +3105,137 @@ solution. The building blocks of one may already be listed in the previous
 discussion. Until it is clear that one has arisen, we are reducing our risk
 by avoiding the problem entirely.
 
-\chapter{Object Repair Costs}
+\chapter{Attacks}
 
-A fundamental challenge in our system is how to not only choose the system
-parameters that keep the expansion factor and repair bandwidth to a minimum but
-also provide an acceptable level of durability.
+As with any distributed system, a variety of attack vectors exist. Many of these
+are common to all distributed systems. Some are storage-specific and will apply
+to any distributed storage system.
 
-Fortunately, we are not alone in wondering about this, and there is a good
-amount of prior research on the problem.
-``Peer-to-Peer Storage Systems: a Practical Guideline to be Lazy'' \cite{p2p-lazy} is an excellent guide, and much of our work follows from their conclusions.
-The end result is a mathematical framework which determines network durability
-and repair bandwidth given Reed-Solomon parameters, average node lifetime, and
-reconstruction rate.
+\section{Spartacus}
 
-The following is a summary of results and explanation of their implications.
+Spartacus attacks, or identity hijacking, are possible on unmodified Kademlia
+\cite{kad}.
+Any node may assume the identity of another node and receive some fraction of
+messages intended for that node by simply copying its node ID.
+This allows for targeted attacks against specific nodes and data.
+Spartacus attack mitigation is addressed in S/Kademlia \cite{skad} by
+implementing Node IDs as public key hashes and requiring messages to be signed.
+A Spartacus attacker in this system would be unable to generate the
+corresponding private key, and thus unable to sign messages and participate in
+the network.
 
-\section{Repair Bandwidth and Loss Rate Framework}
+\section{Sybil}
 
-\begin{center}
-\begin{tabular}{| c | c |}\hline
-Variable & Description\\\hline
-$MTTF$ & Mean time to failure \\
-$\alpha$ & 1/$MTTF$\\
-$MRT$ & Mean reconstruction time \\
-$\gamma$ & 1/$MRT$\\
-$D$&Total bytes on the network\\
-$n$ & Total number of pieces per segment (RS encoding)\\
-$k$ & Pieces needed to rebuild a segment (RS encoding)\\
-$m$ & Repair threshold\\
-$LR$ & Loss rate\\
-1-$LR$ & Durability\\
-$E_D$ & Expansion factor\\
-$B_R$ & Ratio of data that is repair bandwidth\\
-\hline
-\end{tabular}
-\end{center}
+Sybil attacks involve the creation of large amounts of nodes in an attempt to
+disrupt network operation by hijacking or dropping messages. Kademlia
+\cite{kad} is already somewhat resistant to Sybil attacks, because
+it relies on message redundancy and a concrete distance metric.
+A node's neighbors in the network are selected by
+node ID from an evenly distributed pool, and most messages are sent to at least
+$k$ neighbors. If a Sybil attacker controls 50\% of the network, it
+successfully isolates only 12.5\% of honest nodes. While reliability and
+performance will degrade, the network will still be functional unless a large
+portion of the network consists of colluding Sybil nodes.
 
-\begin{align*}
-&&BW_R&=\frac{\alpha D(n-m+k)}{k\ln(n/m)}&\\
-&&LR&=\frac{1}{(m+1)\ln(n/m)}\frac{m!}{(k-1)!}\left(\frac{\alpha}{\gamma}\right)^{m-k+2}&\\
-&&E_D&=n/k&\\
-&&B_R&=BW_R/D&\\
-\end{align*}
+As an additional defense against sybil attacks, S/Kademlia \cite{skad}
+extends Kademlia with a proof of work scheme, which we have adopted. See section
+\ref{sec:node-id} for more details.
 
-\section{Node churn is bad for durability}\label{appendix:bandwidth-space-limits}
+Our storage node reputation system involves a prolonged initial vetting
+period nodes must complete before they are trusted with significant amounts
+of data. This vetting system, discussed more in section
+\ref{sec:concrete-reputation}, prevents a large influx of new nodes from taking
+incoming data from existing reputable storage nodes without first proving
+their longevity.
 
-The equations demonstrate that repair bandwidth is impacted by node churn
-linearly, which is expected.
-Lower mean time to node failure triggers more frequent rebuilds and,
-therefore, more bandwidth usage.
-Loss rate is much more sensitive to high node churn; it increases
-exponentially with $\alpha$.
-This necessitates very stable nodes, with lifetimes of several months, to
-achieve acceptable network durability.
-See appendix \ref{appendix:RS} for a more in depth discussion of node churn's
-affect on erasure code parameters.
+\section{Eclipse}
 
-Repair affects storage nodes' participation beyond their bandwidth usage; it
-also constrains the amount of usable disk space.
-Consider a storage node with 1 TB of available space, with a stated monthly
-bandwidth cap of 500 GB.
-If it's known (via the above framework) that a storage node can expect to
-repair 50\% of its data in a given month, and assuming each stored object
-is served at least once, then we can store no more than 333 GB on this node
-since anything more than that causes more bandwidth than allowed.
-In other words, paid bandwidth plus repair bandwidth must always be less than
-or equal to the cap.
+An eclipse attack attempts to isolate a node or set of node in the network
+graph, by ensuring that all outbound connections reach malicious nodes. Eclipse
+attacks can be hard to identify, as malicious nodes can be made to function
+normally in most cases, only eclipsing certain important messages or
+information. Storj addresses eclipse attacks by using public key hashes as node
+IDs, signatures based on those public keys, and multiple disjoint network
+lookups as prescriped by S/Kademlia.
 
-Higher repair rates equal lower effective storage size, but nodes serving paid
-data more frequently are more sensitive to the effect.
-In practice, the paid bandwidth rate will vary with the type of data being
-stored on each node.
-These ratios must be monitored closely to determine appropriate usable space
-limits as the network evolves over time.
+The larger the network is, the harder it will
+be to prevent a node from finding a portion of the network uncontrolled by
+an attacker.
+As long as a storage node or satellite has been introduced to a portion of
+the network that is not controlled by the attacker at any point, the public
+key hashes and signatures ensure that man-in-the-middle attacks are impossible,
+and multiple disjoint network lookups ensure that Kademlia routing is
+prohibitively expensive to bias.
 
-\chapter{Choosing erasure parameters}
-\label{appendix:RS}
+To avoid an eclipse attack, all that remains
+is to make sure new nodes are appropriately introduced to at least one
+well-behaved node on the network during the bootstrapping process.
+To that end, Storj Labs will run some well-known, verified bootstrap nodes.
 
-\input{RS-appendix-files/model.tex}
-\input{RS-appendix-files/numexp.tex}
-\input{RS-appendix-files/conc.tex}
+\section{Honest Geppetto}
 
-\chapter{Audit false positive risk}\label{appendix:audit-false-positive}
+In this attack,
+the attacker operates a large number of ``puppet'' storage nodes on the network,
+accumulating trust and contracts over time. Once a certain threshold is reached,
+he pulls the strings on each puppet to execute a hostage attack with the data
+involved, or simply drops each storage node from the network. The best defense
+against this attack is to create a network of sufficient scale that this attack
+is ineffective. In the meantime, this can be partially prevented by relatedness
+analysis of storage nodes. Bayesian inference across downtime, latency, network
+route, and other
+attributes can be used to assess the likelihood that two storage nodes are
+operated by the same organization. Satellites can and should attempt to
+distribute pieces across as many unrelated storage nodes as possible.
 
-\todo{i think this section either needs actual calculations or should be removed}
+\section{Hostage bytes}
 
-We rely on a Bayesian approach to determine the probability
-that a storage node is maintaining stored pieces faithfully.
-We use the reputation distribution -- or a modified version of such --
-as the Bayesian prior. As an aside, we remark that this makes it doubly important
-for nodes to obtain and maintain good reputations,
-as the reputation distribution is not only used directly as it pertains to uptime
-but also indirectly in the form of the Bayesian prior for audit confidence levels.
-For the sampling distribution, we use the Binomial distribution with
-success probability $p=\frac{a_s}{a_t+1}$ where $a_s$ is the number of
-successful audits and $a_t$ is the number of total audits.
-We observe that for a well-behaved node, this probability starts at 0.5
-and tends to 1 as the number of successful audits increases,
-assuming that by well-behaved we mean that each audit comes back successfully.
-Then we take the audit false positive risk to be $1-P$,
-where $P$ is the posterior distribution obtained after taking the
-prior and sampling distributions into account.
+The hostage byte attack is a storage-specific attack where malicious storage
+nodes
+refuse to transfer pieces, or portions of pieces, in order to extort additional
+payments from clients. The Reed-Solomon encoding ought to be sufficient to
+defeat attacks of this sort (as the client can simply download the necessary
+number of pieces from other nodes) unless multiple malicious nodes collude to
+gain control of many pieces of the same file. The same mitigations discussed
+under the Honest Geppetto attack can apply here to help avoid this situation.
+
+\section{Cheating storage nodes, clients, or satellites}
+
+The bandwidth allocation protocol minimizes the risk for client and storage
+nodes.
+The client can only interact with the storage node by sending a signed
+restricted allocation.
+The restriction limits the risk to a very low amount.
+The storage node has to comply with the protocol as expected in order to get
+more restricted allocations.
+Storage nodes and satellites will commence a vetting process that limits their
+exposure.
+Storage nodes are allowed to decline requests from untrusted satellites.
+
+\section{Faithless storage nodes and satellites}
+
+While storage nodes and satellites are built to require authentication via
+signatures before serving download requests, it is reasonable to imagine a
+modification of the storage node or satellite that will provide downloads to
+any paying requestor.
+Even in a network with a faithless satellite, data privacy is not significantly
+compromised.
+Strong client-side encryption protects the contents of the file from
+inspection.
+Storj is not designed to protect against compromised clients.
+
+\section{Defeated audit attacks}
+
+A typical Merkle proof verification requires pre-generated challenges and
+responses.
+Without a periodic regeneration of these challenges, a storage node can begin
+to pass most audits without storing all of the requested data.
+Instead, we request a random stripe of erasure shares from all storage nodes.
+We run the Berlekamp-Welch algorithm\cite{bw} across all the
+erasure shares.
+When enough storage nodes return correct information, any faulty or missing
+responses can easily be identified.
+New storage nodes will be placed into a vetting process until enough audits
+have passed.
 
 \newpage
 \bibliographystyle{unsrt}
