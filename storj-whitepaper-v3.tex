@@ -269,13 +269,13 @@ complexity and risk associated with the storage of data on inherently
 untrusted nodes. Because decentralized storage platforms cannot take many
 of the same shortcuts data center based approaches can (e.g. firewalls, DMZs,
 etc.), decentralized storage must be designed from the ground up to support
-end-to-end encryption and enhanced security and privacy at all levels of the
+not only end-to-end encryption but also enhanced security and privacy at all levels of the
 system.
 
 Certain categories of data are also subject to specific regulatory compliance.
-For example, legislation in the United States such as
+For example, the United States legislation for
 the Health Insurance Portability and
-Accountability Act (HIPAA) has requirements for data center
+Accountability Act (HIPAA) has specific requirements for data center
 compatibility. European countries have to consider the General Data Protection
 Regulation (GDPR) regarding
 how individual information must be protected and secured. There
@@ -772,11 +772,11 @@ Because of how limited bandwidth is as a resource, completely eliminating replic
 strategy and using erasure codes only for redundancy causes a drastic
 decrease in bandwidth footprint.
 It also results in storage nodes getting paid more. High expansion factors
-dilute the incoming funds per byte across more storage nodes, whereas low
+dilute the incoming funds per byte across more storage nodes; whereas, low
 expansion factors allow for a much more direct passthrough of income to
 storage node operators.
 
-To get a better intuition of how erasure codes increase durability without
+To better understand how erasure codes increase durability without
 increasing expansion factors, the following table shows various choices of
 $k$ and $n$, along with the expansion factor and associated durability:
 
@@ -1006,14 +1006,14 @@ that remains is to detect when a storage node goes offline or becomes bad and
 then repair at-risk data.
 
 Assuming that probabilistic audits are enough to estimate the likelihood that
-a  node will have the data it should have represents a huge shortcut in terms
+a node will have the data it should represents a huge shortcut in terms
 of work. We can use overall node status,
 which is much more efficient than file-by-file audits,
 to calculate when a file is at risk.
 We don't consider any types of availability other than node availability when
 determining which files to repair.
 
-There are many other ways data might get lost in the network besides node churn such as corruption, malicious behavior, bad hardware, software error, or
+There are many other ways data might get lost in the network besides node churn, such as corruption, malicious behavior, bad hardware, software error, or
 user initiated space
 reclamation. However, these issues are less serious than full node
 churn issues such as power loss, internet connectivity intermittency, complete disk failure,
@@ -1574,8 +1574,8 @@ fact, the network as a whole can never go down.
 \item {\bf Durability} -
 if the metadata server suffers a catastrophic failure without backups, all of
 the user's data will be lost. This is already true with encryption keys,
-but a traditional database solution increases the risk area from just encryption
-keys considerably. Fortunately, the metadata itself can be periodically backed
+but a traditional database solution considerably increases the risk area from just 
+encryption keys. Fortunately, the metadata itself can be periodically backed
 up into the Storj network,
 such that only needing to keep track of metadata-metadata
 further decreases the amount of critical information that must be stored
@@ -1774,7 +1774,7 @@ Once authorized with a metadata service, that metadata service has an associated
 operations with storage nodes require a specific satellite ID and associated
 signature. A storage node will reject operations not signed by the appropriate
 satellite ID. The uplink must retrieve valid signatures from the metadata
-service prior to operations with storage nodes. Storage nodes should not allow
+service prior to operations with storage nodes. Storage nodes will not allow
 operations signed by one satellite to apply to objects owned by another, unless
 explicitly granted by the owning satellite.
 
@@ -1803,9 +1803,9 @@ An assumption in our storage system is that most storage nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
 via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
-We are already using Reed-Solomon erasure coding
-\cite{rs} on small ranges, {\em stripes}, so we use it to issue challenges and
-verify responses as well. This allows us to run arbitrary audits without
+Not only are we are already using Reed-Solomon erasure coding
+\cite{rs} on small ranges, {\em stripes}, but also we use it to issue challenges and
+verify responses. This allows us to run arbitrary audits without
 pre-generated challenges
 
 To perform an audit, we first choose a {\em stripe}. We request that
@@ -1817,8 +1817,8 @@ can easily be identified.
 Given a specific storage node, an audit might reveal that it is offline,
 incorrect, or correct. In the case of a node being offline, the audit failure
 may be due to the address in the node discovery cache being stale, so another,
-fresh lookup should be attempted. If the node still appears to be offline,
-the satellite should continue to try the same audit with that node periodically
+fresh lookup will be attempted. If the node still appears to be offline,
+the satellite will continue to try the same audit with that node periodically
 until the node either responds successfully, actively fails the audit, or
 is disqualified from being offline too long.
 These audit failures will be stored and saved in the reputation system.
@@ -2328,10 +2328,10 @@ Upon receiving the request, the satellite will:
   requirements.
 \item Return a list of nodes, along with their contact information and
   signed unrestricted bandwidth allocation messages, and a chosen root piece
-  id.
+  ID.
 \end{itemize}
 
-Third, the uplink will take this information and begin parallel connections to
+Next, the uplink will take this information and begin parallel connections to
   all of the chosen storage nodes via the bandwidth allocation protocol
   (section \ref{bap}).
 
@@ -2350,7 +2350,7 @@ Third, the uplink will take this information and begin parallel connections to
   end of each piece stream.
 \end{itemize}
 
-Fourth, the storage node will store: the largest restricted bandwidth allocation;
+After that, the storage node will store: the largest restricted bandwidth allocation;
 the TTL of the segment, if one exists; and the data itself. The data will
 be identified by the storage node-specific piece ID and the delegating satellite
 ID.
