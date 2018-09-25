@@ -158,7 +158,7 @@ Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
 Decentralized storage can do this because its architecture matches the real
 Internet better, which itself is decentralized, as opposed to massive
-centralized data centers. News coverage of data breaches over the past few year has shown us that the frequency of data breaches has been increasing. Decentralized storage's process of protecting data will make data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of a data center. 
+centralized data centers. News coverage of data breaches over the past few years has shown us that the frequency of data breaches has been increasing. Decentralized storage's process of protecting data will make data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of a data center. 
 
 This model can address the rapidly
 expanding amount of data for which current solutions struggle.
@@ -210,12 +210,12 @@ market fit goals.
 By carefully considering each requirement, we ensure the framework
 we choose is as universal as possible, given the constraints.
 
-\section{S3 compatibility}
+\section{Amazon S3 compatibility}
 
 At the time of this paper's publication, the most widely deployed cloud storage
-protocol is Amazon Web Services' (AWS) Simple Storage Service protocol (S3).
+protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
 Most cloud storage products provide some form of compatibility with the
-S3 application program interface (API) architecture.
+Amazon S3 application program interface (API) architecture.
 
 Our objective is to aggressively compete in the wider cloud
 storage industry and bring decentralized cloud storage into the mainstream.
@@ -225,7 +225,7 @@ providers for our users.
 This will alleviate many switching costs for users with data currently stored on
 a centralized provider.
 To achieve this, the Storj implementation allows
-applications previously built against S3 to work with Storj with
+applications previously built against Amazon S3 to work with Storj with
 minimal friction or changes.
 This adds strong requirements on feature set, performance, and durability.
 At a bare minimum, this requires the methods sketched out in
@@ -556,7 +556,7 @@ We adopt the Byzantine, Altruistic, Rational (BAR) model \cite{bar} to discuss
 participants in the network.
 {\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
 any reason. Some examples include nodes that are broken or nodes that
-are actively trying to sabotage the protocol. In general, a \textit{Byzantine} node is
+are actively trying to sabotage the protocol. In general, a {\em Byzantine} node is
 one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
 Inevitable hardware failures aside, {\em Altruistic} nodes
@@ -564,9 +564,9 @@ participate in a proposed protocol even if the rational choice is to deviate.
 {\em Rational} nodes participate or deviate only when it
 is in their net best interest.
 
-Some distributed storage systems (e.g. AWS S3, Azure Blob Storage)
+Some distributed storage systems (e.g. Amazon S3, Azure Blob Storage)
 operate in an environment
-where all nodes are considered [\em altruistic]. For example, sans hardware failure
+where all nodes are considered {\em altruistic}. For example, sans hardware failure
 or security breaches, Amazon's storage nodes
 are not going to do anything besides what they were explicitly programmed to do,
 because Amazon owns and runs all of them.
@@ -574,8 +574,10 @@ because Amazon owns and runs all of them.
 In contrast, Storj operates in an environment where every node is
 managed by its own independent operator.
 In this environment, we can expect that a majority
-of storage nodes are rational and a minority are byzantine. Storj assumes no
-altruistic nodes.
+of storage nodes are {\em rational} and a minority are {\em byzantine}. Storj assumes no
+{\em altruistic} nodes.
+
+We must include incentives that encourage the network to ensure that the rational nodes on the network (the majority of operators) behave as similarly as possible to the expected behavior of {\em altruistic} nodes. Therefore, incentives that allow for or encourage {\em byzantine} behavior must also be eliminated.
 
 \section{Coordination avoidance}\label{sec:coordination-avoidance}
 
@@ -825,7 +827,7 @@ $k$ & $n$ & Exp. factor & P(D) \\ \hline
 Erasure codes are used in many streaming contexts such as audio CDs and
 satellite communications, so it's important to point out that using erasure
 coding in general does not make our streaming design requirement
-(required by S3 compatibility) more challenging.
+(required by Amazon S3 compatibility) more challenging.
 Whatever erasure code is chosen for our framework, streaming can be
 added on top by encoding small portions at a time, instead of attempting to
 encode a file all at once. See section \ref{sec:structured-file-storage} for
@@ -869,11 +871,11 @@ a discussion on how we plan to address load balancing very active files.
 Once we split an object up with erasure codes and select storage nodes on
 which to store the new pieces, we now need to keep track of which storage
 nodes we selected.
-Moreover, to maintain S3 compatibility, the user must be able to choose an
+Moreover, to maintain Amazon S3 compatibility, the user must be able to choose an
 arbitrary key, often treated like a path, to identify this mapping of data
 pieces to node. This implies the necessity of a metadata storage system.
 
-S3 compatibility once again imposes some tight requirements.
+Amazon S3 compatibility once again imposes some tight requirements.
 We should support:
 hierarchical objects (paths with prefixes), per-object key/value storage,
 arbitrarily large files, arbitrarily large amounts of files, and so forth.
@@ -906,7 +908,7 @@ multiple implementations of metadata storage that users will be allowed to
 choose between. This greatly assists with our design goal of coordination
 avoidance between users (see section \ref{sec:coordination-avoidance}).
 
-Aside from scale requirements, to implement S3 compatibility,
+Aside from scale requirements, to implement Amazon S3 compatibility,
 the desired API is straightforward and
 simple: {\em Put} (store a pointer given a path), {\em Get} (retrieve a pointer
 given a path),
@@ -919,7 +921,7 @@ Regardless of storage system, our design constraints require total security
 and privacy. All data or metadata will be encrypted.
 Data should be encrypted as early as possible in the data storage pipeline,
 ideally before the data ever leaves the source computer. This means that an
-S3-compatible interface or appropriate similar client library should run
+Amazon S3-compatible interface or appropriate similar client library should run
 colocated on the same computer as the user's application.
 
 Encryption should use a pluggable mechanism that allows users to choose their
@@ -1086,7 +1088,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \item[Uplink] This peer class represents any application or
   service that wants to store data. Applications can store data via an
-  S3-compatible API or through our libstorj C-bindings. This peer class
+  Amazon S3-compatible API or through our libstorj C-bindings. This peer class
   is not expected to remain online like the other two classes and is otherwise
   relatively lightweight. This peer class performs encryption, erasure encoding,
   and coordinates with the other peer classes on behalf of the customer.
@@ -1431,7 +1433,7 @@ example, the Windows file system, New Technology File System (NTFS), supports a 
 ``alternate data streams'' for each file. The Apple file system, Heirarchal File System (HFS), supports
 ``resource forks,'' and the Linux file system, fourth extended file system (EXT4), supports
 ``extended attributes.'' Most importantly for
-our purposes, AWS S3 supports ``object metadata'' \cite{s3-object-meta}. This ability to support arbitrarily named sets of keys-value pairs improves
+our purposes, Amazon S3 supports ``object metadata'' \cite{s3-object-meta}. This ability to support arbitrarily named sets of keys-value pairs improves
 compatibility with other storage platforms. Every file will include a
 limited set of arbitrary key-value pairs to support object metadata. We call
 these ``extended attributes.''
@@ -2341,7 +2343,7 @@ will be efficient and small.
 
 \section{Uplink}
 
-The uplink provides an S3-compatible, drop-in interface for users and
+The uplink provides an Amazon S3-compatible, drop-in interface for users and
 applications that
 need to store data but don't want to bother with the complexities of distributed
 storage directly. The uplink is a simple service layer on top of libstorj,
@@ -3071,7 +3073,7 @@ Amazon S3 generally provides {\em read-after-write consistency}, though in some
 cases will provide {\em eventual consistency} instead \cite{s3-consistency}.
 Arguably, there may be some flexibility here which allows for the selection
 of alternate consistency models that suit us better while still broadly
-providing S3 compatibility.
+providing Amazon S3 compatibility.
 Many distributed databases provide eventual consistency by
 default, such as Dynamo \cite{dynamo} and Cassandra \cite{cassandra}.
 

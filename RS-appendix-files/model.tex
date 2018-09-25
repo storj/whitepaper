@@ -13,7 +13,7 @@ $t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a
 
 When modeling indirect file piece loss, we suppose that a fixed rate of nodes 
 drop out of the network each month\footnote{Though the rate may be taken over 
-any desired time interval.} whether or not they are holding pieces of the file 
+any desired time interval.}, whether or not they are holding pieces of the file 
 under consideration. To describe the probability that $d$ of the dropped nodes 
 were delegates for a specific file coded into $n$ pieces, we turn to the 
 Hypergeometric probability distribution. Suppose $c$ nodes are replaced per 
@@ -22,7 +22,7 @@ nodes were delegates for the file is given by
 \begin{align}
     P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom}
 \end{align}
-which has mean $nc/C$. We then determine how long it will take for the number of pieces to fall below the desired threshold $m$ by iterating, holding the overall churn $c$ fixed but reducing the number of existing pieces by the distribution's mean in each iteration and counting the number of iterations required. For example, after one iteration, the number of existing piececs is reduced by $nc/C$, so instead of $n$ pieces on the network (as the parameter in \eqref{hgeom}), there are $n-nc/C$ pieces, changing both the parameter and the mean for \eqref{hgeom} in iteration 2.
+which has mean $nc/C$. We then determine how long it will take for the number of pieces to fall below the desired threshold $m$ by iterating, holding the overall churn $c$ fixed but reducing the number of existing pieces by the distribution's mean in each iteration and counting the number of iterations required. For example, after one iteration, the number of existing pieces is reduced by $nc/C$, so instead of $n$ pieces on the network (as the parameter in \eqref{hgeom}), there are $n-nc/C$ pieces, changing both the parameter and the mean for \eqref{hgeom} in iteration 2.
 
 We may extend this model by considering multiple checks per month (as in the direct file piece loss case), assuming that $c/a$ nodes are lost every $1/a$-th of a month instead of assuming that $c$ nodes are lost per month, where $a$ is the number of checks per month. This yields an initial Hypergeometric probability distribution with mean $nc/aC$.
 
