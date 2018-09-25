@@ -83,7 +83,7 @@ the risk of data failures and outages while simultaneously increasing
 the security and privacy of object storage. It also
 allows market forces to optimize on less expensive ways to
 provide storage at a greater rate than any single entity could afford.
-although there are many ways to build such a system, there are some specific
+Although there are many ways to build such a system, there are some specific
 responsibilities any given implementation should address.
 Based on our experience with petabyte-scale
 storage systems, we introduce a modular framework for considering these
@@ -260,7 +260,7 @@ Figure \ref{fig:s3-api-code} to be implemented.
 
 One of the primary focuses of the Storj network is to ensure that its users'
 data privacy is protected. This important element is
-built into the design of the client services, network services, and other related services.
+built into the design of the client, network, and other related services.
 
 Any object storage platform in our market should ensure both the privacy and
 security of data stored; however,
@@ -847,8 +847,8 @@ redundancy, the remaining additional uploads can be canceled. This cancellation 
 upload to continue as fast as the fastest nodes in a set, instead of waiting
 for the slowest nodes.
 Downloads are similarly improved. Since more redundancy exists
-than is needed, downloads can be served from the fastest peers, eliminating a
-wait for temporarily slow or offline peers.
+than is needed, downloads can use fastest peers to download the starting pieces, slower
+nodes help with the later pieces.
 
 \begin{figure}
 \centering
@@ -914,7 +914,7 @@ avoidance between users (see section \ref{sec:coordination-avoidance}).
 
 Aside from scale requirements, to implement Amazon S3 compatibility,
 the desired API is straightforward and
-simple: {\em Put} (store a pointer given a path), {\em Get} (retrieve a pointer
+simple: {\em Put} (store metadata at a given path), {\em Get} (retrieve metadata at a
 given a path),
 {\em List} (paginated, deterministic listing of existing paths), and {\em Delete}
 (remove a path).
@@ -1072,7 +1072,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \section{Definitions}
 
-\subsection{Actors/Entities}
+\subsection{Actors}
 
 \begin{figure}
 \centering
@@ -1469,26 +1469,6 @@ pointers keeps track of segment pointers by path, so we adjust the
 path a small amount to help us keep track of files instead of
 segments.
 
-Every file has a last segment. The last segment is also in the
-position to know the size of the overall file, so the metadata about the
-overall file is stored along with the last segment. The path to
-the last segment is prepended with an {\tt /l} (for {\em last}), whereas
-other segments are prepended with an {\tt /s} and then their segment number.
-
-As an illustrative example, suppose a video is 65 MB and the maximum
-segment size is 32 MB. The video is stored at the logical encrypted path
-{\tt /5fbac179da/8510acf81}. There will be three pointers for this video
-file. The first pointer will represent the first 32 MB and will be
-stored at {\tt /s0/5fbac179da/8510acf81}, the second pointer will represent
-the next 32 MB and will be stored at {\tt /s1/5fbac179da/8510acf81}, and the
-last pointer will represent the final 1 MB and will be stored at
-{\tt /l/5fbac179da/8510acf81}. To efficiently list files with prefix
-{\tt /5fbac179da/} along with their metadata such as their overall file size,
-one only has to list segments with prefix {\tt /l/5fbac179da/}. In order to download a
-file, the last segment is needed. If the last segment does not already encompass the entire file, it
-(the last segment) will contain enough metadata to determine exactly how to obtain the other
-segments of the file by path.
-
 \subsection{Segments as Stripes}
 
 In many situations, it's important to access a subsection of a larger piece of
@@ -1565,54 +1545,6 @@ encryption information, erasure coding details,
 the repair threshold amount that determines how much redundancy a segment
 must lose before triggering a repair, the amount of pieces that must be
 stored to consider a repair to be successful, and other details.
-
-The full definition of a pointer can be seen in figure \ref{fig:pointer}.
-
-\begin{figure}
-\lstset{language=protobuf}
-\begin{lstlisting}
-message Pointer {
-  enum DataType { INLINE = 0; REMOTE = 1; }
-  DataType type = 1;
-
-  bytes inline_segment = 3;
-
-  RemoteSegment remote = 4;
-
-  google.protobuf.Timestamp creation_date = 6;
-  google.protobuf.Timestamp expiration_date = 7;
-  bytes metadata = 8;
-}
-
-message RemoteSegment {
-  RedundancyScheme redundancy = 1;
-  bytes piece_id = 2;
-  repeated RemotePiece remote_pieces = 3;
-
-  bytes merkle_root = 4;
-  int64 size = 5;
-}
-
-message RedundancyScheme {
-  enum SchemeType { RS = 0; }
-  SchemeType type = 1;
-
-  int32 min_req = 2;           // k
-  int32 total = 3;             // n
-  int32 repair_threshold = 4;  // m
-  int32 success_threshold = 5; // o
-
-  int32 erasure_share_size = 6;
-}
-
-message RemotePiece {
-  int32 piece_num = 1;
-  bytes node_id = 2;
-}
-\end{lstlisting}
-\caption{Pointer definition}
-\label{fig:pointer}
-\end{figure}
 
 \section{Metadata}\label{sec:concrete-metadata}
 
@@ -2317,7 +2249,7 @@ communicate directly with storage nodes so as to avoid central bandwidth costs.
 \section{Quality control and branding}\label{sec:qc}
 
 The Storj Network has two essential software components that serve two distinct
-target margets:
+target markets:
 
 \begin{enumerate}
 \item creating storage supply for the network via recruiting storage node
@@ -2464,7 +2396,7 @@ bandwidth allocation they received as part of the upload to the appropriate
 satellite for payment.
 
 If an upload happens via the Amazon S3 multipart upload interface, each
-``part'' is uploaded as a segment individually.
+{\em part} is uploaded as a segment individually.
 
 \section{Download}
 
