@@ -4,19 +4,19 @@
 In the context of storing an erasure-coded file on a decentralized network, we consider file piece loss from two different perspectives.
 
 \subsection{Direct file piece loss}
-With direct file piece loss, we assume that for a specific file, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if file pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then file piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate\footnote{So if we assume a proportion of $p=.1$ pieces are lost per month, $t$ is given in months.}. 
+With direct file piece loss, we assume that for a specific file, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if file pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then file piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate\footnote{So if we assume a proportion of $p=.1$ pieces are lost per month, $t$ is given in months.}.
 To account for $a$ multiple checks per month, we may extend this to $n(1-p/a)^{at}$. If $m$ is the rebuild threshold which controls when a file is rebuilt, we may solve $n(1-p/a)^{at}=m$ for $t$ (taking the ceiling when necessary) to determine how long it will take for the $n$ pieces of a file to decay to less than $m$ pieces. This works out to the smallest $t$ for which
 $t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a$ and $p$, how long we expect a file to last between repairs.
 
 \subsection{Indirect file piece loss}
 
-When modeling indirect file piece loss, we suppose that a fixed rate of nodes 
-drop out of the network each month\footnote{Though the rate may be taken over 
-any desired time interval.}, whether or not they are holding pieces of the file 
-under consideration. To describe the probability that $d$ of the dropped nodes 
-were delegates for a specific file coded into $n$ pieces, we turn to the 
-Hypergeometric probability distribution. Suppose $c$ nodes are replaced per 
-month out of $C$ total nodes on the network. Then the probability that $d$ 
+When modeling indirect file piece loss, we suppose that a fixed rate of nodes
+drop out of the network each month\footnote{Though the rate may be taken over
+any desired time interval.}, whether or not they are holding pieces of the file
+under consideration. To describe the probability that $d$ of the dropped nodes
+were delegates for a specific file coded into $n$ pieces, we turn to the
+Hypergeometric probability distribution. Suppose $c$ nodes are replaced per
+month out of $C$ total nodes on the network. Then the probability that $d$
 nodes were delegates for the file is given by
 \begin{align}
     P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom}
