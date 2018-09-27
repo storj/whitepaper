@@ -132,8 +132,8 @@ Stefan Benten,
 Tim Adams,
 and Viktor Ihnatiuk.
 
-We'd also like to especially thank the other authors of the previous
-Storj v2 whitepaper:
+We'd also like to especially thank the other authors and contributors of the
+previous Storj v2 whitepaper:
 Braydon Fuller,
 Chris Pollard,
 Gordon Hall,
@@ -160,7 +160,17 @@ unavailability on a grand scale, storage costs, and expanding and upgrading quic
 
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
-Decentralized storage is better positioned to achieve these outcomes as the architecture has a more natural alignment to the decentralized architecture of the Internet as a whole, as opposed to massive centralized data centers. News coverage of data breaches over the past few years has shown us that the frequency of data breaches has been increasing by as much as a factor of 10 between 2005 and 2017. [Add Citation: https://www.statista.com/statistics/273550/data-breaches-recorded-in-the-united-states-by-number-of-breaches-and-records-exposed/] Decentralized storage's process of protecting data makes data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of any single data center.
+Decentralized storage is better positioned to achieve these outcomes as the
+architecture has a more natural alignment to the decentralized architecture of
+the Internet as a whole, as opposed to massive centralized data centers.
+News coverage of data breaches over the past few years has shown us that the
+frequency of data breaches has been increasing by as much as a factor of 10
+between 2005 and 2017 \cite{breaches}.
+Decentralized storage's process of protecting data makes data breaches more
+difficult than current methods used by data centers while, at the same time,
+cost less than current storage methods. Another benefit of this method is that
+the ability to access data is not dependent on the current availability of any
+single data center.
 
 This model can address the rapidly
 expanding amount of data for which current solutions struggle.
@@ -195,7 +205,7 @@ our optimization efforts are based.
 Chapter \ref{chap:framework} covers our framework. Chapter
 \ref{chap:concrete}
 proposes a simple concrete implementation of each component,
-While chapter \ref{chap:walkthroughs} explains what happens
+while chapter \ref{chap:walkthroughs} explains what happens
 during each operation in the network. Finally, chapter
 \ref{chap:future-work} covers future work.
 
@@ -227,11 +237,9 @@ a centralized provider.
 To achieve this, the Storj implementation allows
 applications previously built against Amazon S3 to work with Storj with
 minimal friction or changes.
-S3 CompatibilityThis incorporates aggressive requirements for feature set, performance, and durability.
+This adds aggressive requirements for feature set, performance, and durability.
 At a bare minimum, this requires the methods described in
 Figure \ref{fig:s3-api-code} to be implemented.
-
-While, as mentioned in this section, we are building a gateway with an S3 compatible API, we are also designing our native API to be simple, easy-to-integrate, and largely unconstrained by the Amazon S3 API.
 
 \begin{figure}
 \lstset{language=Golang}
@@ -292,16 +300,18 @@ cost associated with running the service.
 One of the main motivations for preferring decentralization is to drive
 down infrastructure costs for maintenance, utilities, and bandwidth.
 We believe that there
-are significant underutilized resources both at the edge of the network and at
-the margin for many smaller operators. In our experience building decentralized
+are significant underutilized resources at the edge of the network
+for many smaller operators. In our experience building decentralized
 storage networks, we have found a long tail of resources that are presently
 unused or underused that could provide affordable and
 geographically distributed cloud storage. Conceivably some small operator
 has access to less expensive electricity than standard data centers or another small
 operator has access to less expensive cooling. Many of these small operator
 environments are not substantial enough to run an entire datacenter-like
-storage system. However, we have found that in aggregate, enough small operator
-environments exist such that their combination over the internet constitutes
+storage system. For example, perhaps a rural hydro-electric dam operator has
+enough excess electricity to run ten servers, but no more. We have found that
+in aggregate, enough small operator environments exist such that their
+combination over the internet constitutes
 significant opportunity and advantage for less expensive and faster storage.
 
 Operating a decentralized network requires node operators to contribute
@@ -322,7 +332,7 @@ trusting any third party with custodianship of personal data.
 Some possible costly outcomes include changes to the company's roadmap that could result in the product
 becoming less useful, changes to the company's position on data collection that could
 cause it to sell customer metadata to advertisers, or even the company could go
-out of business or otherwise could fail to keep customer data safe.
+out of business or otherwise fail to keep customer data safe.
 By creating an equivalent or better decentralized
 system, many users concerned about single-entity risk will have a viable
 alternative.
@@ -332,7 +342,7 @@ would continue to be available.
 We have decided to adopt a decentralized architecture because, despite the trade-offs, we believe decentralization addresses the core limitations,
 risks, and cost factors that result from centralized cloud storage.
 Within this context,
-decentralization results in a globally distributed singleton network that can
+decentralization results in a globally distributed network that can
 serve a wide range of storage use cases from archival to CDN. Whereas,
 centralized storage systems require different architectures, implementations,
 and infrastructure to address each of those same use cases.
@@ -361,12 +371,10 @@ the economic return.
 
 We believe that decentralized storage can provide a viable alternative to
 centralized cloud.
-
 However, to compel partners or customers to bring data to the network,
 the price charged for storage and bandwidth -- combined with the other
 benefits of decentralized storage -- must be
 more compelling and economically beneficial than competing storage solutions.
-
 In our design of Storj, we seek to create an economically advantageous
 situation for four different groups:
 
@@ -1021,7 +1029,7 @@ parameters according to differing network conditions.
 
 \section{Payments}
 
-Payments, value attribution and billing in decentralized networks are a critical part of maintaining a healthy
+Payments, value attribution, and billing in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand. Of course, decentralized payment systems
 are still in their infancy in a number of ways.
 
@@ -1084,8 +1092,7 @@ The following defined terms are used throughout the description of the concrete 
   responsibilities. There are three different peer classes that represent
   services in our network: {\em Storage Nodes}, {\em Satellites}, and {\em Uplinks}.
   The Storj Network allows the different peer classes and associated functions to be
-  run separately and independently by different operators, unlike blockchain-based
-  decentralized storage networks.
+  run separately and independently by different operators.
 
 \item[Storage Node] This peer class participates in the node discovery
   system, stores data for others, and gets paid for storage and bandwidth
@@ -1829,7 +1836,8 @@ not a requirement that audits are performed on every byte, or even on every
 file.
 Additionally, it is important that every byte stored in the system has an equal
 probability of being checked for a future audit to every other byte in the
-system.
+system. See appendix \ref{appendix:audit-false-positive} for a discussion on
+how many audits are required to be confident data is stored correctly.
 
 \section{Data repair}\label{sec:concrete-data-repair}
 
@@ -2121,7 +2129,7 @@ that it has enough funds and is authorized to perform that operation.
 The Satellite will return an {\em unrestricted
 bandwidth allocation} message. This message will include the satellite ID,
 the identity of the client, an expiration timestamp, a serial number,
-the maximum amount of bytes authorized, and the direction the bytes will flow
+the maximum amount of bytes authorized $x$, and the direction the bytes will flow
 (whether or not the data will be transferred from or to the client).
 The message will be signed by the Satellite.
 
@@ -2263,7 +2271,7 @@ demand side through two brands, {\em Storj} and {\em Tardigrade}.
 We will retain \url{storj.io} as the place for contributing extra storage and
 bandwidth to the Storj Network. This includes Storage Node setup, documentation,
 frequently asked questions (FAQs), and tutorials. Users of both brands will also be able to
-access our source code and community through \url{storj.io}
+access our source code and community through \url{storj.io}.
 The demand side of our business will be directed through \url{tardigrade.io}.
 This experience will be focused toward our partners and customers who purchased
 decentralized storage and bandwidth from the network with the expectation of
@@ -2279,7 +2287,7 @@ certain compliance and quality requirements.
 These quality controls will continuously audit and rank Satellites on their
 behavior, durability, compliance, and performance.
 
-Storj Labs partners who host Satellites ``Tardigrade'' Satellites may receive
+Storj Labs partners who host ``Tardigrade'' Satellites may receive
 a share of revenue greater than typical demand partners. The portion of the
 revenue paid to Stoj Labs is intended to cover a range of different costs.
 Such costs might include a payment continuity service. If the Satellite
@@ -2614,15 +2622,16 @@ about, either as part of the audit process or via standard overlay ping operatio
   on enough good, online Storage Nodes, it will be added to the repair queue.
 \end{itemize}
 
-A worker process will take segment pointers off the repair queue. When
-  a segment pointer is taken off the repair queue, the entire segment will be
-  downloaded. Unlike audits, only enough pieces for accurate repair are needed.
+A worker process will take segment pointers off the repair queue.
+When a segment pointer is taken off the repair queue:
+
+\begin{itemize}
+\item The worker will download enough pieces to reconstruct the entire segment.
+  Unlike audits, only enough pieces for accurate repair are needed.
   Unlike streaming downloads, the repair system can wait for the entire segment
   before starting. As a result, pieces are compared against a Merkle tree of
   hashes for correctness prior to repair, where the Merkle root is stored in
   the pointer.
-
-\begin{itemize}
 \item Once enough correct pieces are recovered, the missing pieces are
   regenerated.
 \item The Satellite selects some new Nodes and uploads the new pieces to
@@ -2850,7 +2859,7 @@ exponentially with $\alpha$.
 This necessitates very stable nodes, with lifetimes of several months, to
 achieve acceptable network durability.
 See appendix \ref{appendix:RS} for a more in depth discussion of how node churn
-effects erasure code parameters.
+affects erasure code parameters.
 
 Repair affects Storage Nodes' participation beyond their bandwidth usage; it
 also constrains the amount of usable disk space.
