@@ -160,18 +160,15 @@ unavailability on a grand scale, storage costs, and expanding and upgrading quic
 
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
-Decentralized storage can do this because its architecture matches the real
-Internet better, which itself is decentralized, as opposed to massive
-centralized data centers. News coverage of data breaches over the past few years has shown us that the frequency of data breaches has been increasing. Decentralized storage's process of protecting data will make data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of a data center. 
+Decentralized storage is better positioned to achieve these outcomes as the architecture has a more natural alignment to the decentralized architecture of the Internet as a whole, as opposed to massive centralized data centers. News coverage of data breaches over the past few years has shown us that the frequency of data breaches has been increasing by as much as a factor of 10 between 2005 and 2017. [Add Citation: https://www.statista.com/statistics/273550/data-breaches-recorded-in-the-united-states-by-number-of-breaches-and-records-exposed/] Decentralized storage's process of protecting data makes data breaches more difficult than current methods used by data centers while, at the same time, cost less than current storage methods. Another benefit of this method is that the ability to access data is not dependent on the current availability of any single data center. 
 
 This model can address the rapidly
 expanding amount of data for which current solutions struggle.
 With an anticipated 44 zettabytes of data expected to exist by 2020 and a
 market that will grow to \$92 billion USD in the same time frame
-\cite{storage-growth}, we have discovered that decentralized cloud storage
-has the potential to address several key market segments.
-As the industry's capabilities evolve, decentralized cloud
-storage will be able to address a much wider range of use cases from basic
+\cite{storage-growth}, we have identified several key market segments that decentralized cloud storage
+has the potential to address.
+As decentralized cloud storage capabilities evolve, it will be able to address a much wider range of use cases from basic
 object storage to content delivery networks (CDN).
 
 Decentralized cloud storage is rapidly advancing in maturity, but its evolution
@@ -181,11 +178,10 @@ the network. When designing a distributed storage system,
 there are many parameters to be optimized such as speed, capacity,
 trustlessness, byzantine fault tolerance, cost, bandwidth, and latency.
 
-We propose a framework that scales horizontally to serve hundreds of millions of
-people across the globe. Our system, the Storj Network, is a robust object store
+We propose a framework that scales horizontally to exabytes of data storage across the globe. Our system, the Storj Network, is a robust object store
 that encrypts, shards, and distributes data to nodes across the globe for
 storage.
-Data is served in a manner purposefully designed to prevent
+Data is stored and served in a manner purposefully designed to prevent
 breaches.
 In order to accomplish this task, we've designed our system to be modular,
 consisting of independent components with task-specific jobs.
@@ -231,9 +227,11 @@ a centralized provider.
 To achieve this, the Storj implementation allows
 applications previously built against Amazon S3 to work with Storj with
 minimal friction or changes.
-This adds strong requirements on feature set, performance, and durability.
-At a bare minimum, this requires the methods sketched out in
+S3 CompatibilityThis incorporates aggressive requirements for feature set, performance, and durability.
+At a bare minimum, this requires the methods described in
 Figure \ref{fig:s3-api-code} to be implemented.
+
+While, as mentioned in this section, we are building a gateway with an S3 compatible API, we are also designing our native API to be simple, easy-to-integrate, and largely unconstrained by the Amazon S3 API.
 
 \begin{figure}
 \lstset{language=Golang}
@@ -258,12 +256,8 @@ Figure \ref{fig:s3-api-code} to be implemented.
 
 \section{Security and privacy}
 
-One of the primary focuses of the Storj network is to ensure that its users'
-data privacy is protected. This important element is
-built into the design of the client, network, and other related services.
-
-Any object storage platform in our market should ensure both the privacy and
-security of data stored; however,
+Any object storage platform must ensure both the privacy and
+security of data stored regardless of whether it is centralized or decentralized; however,
 decentralized storage platforms include an additional layer of
 complexity and risk associated with the storage of data on inherently
 untrusted nodes. Because decentralized storage platforms cannot take many
@@ -318,11 +312,11 @@ increase in adoption and proliferation of storage nodes.
 This effectively increases the available capacity while at the same time
 driving costs down.
 
-Our decentralization goals are also driven by our desire to detangle
-fundamental infrastructure, such as storage, from the hands of a few major
-entities.
+Our decentralization goals are also driven by our desire to provide a viable alternative for
+fundamental infrastructure, such as storage, to the few major
+entities who dominate the market at present.
 We believe that there exists inherent risk in trusting a single entity,
-company, or organization with a significant fraction of the world's data.
+company, or organization with a significant percentage of the world's data.
 In fact, we believe that there is an implicit cost associated with the risk of
 trusting any third party with custodianship of personal data.
 Some possible costly outcomes include changes to the company's roadmap that could result in the product
@@ -330,7 +324,7 @@ becoming less useful, changes to the company's position on data collection that 
 cause it to sell customer metadata to advertisers, or even the company could go
 out of business or otherwise could fail to keep customer data safe.
 By creating an equivalent or better decentralized
-system, many users worried about single-entity risk will have a viable
+system, many users concerned about single-entity risk will have a viable
 alternative.
 With decentralized architecture, Storj could cease operating and the data
 would continue to be available.
@@ -588,8 +582,8 @@ This observation happens at all scales and applies not only to distributed
 networks but also to
 concurrent threads of execution coordinating within the same computer.
 As soon as coordination is needed, actors in the system will need to wait for
-other actors, and waiting -- due to coordination issues -- can be significantly
-costly.
+other actors, and waiting -- due to coordination issues -- can have significant
+cost.
 
 While many types of operations in a network may require coordination
 (e.g., operations that require linearizability\footnote{
@@ -666,7 +660,7 @@ services rendered.
 \end{description}
 
 To improve understandability, we break up the design into a collection of eight
-relatively independent concerns and then combine them to form the desired
+relatively independent components and then combine them to form the desired
 framework.
 
 The individual components are:
@@ -751,7 +745,7 @@ bandwidth usage for a fixed amount of data. As discussed in the protocol design
 constraints, high bandwidth usage prevents scaling, so this is an undesirable
 strategy for ensuring a high degree of file durability.
 
-Importantly, {\em erasure
+As an alternative to simple replication, erasure codes provide a much more efficient method to achieve redundancy. Importantly, {\em erasure
 codes} allow changes in durability without changes in expansion factor.
 Erasure codes are an encoding scheme for manipulating
 data durability without tying it to bandwidth usage.
@@ -906,8 +900,8 @@ gigabytes. It's worth pointing out that these numbers vary
 heavily with average object size: the larger the object size, the less the
 metadata overhead.
 
-One of our framework's focuses is enabling this component -- metadata
-storage -- to be interchangeable per user. Specifically, we expect to ship with
+An additional framework focus is enabling this component -- metadata
+storage -- to be interchangeable per user. Specifically, we expect the platform to incorporate
 multiple implementations of metadata storage that users will be allowed to
 choose between. This greatly assists with our design goal of coordination
 avoidance between users (see section \ref{sec:coordination-avoidance}).
@@ -968,8 +962,8 @@ to range across all possible files.
 
 In our storage system,
 audits are simply a mechanism used to determine a Node's degree of stability.
-Failed audits will result in a Storage Node marked as bad, which
-will result in shuffling data to new Nodes and avoiding that Node altogether
+Failed audits will result in a Storage Node being marked as bad, which
+will result in redistributing data to new Nodes and avoiding that Node altogether
 in the future. Storage Node uptime and overall health are the primary metrics
 used to determine which files need repair.
 Audits, in this case, are probabilistic challenges that confirm, with a high
@@ -1027,7 +1021,7 @@ parameters according to differing network conditions.
 
 \section{Payments}
 
-Payments in decentralized networks are a critical part of maintaining a healthy
+Payments, value attribution and billing in decentralized networks are a critical part of maintaining a healthy
 ecosystem of both supply and demand. Of course, decentralized payment systems
 are still in their infancy in a number of ways.
 
@@ -1047,13 +1041,15 @@ Payments will be transferred during
 a background settlement process in which well-behaved participants within
 the network cooperate. Storage nodes in our framework should limit their exposure
 to untrusted payers until confidence is gained that those payers are likely
-to pay their bills.
+to pay for services rendered.
 
 The Storj network is payment agnostic.
 The protocol does not require a specific payment type.
 The network assumes the Ethereum-based STORJ token as the default payment
 medium, but many other payment types could be implemented, including Bitcoin,
 Ether, credit or debit card, ACH transfer, or physical transfer of live goats.
+
+In addition to the payment for services rendered to those contributing storage and bandwidth, the system also tracks and aggregates the value of the consumption of those services by those who own the data stored on the network.  In this way, the framework is able to support the end-to-end economics of the storage marketplace ecosystem.
 
 \chapter{Concrete implementation}\label{chap:concrete}
 
@@ -1064,12 +1060,14 @@ significant degree of freedom in choosing how to implement each component.
 In this section, we lay out our initial implementation strategy. We expect
 the details contained within this section to change over time, but believe the
 details outlined here are viable and support a working implementation of our
-framework.
+framework capable of providing highly secure, performant and durable production-grade cloud storage.
 
 As with our previous network, we will publish changes to this concrete
 architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \section{Definitions}
+
+The following defined terms are used throughout the description of the concrete implementation that follows:
 
 \subsection{Actors}
 
@@ -1085,7 +1083,9 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 \item[Peer class] A cohesive collection of network services and
   responsibilities. There are three different peer classes that represent
   services in our network: {\em Storage Nodes}, {\em Satellites}, and {\em Uplinks}.
-  Peer classes tend to be run separately by different operators.
+  The Storj Network allows the different peer classes and associated functions to be 
+  run separately and independently by different operators, unlike blockchain-based 
+  decentralized storage networks.
 
 \item[Storage Node] This peer class participates in the node discovery
   system, stores data for others, and gets paid for storage and bandwidth
@@ -1100,7 +1100,7 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \item[Satellite] This peer class participates in the node discovery system,
   caches node address information, stores per-object metadata, keeps storage
-  node reputation, pays Storage Nodes, performs audits and repair, and manages
+  node reputation, pays Storage Nodes, aggregates billing data, performs audits and repair, and manages
   authorization and user accounts.
   Any user can run their own Satellite, but we expect many users
   to elect to avoid the operational complexity and create an account on
@@ -1187,12 +1187,12 @@ Storage Nodes the pieces of a remote segment were stored on.
 The main duty of the Storage Node is to reliably store and return data.
 Node operators
 are individuals or entities that have excess hard drive space and want to earn
-income by lending their space to others. These operators will
+income by renting their space to others. These operators will
 download,
 install, and configure Storj software locally, with no account required
 anywhere. They will then configure disk space and bandwidth allowance.
 During node discovery, Storage Nodes will advertise how much bandwidth and
-hard drive space is available, and what is their desired STORJ token
+hard drive space is available, and what is their designated STORJ token
 wallet address.
 
 Storage Nodes also keep track of optional per-piece ``time-to-live'', or TTL.
@@ -1670,7 +1670,7 @@ control over access to the data,
 while delegating the responsibility of keeping files available on the network
 to the Satellite.
 
-Clients may use Satellites run by a third-party. Because Satellites do not store
+Clients may use Satellites run by a third-party. Because Satellites store almost no
 data and have no access to keys, this is a large improvement over the
 traditional data-center model. Many of the features Satellites provide, like
 storage node selection and reputation, leverage considerable network effects.
@@ -2023,7 +2023,7 @@ We believe that the most common use case is indefinite storage.
 Moving forward, our network will not use contracts at all to manage payments
 and file storage durations.
 
-Satellites will pay Storage Nodes for the data they store long-term
+Satellites will pay Storage Nodes for the data they store
 and for object downloads.
 Storage Nodes will not be paid for the initial storage of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
@@ -2160,7 +2160,7 @@ Satellites will pay the Storage Node for that bandwidth.
 If the client can't afford the bandwidth usage, the Satellite will not sign an
 unrestricted bandwidth allocation, protecting the satellite's reputation.
 Likewise, if the client tries to use more bandwidth than allocated,
-the Storage Node will shut down the request.
+the Storage Node will decline the request.
 The Storage Node can only get paid for the maximum amount a client has agreed
 to,
 as it otherwise has no valid bandwidth allocations to return for
@@ -2279,15 +2279,18 @@ certain compliance and quality requirements.
 These quality controls will continuously audit and rank Satellites on their
 behavior, durability, compliance, and performance.
 
-Storj Labs may also require a small fee from Satellites wishing to be listed
-as ``Tardigrade'' Satellites. This fee could cover a few different costs. First,
-the fee could pay a form of insurance. If the Satellite temporarily goes
-offline, Storj Labs can continue to pay Storage Nodes on the behalf of the
-Satellite until the Satellite returns to avoid losing data. Second, this fee
-may cover country-specific tax compliance functionality. For example, this fee
-could cover assisting satellite operators in complying with United States
-Form 1099 tax filing, which is required by United States law for any payments
-to an individual in a given year exceeding a total of \$600.
+Storj Labs partners who host Satellites ``Tardigrade'' Satellites may receive
+a share of revenue greater than typical demand partners. The portion of the 
+revenue paid to Stoj Labs is intended to cover a range of different costs. 
+Such costs might include a payment continuity service. If the Satellite 
+temporarily goes offline, Storj Labs can continue to pay Storage Nodes on 
+behalf of the Satellite until the Satellite returns to avoid losing data. 
+Additionally, this fee may cover country-specific tax compliance functionality. 
+For example, this fee could cover assisting satellite operators in complying 
+with United States Form 1099 tax filing, which is required by United States 
+law for any payments to an individual in a given year exceeding a total 
+of \$600. Additional services are contemplated and will be included in
+the roadmap as requirements are developed.
 
 These compliance and quality controls will be implemented to ensure that
 Storage Nodes and Satellites are able to continuously meet all SLAs of the
@@ -2764,7 +2767,7 @@ high durability, regular payments, and regular backups. We expect a large
 degree of variation in quality of Satellites, which led us to our quality
 control program (see section \ref{sec:qc}).
 
-Over time, clientelle of Satellites will want to reduce their dependence on satellite
+Over time, clientele of Satellites will want to reduce their dependence on satellite
 operators and enjoy more efficient data portability between Satellites besides
 downloading and uploading their data manually. We plan to spend significant time
 on improving this user experience in a number of ways.
@@ -2846,8 +2849,8 @@ Loss rate is much more sensitive to high node churn; it increases
 exponentially with $\alpha$.
 This necessitates very stable nodes, with lifetimes of several months, to
 achieve acceptable network durability.
-See appendix \ref{appendix:RS} for a more in depth discussion of node churn's
-affect on erasure code parameters.
+See appendix \ref{appendix:RS} for a more in depth discussion of how node churn
+effects erasure code parameters.
 
 Repair affects Storage Nodes' participation beyond their bandwidth usage; it
 also constrains the amount of usable disk space.
@@ -3103,7 +3106,7 @@ attacks can be hard to identify, as malicious nodes can be made to function
 normally in most cases, only eclipsing certain important messages or
 information. Storj addresses eclipse attacks by using public key hashes as node
 IDs, signatures based on those public keys, and multiple disjoint network
-lookups as prescriped by S/Kademlia.
+lookups as prescribed by S/Kademlia.
 
 The larger the network is, the harder it will
 be to prevent a node from finding a portion of the network uncontrolled by
