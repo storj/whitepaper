@@ -95,52 +95,72 @@ concrete implementation for the entire framework.
 
 This paper represents the combined efforts of many individuals.
 Contributors affiliated with Storj Labs, Inc. include but are not limited to:
-Alexander Bender,
-Alexander Leitner,
-Atikh Bana,
-Ben Golub,
-Benjamin Sirb,
-Brandon Iglesias,
-Bryan White,
+Tim Adams,
+Kishore Aligeti,
 Cameron Ayer,
-Dan Sorensen,
-Dennis Coyle,
-Dylan Lott,
-Egon Elbre,
-Faris Huskovic,
-Garrett Ransom,
+Atikh Bana,
+Alexander Bender,
+Stefan Benten,
+Maximillian von Briesen,
+Paul Cannon,
 Gina Cooley,
-Helene Unland,
-James Hagans,
-Jennifer Johnson,
-Jens Heimbürge,
+Dennis Coyle,
+Egon Elbre,
+Nadine Farah,
+Patrick Gerbes,
 John Gleeson,
-Jon Sanderson,
+Ben Golub,
+James Hagans,
+Jens Heimbürge,
+Faris Huskovic,
+Philip Hutchins,
+Brandon Iglesias,
+Viktor Ihnatiuk,
+Jennifer Johnson,
+Kevin Leffew,
+Alexander Leitner,
+Dylan Lott,
 JT Olio,
 Kaloyan Raev,
-Kevin Leffew,
-Kishore Aligeti,
+Garrett Ransom,
 Matthew Robinson,
-Maximillian von Briesen,
-Nadine Farah,
+Jon Sanderson,
+Benjamin Sirb,
+Dan Sorensen,
+Helene Unland,
 Natalie Villasana,
-Patrick Gerbes,
-Paul Cannon,
-Philip Hutchins,
-Shawn Wilkinson,
-Stefan Benten,
-Tim Adams,
-and Viktor Ihnatiuk.
+Bryan White,
+and Shawn Wilkinson.
 
 We'd also like to especially thank the other authors and contributors of the
 previous Storj v2 whitepaper:
-Braydon Fuller,
-Chris Pollard,
-Gordon Hall,
-James Prestwich,
-Josh Brandoff,
 Tome Boshevski,
-and Vitalik Buterin.
+Josh Brandoff,
+Vitalik Buterin,
+Braydon Fuller,
+Gordon Hall,
+Chris Pollard,
+and James Prestwich.
+
+We would like to acknowledge the efforts, whitepapers, and communications of
+others in the distributed computing, blockchain, distributed storage, and
+decentralized storage space, whose work has informed our efforts. A more
+comprehensive list of sources is in the appendix, but we would like to provide
+particular acknowledgement to the teams that built
+Allmydata,
+Ceph,
+Cleversafe,
+Crashplan,
+Ethereum,
+Filecoin,
+Gluster,
+IPFS,
+Kademlia,
+Maidsafe,
+Minio,
+Siacoin,
+SONM,
+and Tahoe-LAFS.
 
 Finally, we extend a huge thank you to everyone we talked to during the
 design and architecture of this system for their valuable thoughts, feedback,
@@ -209,6 +229,12 @@ while chapter \ref{chap:walkthroughs} explains what happens
 during each operation in the network. Finally, chapter
 \ref{chap:future-work} covers future work.
 
+As with Google's Chubby lock service \cite{chubby}, the Storj Network is an
+engineering effort required to fill the needs mentioned above and below;
+the concrete implementation detailed here was not research.
+We claim no novel algorithms or techniques. The purpose
+of this paper is to describe what we did, what we plan to do, and why.
+
 \chapter{Storj design constraints}\label{chap:design-constraints}
 
 Before designing a system, it's important to first define its requirements.
@@ -219,48 +245,6 @@ Our design constraints are heavily influenced by our product and
 market fit goals.
 By carefully considering each requirement, we ensure the framework
 we choose is as universal as possible, given the constraints.
-
-\section{Amazon S3 compatibility}
-
-At the time of this paper's publication, the most widely deployed cloud storage
-protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
-Most cloud storage products provide some form of compatibility with the
-Amazon S3 application program interface (API) architecture.
-
-Our objective is to aggressively compete in the wider cloud
-storage industry and bring decentralized cloud storage into the mainstream.
-Until a decentralized cloud storage protocol becomes widely adopted,
-we are creating a graceful transition path from centralized
-providers for our users.
-This will alleviate many switching costs for users with data currently stored on
-a centralized provider.
-To achieve this, the Storj implementation allows
-applications previously built against Amazon S3 to work with Storj with
-minimal friction or changes.
-This adds aggressive requirements for feature set, performance, and durability.
-At a bare minimum, this requires the methods described in
-Figure \ref{fig:s3-api-code} to be implemented.
-
-\begin{figure}
-\lstset{language=Golang}
-\begin{lstlisting}
-  // Bucket operations
-	CreateBucket(bucketName string)
-	DeleteBucket(bucketName string)
-	ListBuckets() []BucketInfo
-
-  // Object operations
-	GetObject(bucketName, objectPath string, offset, length int64) (
-	    ObjectData, ObjectInfo)
-	PutObject(bucketName, objectPath string, data ObjectData,
-	    metadata map[string]string) ObjectInfo
-	DeleteObject(bucketName, objectPath string)
-	ListObjects(bucketName, prefix, startKey string,
-	    limit int, delimiter string) ([]ObjectInfo, more bool)
-\end{lstlisting}
-\caption{Minimum S3 API}
-\label{fig:s3-api-code}
-\end{figure}
 
 \section{Security and privacy}
 
@@ -346,6 +330,49 @@ decentralization results in a globally distributed network that can
 serve a wide range of storage use cases from archival to CDN. Whereas,
 centralized storage systems require different architectures, implementations,
 and infrastructure to address each of those same use cases.
+
+\section{Amazon S3 compatibility}
+
+At the time of this paper's publication, the most widely deployed cloud storage
+protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
+Most cloud storage products provide some form of compatibility with the
+Amazon S3 application program interface (API) architecture.
+
+Our objective is to aggressively compete in the wider cloud
+storage industry and bring decentralized cloud storage into the mainstream.
+Until a decentralized cloud storage protocol becomes widely adopted,
+we are creating a graceful transition path from centralized
+providers for our users.
+This will alleviate many switching costs for users with data currently stored on
+a centralized provider.
+To achieve this, the Storj implementation allows
+applications previously built against Amazon S3 to work with Storj with
+minimal friction or changes.
+S3 compatibility adds aggressive requirements for feature set, performance, and
+durability.
+At a bare minimum, this requires the methods described in
+Figure \ref{fig:s3-api-code} to be implemented.
+
+\begin{figure}
+\lstset{language=Golang}
+\begin{lstlisting}
+  // Bucket operations
+	CreateBucket(bucketName string)
+	DeleteBucket(bucketName string)
+	ListBuckets() []BucketInfo
+
+  // Object operations
+	GetObject(bucketName, objectPath string, offset, length int64) (
+	    ObjectData, ObjectInfo)
+	PutObject(bucketName, objectPath string, data ObjectData,
+	    metadata map[string]string) ObjectInfo
+	DeleteObject(bucketName, objectPath string)
+	ListObjects(bucketName, prefix, startKey string,
+	    limit int, delimiter string) ([]ObjectInfo, more bool)
+\end{lstlisting}
+\caption{Minimum S3 API}
+\label{fig:s3-api-code}
+\end{figure}
 
 \section{Marketplace and economics}
 
@@ -701,7 +728,7 @@ that we must keep track of which nodes were selected for each upload via a
 small amount of metadata; we can't select nodes for storing data implicitly or
 deterministically as in a system like Dynamo \cite{dynamo}. This decision
 implies the requirement of a metadata storage system to keep track
-of selected nodes.
+of selected nodes (see section \ref{sec:framework-metadata}).
 
 \section{Peer-to-peer communication and discovery}
 
@@ -871,7 +898,7 @@ This ability to over-encode a file greatly assists dynamic load balancing of
 popular content on the network. See section \ref{sec:future-hot-files} for
 a discussion on how we plan to address load balancing very active files.
 
-\section{Metadata}
+\section{Metadata}\label{sec:framework-metadata}
 
 Once we split an object up with erasure codes and select storage nodes on
 which to store the new pieces, we now need to keep track of which storage
@@ -1189,7 +1216,7 @@ inline segment data, or keeps track of which
 Storage Nodes the pieces of a remote segment were stored on.
 \end{description}
 
-\section{Storage Node}
+\section{Storage Node}\label{sec:concrete-storage-nodes}
 
 The main duty of the Storage Node is to reliably store and return data.
 Node operators
@@ -1197,7 +1224,9 @@ are individuals or entities that have excess hard drive space and want to earn
 income by renting their space to others. These operators will
 download,
 install, and configure Storj software locally, with no account required
-anywhere. They will then configure disk space and bandwidth allowance.
+anywhere.\footnote{Registration with a US-1099 tax form service may be
+required. See section \ref{sec:qc}.}
+They will then configure disk space and bandwidth allowance.
 During node discovery, Storage Nodes will advertise how much bandwidth and
 hard drive space is available, and what is their designated STORJ token
 wallet address.
@@ -2176,7 +2205,8 @@ payment.
 
 \section{Satellite reputation}
 
-Whenever a Satellite on the Storj network has a less than stellar payment history,
+Whenever a Satellite on the Storj network has a less than stellar payment,
+demand generation, or performance history,
 there is a strong incentive for the Storage Nodes to avoid accepting its data.
 
 When a new Satellite joins the network, the participating Storage Nodes will
@@ -2192,12 +2222,12 @@ will trust, or don't trust, if desired.
 
 Storage node operators can elect to automatically trust a Storj Labs
 provided collection of recommended Satellites that adhere to a strict set of
-quality controls.
+quality controls and payment service level agreements (SLAs).
 To protect storage node operators, if a satellite operator wants to be
-included in the Storj Recommended Satellites list, the satellite operator may
-be required to pay Storj Labs for insurance. This insurance will allow Storj
-Labs to continue to pay storage node operators in place of the Satellite, should
-the Satellite become temporarily inoperable.
+included in the ``Tardigrade'' approved list,
+the satellite operator may be required to
+adhere to a set of operating, payment, and pricing parameters and to sign a
+business arrangement with Storj Labs.
 See section \ref{sec:qc} for more details.
 
 \section{Garbage collection}\label{sec:garbage-collection}
@@ -2282,23 +2312,21 @@ selection, documentation, FAQs, tutorials, and so forth.
 The ``Tardigrade'' brand will additionally serve as a satellite quality
 credentialing system. Anyone can set up a Satellite via
 \url{storj.io}, but to have a Satellite listed as an official Tardigrade
-Satellite and be considered ``Tardigrade quality'', an operator must pass
+Satellite and be considered ``Tardigrade quality,'' and benefit directly from
+Storj Labs' demand generation activities, an operator must pass
 certain compliance and quality requirements.
 These quality controls will continuously audit and rank Satellites on their
 behavior, durability, compliance, and performance.
-
-Storj Labs partners who host ``Tardigrade'' Satellites may receive
-a share of revenue greater than typical demand partners. The portion of the
-revenue paid to Stoj Labs is intended to cover a range of different costs.
-Such costs might include a payment continuity service. If the Satellite
-temporarily goes offline, Storj Labs can continue to pay Storage Nodes on
-behalf of the Satellite until the Satellite returns to avoid losing data.
-Additionally, this fee may cover country-specific tax compliance functionality.
-For example, this fee could cover assisting satellite operators in complying
-with United States Form 1099 tax filing, which is required by United States
-law for any payments to an individual in a given year exceeding a total
-of \$600. Additional services are contemplated and will be included in
-the roadmap as requirements are developed.
+In addition, the satellite operator will have to adhere to particular business
+policies around pricing, storage node recruitment, SLAs, storage node payments,
+etc. Satellite operators in the Tardigrade network will have a business
+relationship with Storj Labs that defines, among other things, franchise fees
+and revenue sharing between the entities. Storj Labs will also assume
+responsibilities including demand generation, brand enforcement, satellite
+operator support, end user support, United States Form 1099 tax filing
+compliance,\footnote{US Form 1099 is required by law for any payments to an
+individual in a given year exceeding a total of \$600.}
+insurance, and maintenance of overall network quality.
 
 These compliance and quality controls will be implemented to ensure that
 Storage Nodes and Satellites are able to continuously meet all SLAs of the
@@ -2881,35 +2909,7 @@ limits as the network evolves over time.
 
 \chapter{Audit false positive risk}\label{appendix:audit-false-positive}
 
-\todo{i think this section either needs actual calculations or should be removed}
-
-We rely on a Bayesian approach to determine the probability
-that a Storage Node is maintaining stored pieces faithfully.
-We use the reputation distribution -- or a modified version of such --
-as the Bayesian prior. As an aside, we remark that this makes it doubly important
-for Nodes to obtain and maintain good reputations,
-as the reputation distribution is used not only directly as it pertains to uptime
-but also indirectly in the form of the Bayesian prior for audit confidence levels.
-For the sampling distribution, we use the Binomial distribution with
-success probability $p=\frac{a_s}{a_t+1}$ where $a_s$ is the number of
-successful audits and $a_t$ is the number of total audits.
-We observe that for a well-behaved Node, this probability starts at 0.5
-and tends to 1 as the number of successful audits increases,
-assuming that by well-behaved we mean that each audit comes back successfully.
-Then we take the audit false positive risk to be $1-P$,
-where $P$ is the posterior distribution obtained after taking the
-prior and sampling distributions into account.
-
-\begin{table}[H]\centering
-\begin{tabular}{| c | c | c| c | c|}\hline
-Successes&Trials&Mean&Lower&Upper\\\hline
-80&100&0.80&0.71&0.87 \\
-85&100&0.85&0.76&0.91\\
-90&100&0.90&0.82&0.95\\
-95&100&0.95&0.89&0.98 \\
-99&100&0.99&0.95&0.99 \\\hline
-\end{tabular}
-\end{table}
+\input{audit-success/main.tex}
 
 \chapter{Choosing erasure parameters}
 \label{appendix:RS}
