@@ -216,7 +216,7 @@ breaches.
 In order to accomplish this task, we've designed our system to be modular,
 consisting of independent components with task-specific jobs.
 We've integrated these components to implement a decentralized object storage
-system that is secure, performant, and reliable.
+system that is secure, performant, reliable and significantly more economical than either on premises or traditional, centralized cloud storage. A brief discussion of the elements that should deliver these properties are included as Appendix [\textbf{TODO}].
 
 We have organized the rest of this paper into five additional
 chapters. Chapter \ref{chap:design-constraints} discusses the design space
@@ -265,7 +265,7 @@ Accountability Act (HIPAA) has specific requirements for data center
 compatibility. European countries have to consider the General Data Protection
 Regulation (GDPR) regarding
 how individual information must be protected and secured. There
-are many other regulations in other sectors regarding user's data privacy.
+are many other regulations in other sectors regarding user's data privacy. Tagging files or buckets for a specific geolocation will enable users to control the physical location of their data furthering the privacy and control over their data.
 
 Customers should be able to
 evaluate that our software is implemented correctly, is resistant to
@@ -281,6 +281,8 @@ Informally, a decentralized application is a service that has no single
 operator. Furthermore, no single entity should be solely responsible for the
 cost associated with running the service.
 
+\todo{Think about our main motivation being putting control of data back into its owners hands}
+\todo{Consider being clear below that small operator environments can be individuals or small parts of small datacenters but we aim to avoid large datacenters. How?}
 One of the main motivations for preferring decentralization is to drive
 down infrastructure costs for maintenance, utilities, and bandwidth.
 We believe that there
@@ -393,7 +395,7 @@ invest billions of dollars in building out a network of data centers and
 then enjoy significant economies of scale. The combination of large upfront
 costs and economies of scale means that there is an extremely limited number
 of viable suppliers of public cloud storage (arguably, fewer than five major
-options worldwide). These few suppliers are also the primary beneficiaries of
+operators worldwide). These few suppliers are also the primary beneficiaries of
 the economic return.
 
 We believe that decentralized storage can provide a viable alternative to
@@ -431,7 +433,7 @@ situation for four different groups:
 
 \item[Network operator] - To sustain continued investment in code,
 functionality, network maintenance, and demand generation, the network
-operator must be able to retain a reasonable profit. They must maintain this profit while
+operator, currently Storj Labs, Inc.,  must be able to retain a reasonable profit. They must maintain this profit while
 not only charging end users less than the public cloud providers but also margin sharing
 with storage node operators and demand providers.
 \end{description}
@@ -587,7 +589,7 @@ participate in a proposed protocol even if the rational choice is to deviate.
 {\em Rational} nodes participate or deviate only when it
 is in their net best interest.
 
-Some distributed storage systems (e.g. Amazon S3, Microsoft Azure Blob Storage)
+Some distributed storage systems (e.g. an on-premises RAID infrastructure)
 operate in an environment
 where all nodes are considered {\em altruistic}. For example, sans hardware failure
 or security breaches, Amazon's storage nodes
@@ -755,7 +757,7 @@ standard domain name system (DNS), which is a mapping of an identifier to an
 ephemeral connection address, but unlike DNS, there can be no centralized
 registration process.
 To achieve this, a network overlay can be
-built on top of our peer-to-peer communication protocol that provides this
+built on top of a peer-to-peer communication protocol that provides this
 functionality. See Section \ref{sec:concrete-node-discovery} for
 implementation details.
 
@@ -795,8 +797,9 @@ is better than a $(k=10,n=20)$ erasure code, even though the expansion factor
 across more nodes in the $(k=20,n=40)$ case. These considerations make erasure
 codes an important part of our general framework.
 
+/todo{Discuss the consideration of this assuming uncorrelated node failures and that a centralized system could not use Reed Solomon s effectively due to the high likelihood of multiple nodes failing simultaneously due to a system-wide event (power outage, bad software, operator error, etc.}
 By being able to tweak the durability independently of the expansion factor,
-very high durabilities can be achieved with surprisingly low expansion factors.
+very high durability can be achieved with surprisingly low expansion factors.
 Because of how limited bandwidth is as a resource, completely eliminating replication as a
 strategy and using erasure codes only for redundancy causes a drastic
 decrease in bandwidth footprint.
@@ -936,7 +939,7 @@ heavily with average object size: the larger the object size, the less the
 metadata overhead.
 
 An additional framework focus is enabling this component -- metadata
-storage -- to be interchangeable per user. Specifically, we expect the platform to incorporate
+storage -- to be interchangeable per Satellite. Specifically, we expect the platform to incorporate
 multiple implementations of metadata storage that users will be allowed to
 choose between. This greatly assists with our design goal of coordination
 avoidance between users (see section \ref{sec:coordination-avoidance}).
@@ -1016,7 +1019,7 @@ iteratively to a storage node as a whole, detection of missing or altered data
 becomes certain to within a known and modifiable error threshold.
 
 A reputation system is needed to persist the history of audit outcomes for
-given node identities. Our overall framework has loose requirements on the use
+given node identities. Our overall framework has flexible requirements on the use
 of such a system, but see section \ref{sec:concrete-reputation} for a
 discussion of our initial approach.
 
@@ -1060,9 +1063,7 @@ Payments, value attribution, and billing in decentralized networks are a critica
 ecosystem of both supply and demand. Of course, decentralized payment systems
 are still in their infancy in a number of ways.
 
-For our framework to achieve low latency and high throughput, we must
-avoid naively placing a blockchain-based solution in the storage hot path.
-This means that an adequately performant storage system cannot afford to
+For our framework to achieve low latency and high throughput, we must not have transactional dependencies on a blockchain. This means that an adequately performant storage system cannot afford to
 wait for blockchain operations. When operations should be measured in
 milliseconds, waiting for a cluster of nodes to probabilistically come to
 agreement on a shared global ledger is a non-starter
@@ -1076,13 +1077,15 @@ Payments will be transferred during
 a background settlement process in which well-behaved participants within
 the network cooperate. Storage nodes in our framework should limit their exposure
 to untrusted payers until confidence is gained that those payers are likely
-to pay for services rendered.
+to pay for services rendered. In order to guarantee confidence, Storj Labs will maintain the Tardigrade membership list, a curated list of Satellites, for which membership has strict requirements ensuring that they adhere to all requirements, and provide the highest level of service.
+
+Billing and Payment means we also have to accurately account for storage and bandwidth utilization at both the node and client level. Note also that we need to not pay non-compliant nodes as well as account for repair costs and potentially assess those costs against nodes necessitating repair through unavailability. Billing and payment data must also be designed to be impervious to Byzantine or Rational actor manipulation.
 
 The Storj network is payment agnostic.
 The protocol does not require a specific payment type.
 The network assumes the Ethereum-based STORJ token as the default payment
 medium, but many other payment types could be implemented, including Bitcoin,
-Ether, credit or debit card, ACH transfer, or physical transfer of live goats.
+Ether, credit or debit card, ACH transfer, or physical transfer of even live goats.
 
 In addition to the payment for services rendered to those contributing storage and bandwidth, the system also tracks and aggregates the value of the consumption of those services by those who own the data stored on the network.  In this way, the framework is able to support the end-to-end economics of the storage marketplace ecosystem.
 
@@ -1119,27 +1122,35 @@ The following defined terms are used throughout the description of the concrete 
   responsibilities. There are three different peer classes that represent
   services in our network: {\em Storage Nodes}, {\em Satellites}, and {\em Uplinks}.
   The Storj Network allows the different peer classes and associated functions to be
-  run separately and independently by different operators.
+  run separately and independently by different operators, unlike decentralized storage networks which are designed similarly to blockchains where every node is identical and must perform the same actions.
+  
+\item[Lib Uplink] A library which provides all necessary functions to interact with {\em Storage Nodes} and {\em Satellites} directly. This library will be available in a number of different programming languages.
+
+\item[The three different peer classes (figure)]
 
 \item[Storage Node] This peer class participates in the node discovery
   system, stores data for others, and gets paid for storage and bandwidth
   (via the bandwidth allocation protocol in section \ref{bap}).
 
 \item[Uplink] This peer class represents any application or
-  service that wants to store data. Applications can store data via an
-  Amazon S3-compatible API or through our {\em libstorj} C-bindings. This peer class
-  is not expected to remain online like the other two classes and is otherwise
+  service that implements {\em Lib Uplink} and wants to store and/or retrieve data. This peer class
+  is not expected to remain online like the other two classes and is
   relatively lightweight. This peer class performs encryption, erasure encoding,
-  and coordinates with the other peer classes on behalf of the customer.
+  and coordinates with the other peer classes on behalf of the customer/client.
 
 \item[Satellite] This peer class participates in the node discovery system,
-  caches node address information, stores per-object metadata, keeps storage
-  node reputation, pays Storage Nodes, aggregates billing data, performs audits and repair, and manages
+  caches node address information, stores per-object metadata, maintains storage
+  node reputation, aggregates billing data, pays Storage Nodes, performs audits and repair, and manages
   authorization and user accounts.
   Any user can run their own Satellite, but we expect many users
   to elect to avoid the operational complexity and create an account on
-  another Satellite hosted by a trusted third party such as a friend, group, or
+  another Satellite hosted by Storj Labs, or a trusted third party such as a friend, group, or
   workplace.
+  
+\item[Uplink CLI] A command line interface for uploading and downloading files from the network, managing permissions and sharing, and managing accounts, 
+
+\item[Gateway] A service which provides a compatibility layer between other object storage services like S3 and Lib Uplink exposing an Amazon S3-compatible API.
+
 \end{description}
 
 \subsection{Data}
@@ -1182,8 +1193,7 @@ user-configurable maximum {\em segment} size.
 
 \item[Remote Segment] A {\em remote segment} is a larger segment that will be
 encoded and distributed across the network. A {\em remote segment} is larger than
-the metadata required to keep track of its bookkeeping, such as the Nodes it
-is stored on.
+the metadata required to keep track of its bookkeeping, which includes information such as the id's and addresses of the Nodes that the data is stored on.
 
 \item[Inline Segment] An {\em inline segment} is a segment that is small
 enough where the data it represents takes less space than the corresponding
@@ -1244,6 +1254,8 @@ Satellites for later settlement and payment. This also requires a small
 database. Both TTL and bandwidth allocations are stored in a SQLite
 \cite{sqlite} database.
 
+Additionally, Storage nodes will track the amount of bandwidth and storage services utilized by each satellite to which the node renders services. Storage Nodes maintain data on reliable Satellites and communicate that data to peers.
+
 Storage Nodes can choose which Satellites to work with. If they work
 with multiple Satellites (the default behavior), then payment may come from
 multiple sources on varying payment schedules.
@@ -1256,7 +1268,7 @@ the Storage Node sends in signed bandwidth allocation messages
 Storage Nodes are expected to reliably store all data sent to them and are
 paid
 with the assumption that they are faithfully storing all data.
-Storage Nodes that fail random audits will be removed from the pool and will
+Storage Nodes that fail random audits will be removed from the pool, could lose funds held in escrow to cover additional costs, and will
 receive
 limited to no future payments.
 Storage Nodes are {\em not} paid for the initial transfer of data to store
