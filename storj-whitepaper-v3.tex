@@ -1,6 +1,6 @@
-\documentclass[11pt,fleqn,openany]{book}
+\documentclass[8pt,fleqn,openany]{book}
 \usepackage[utf8]{inputenc}
-\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry}
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=16pt,letterpaper]{geometry}
 \usepackage{xcolor}
 \definecolor{ocre}{RGB}{38,131,255}
 \definecolor{ForestGreen}{RGB}{34,139,34}
@@ -25,10 +25,20 @@
 \usepackage{float}
 \usepackage{comment}
 \usepackage{cite}
+\usepackage{mathspec}
+\usepackage{fontspec}
+\setallmainfonts{Montserrat Light}
+\setmainfont{Montserrat Light}
+\setsansfont{Montserrat Light}
+%\setmonofont{Montserrat ExtraLight}
 
+\setmathrm{Montserrat}
+\setmathsf{Montserrat}
+\setmathtt{Montserrat}
 \setlength{\parskip}{1em}
+\urlstyle{rm}
 
-\renewcommand{\baselinestretch}{1.2}
+\renewcommand{\baselinestretch}{1.15}
 
 \newcommand{\x}[1]{{\tt #1}} \newcommand{\code}[1]{{\em #1}}
 \newcommand{\todo}[1]{{\color{red} TODO #1 }}
@@ -1527,10 +1537,10 @@ of unreliable Storage Nodes.
 Stripes are the boundary by which we perform erasure encoding.
 In a $(k, n$) erasure code scheme, $n$ erasure shares are generated for
 every stripe.
-For example, perhaps a \x{stripe} is broken into 40 \x{erasure share}s
-($n=40$), where any 20 ($k=20$) are needed to reconstruct the \x{stripe}. Each
-of the 40 \x{erasure share}s will be $1/20$th the size of the original
-\x{stripe}.
+For example, perhaps a {\em stripe} is broken into 40 {\em erasure shares}
+($n=40$), where any 20 ($k=20$) are needed to reconstruct the {\em stripe}. Each
+of the 40 {\em erasure shares} will be $1/20$th the size of the original
+{\em stripe}.
 
 See section \ref{appendix:RS} for a breakdown of how varying the erasure code
 parameters affects availability and redundancy.
