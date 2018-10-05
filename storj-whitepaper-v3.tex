@@ -2300,15 +2300,26 @@ Satellites will reject overly frequent requests for these data structures.
 
 \section{Uplink}
 
-The Uplink provides an Amazon S3-compatible, drop-in interface for users and
-applications that
-need to store data but don't want to bother with the complexities of distributed
-storage directly. The Uplink is a simple service layer on top of {\em libstorj},
-which is a library that provides access to storing and retrieving data in the
+Uplink is the term which we use to identify any software or service that implements Lib Uplink in order to interact with Satellites and Storage Nodes.
+
+\subsection{Lib Uplink}
+
+Lib Uplink is a library that provides access to storing and retrieving data in the
 Storj network.
 
-The Uplink will run co-located with wherever data is generated, and will
+\subsection{Gateway}
+
+The Gateway provides an Amazon S3-compatible, drop-in interface for users and
+applications that
+need to store data but don't want to bother with the complexities of distributed
+storage directly. The Gateway is a simple service layer on top of {\em libuplink}.
+
+The Gateway will run co-located with wherever data is generated, and will
 communicate directly with Storage Nodes so as to avoid central bandwidth costs.
+
+\subsection{Uplink CLI}
+
+The Uplink CLI is a command line application which implements Lib Uplink allowing its user to upload and download files, create and remove buckets, manage file permissions and other related tasks. It aims to provide an experience familiar to what you might expect when using Linux/UNIX tools such as scp or rsync.
 
 \section{Quality control and branding}\label{sec:qc}
 
