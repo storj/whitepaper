@@ -1,7 +1,7 @@
 all: storj-whitepaper-v3.pdf storj-whitepaper-v3.html storj-whitepaper-v3.epub storj-whitepaper-v3.mobi
 
 clean:
-	rm -f *.4ct *.4tc *.aux *.bbl *.blg *.css *.dvi *.epub *.fdb_latexmk *.fls *.html *.idv *.lg *.log *.mobi *.out *.pdf *.tmp *.xref storj-whitepaper-v3*x.png
+	rm -f *.4ct *.4tc *.aux *.bbl *.blg *.css *.dvi *.epub *.fdb_latexmk *.fls *.html *.idv *.lg *.log *.mobi *.out *.pdf *.tmp *.xref storj-whitepaper-v3*x.png *.ptc *.toc images/*.pdf
 
 %.pdf: *.tex *.bib durability/durability.eps
 	latexmk -pdf $<

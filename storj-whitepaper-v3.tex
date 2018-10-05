@@ -2,17 +2,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=16pt,letterpaper]{geometry}
 \usepackage{xcolor}
-\definecolor{ocre}{RGB}{38,131,255}
+\definecolor{defaultcolor}{RGB}{38,131,255}
 \definecolor{ForestGreen}{RGB}{34,139,34}
-\usepackage{avant}
-\usepackage{mathptmx}
-\usepackage{microtype}
-\usepackage[T1]{fontenc}
-\usepackage{inconsolata}
 \usepackage{tabulary}
 
-\usepackage[hidelinks]{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in
-% references
+\usepackage{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in references
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{listings}
@@ -25,18 +19,14 @@
 \usepackage{float}
 \usepackage{comment}
 \usepackage{cite}
-\usepackage{mathspec}
-\usepackage{fontspec}
-\setallmainfonts{Montserrat Light}
-\setmainfont{Montserrat Light}
-\setsansfont{Montserrat Light}
-%\setmonofont{Montserrat ExtraLight}
 
-\setmathrm{Montserrat}
-\setmathsf{Montserrat}
-\setmathtt{Montserrat}
+\usepackage{mathptmx}
+\usepackage{inconsolata}
+\usepackage[defaultfam,light]{montserrat}
+
 \setlength{\parskip}{1em}
 \urlstyle{rm}
+\renewcommand{\rmdefault}{Montserrat-LF}
 
 \renewcommand{\baselinestretch}{1.15}
 
@@ -61,12 +51,14 @@ Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
 \date{\small\sffamily\color{white} v3.0, September 24, 2018\\
-\small\color{white}\url{https://github.com/storj/whitepaper}
+\small\colorlet{urllinkcolor}{white}\url{https://github.com/storj/whitepaper}
 }
 
 \input{structure}
 
 \begin{document}
+
+\raggedbottom
 
 \thispagestyle{fancy}
 \chapterimage{images/header.eps}
@@ -275,7 +267,7 @@ Accountability Act (HIPAA) has specific requirements for data center
 compatibility. European countries have to consider the General Data Protection
 Regulation (GDPR) regarding
 how individual information must be protected and secured. There
-are many other regulations in other sectors regarding user's data privacy. 
+are many other regulations in other sectors regarding user's data privacy.
 
 Customers should be able to
 evaluate that our software is implemented correctly, is resistant to
@@ -581,7 +573,7 @@ We adopt the Byzantine, Altruistic, Rational (BAR) model \cite{bar} to discuss
 participants in the network.
 {\em Byzantine} nodes may deviate arbitrarily from the suggested protocol for
 any reason. Some examples include nodes that are broken or nodes that
-are actively trying to sabotage the protocol. In general, a {\em Byzantine} node is a bad actor, or 
+are actively trying to sabotage the protocol. In general, a {\em Byzantine} node is a bad actor, or
 one that optimizes for a utility function that is independent of the one
 given for the suggested protocol.
 Inevitable hardware failures aside, {\em Altruistic} nodes are good actors and
@@ -744,8 +736,8 @@ This may require techniques like STUN, UPnP, NAT-PMP, etc.
 \item provides authentication, where each participant cryptographically
 proves the identity of the peer with whom they are speaking to avoid
 man-in-the-middle attacks.
-\item provides complete privacy. In cases such as the bandwidth allocation
-protocol (see section \ref{bap}), the client and storage node must be able
+\item provides complete privacy. In cases such as bandwidth measurement
+(see section \ref{bap}), the client and storage node must be able
 to communicate without any risk of eavesdroppers. The protocol should
 ensure that all communications are private by default.
 \end{itemize}
@@ -883,7 +875,7 @@ nodes to help with the later pieces.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{diagram-drafts/redundancy.png}
+\includegraphics[height=.35\textheight]{images/redundancy.eps}
 \caption{Various outcomes during upload and download}
 \end{figure}
 
@@ -1108,7 +1100,7 @@ The following defined terms are used throughout the description of the concrete 
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{diagram-drafts/peers.eps}
+\includegraphics[width=.75\textwidth]{images/overview.eps}
 \caption{The three different peer classes}
 \end{figure}
 
@@ -1120,18 +1112,22 @@ The following defined terms are used throughout the description of the concrete 
   services in our network: {\em Storage Nodes}, {\em Satellites}, and {\em Uplinks}.
   The Storj Network allows the different peer classes and associated functions to be
   run separately and independently by different operators, unlike decentralized storage networks which are designed similarly to blockchains where every node is identical and must perform the same actions.
-  
-\item[Lib Uplink] A library which provides all necessary functions to interact with {\em Storage Nodes} and {\em Satellites} directly. This library will be available in a number of different programming languages.
 
 \item[Storage Node] This peer class participates in the node discovery
   system, stores data for others, and gets paid for storage and bandwidth
-  (via the bandwidth allocation protocol in section \ref{bap}).
+  (see section \ref{bap}).
+
+\item[Lib Uplink] A library which provides all necessary functions to interact with {\em Storage Nodes} and {\em Satellites} directly. This library will be available in a number of different programming languages.
 
 \item[Uplink] This peer class represents any application or
   service that implements {\em Lib Uplink} and wants to store and/or retrieve data. This peer class
   is not expected to remain online like the other two classes and is
   relatively lightweight. This peer class performs encryption, erasure encoding,
   and coordinates with the other peer classes on behalf of the customer/client.
+
+\item[Uplink CLI] A command line interface for uploading and downloading files from the network, managing permissions and sharing, and managing accounts,
+
+\item[Gateway] A service which provides a compatibility layer between other object storage services like Amazon S3 and Lib Uplink exposing an Amazon S3-compatible API.
 
 \item[Satellite] This peer class participates in the node discovery system,
   caches node address information, stores per-object metadata, maintains storage
@@ -1141,10 +1137,6 @@ The following defined terms are used throughout the description of the concrete 
   to elect to avoid the operational complexity and create an account on
   another Satellite hosted by Storj Labs, or a trusted third party such as a friend, group, or
   workplace.
-  
-\item[Uplink CLI] A command line interface for uploading and downloading files from the network, managing permissions and sharing, and managing accounts, 
-
-\item[Gateway] A service which provides a compatibility layer between other object storage services like Amazon S3 and Lib Uplink exposing an Amazon S3-compatible API.
 
 \end{description}
 
@@ -1152,7 +1144,7 @@ The following defined terms are used throughout the description of the concrete 
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{diagram-drafts/data-flow-diagram.png}
+\includegraphics[width=\textwidth]{images/structure.eps}
 \caption{Files, segments, stripes, erasure shares, and pieces}
 \end{figure}
 
@@ -1276,8 +1268,8 @@ maintenance traffic.
 Storage Nodes will support three methods: \code{get}, \code{put}, and
 \code{delete}.
 Each method will take a {\em piece ID}, an ID and signature of the associated
-satellite instance, and the other metadata required by the
-bandwidth allocation protocol (see section \ref{bap}).
+satellite instance, and the other metadata required for bandwidth measurement
+(see section \ref{bap}).
 
 The {\em satellite ID} forms a namespace. An identical {\em piece ID} with a
 different {\em satellite ID} refers to a different {\em piece}.
@@ -1312,9 +1304,9 @@ require a brand new node ID.
 
 \begin{figure}
 \centering
-\includegraphics[width=.8\textwidth]{diagram-drafts/identity.eps}
+\includegraphics[width=.8\textwidth]{images/identity.eps}
 \caption{The different keys and certificates that compose a Storage Node's
-overall identity.}
+overall identity. Each row represents a private/public key pair.}
 \end{figure}
 
 As in S/Kademlia \cite{skad}, the {\em node ID} will be the hash of a public key
@@ -1363,8 +1355,8 @@ For the few cases where a Node cannot achieve a successful connection through a
 NAT or firewall (via STUN, uPnP, NATPmP, or similar techniques), manual
 intervention and port forwarding will be required. In the future, Nodes unable
 to create a connection through their firewalls may rely on traffic proxying from
-other, more available Nodes, for a fee.\footnote{See the bandwidth allocation
-protocol (\ref{bap}) for a description of how fees work.} Nodes can also provide
+other, more available Nodes, for a fee.\footnote{See how we measure bandwidth
+(section \ref{bap}) for a description of how fees work.} Nodes can also provide
 assistance to other Nodes for initial STUN setup, public address validation,
 and so forth.
 
@@ -1441,9 +1433,11 @@ The standard Reed-Solomon numbers are $k$ and $n$, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
 
-\begin{center}
-\includegraphics[width=\textwidth]{diagram-drafts/redundancy_kmon.png}
-\end{center}
+\begin{figure}
+\centering
+\includegraphics[width=.8\textwidth]{images/kmon.eps}
+\caption{The relationship between $k$, $m$, $o$, and $n$.}
+\end{figure}
 
 The {\em minimum safe} and {\em optimal} values, respectively, are $m$ and $o$. The
 value $m$ is chosen such that if a Satellite notices the amount of available pieces
@@ -1477,9 +1471,16 @@ Every file will include a limited set of user-specified key-value pairs
 (extended attributes) that will be stored alongside other metadata about the
 file.
 
+The primary file data itself is simply referred to as a {\em stream}.
+
 \subsection{Files as Segments}
 
-The highest level subdivision of a file is called a ``segment.''
+\begin{center}
+\includegraphics[width=.9\textwidth]{images/stream-segment.eps}
+\end{center}
+
+The highest level subdivision of a file's primary stream of data is called a
+``segment.''
 A file may be small enough that it consists of only one segment.
 If that segment is smaller than the metadata required to store it on the
 network, the data will be stored inline with the metadata. We call this an
@@ -1513,6 +1514,10 @@ segments.
 
 \subsection{Segments as Stripes}
 
+\begin{center}
+\includegraphics[width=.65\textwidth]{images/segment-stripe.eps}
+\end{center}
+
 In many situations, it's important to access a subsection of a larger piece of
 data. Some file formats, such as video files or disk images, support seeking,
 where only a subset of the data is needed for read operations.
@@ -1520,7 +1525,9 @@ To support these operations,
 it's useful to be able to decode and decrypt small parts of a segment.
 
 A stripe defines a subset of a segment and should be no more than a
-couple of kilobytes large. Erasure encoding
+couple of kilobytes large. Encryption happens on a small multiple of stripes,
+whereas erasure encoding happens on a single stripe at a time.
+Erasure encoding
 a single stripe at a time allows us to read small portions of a
 large segment without retrieving the entire segment first.
 It also allows us to stream data into the
@@ -1528,6 +1535,10 @@ network without staging it beforehand, and it enables a number of other useful
 features.
 
 \subsection{Stripes as Erasure Shares}
+
+\begin{center}
+\includegraphics[width=.45\textwidth]{images/stripe-share.eps}
+\end{center}
 
 As discussed in sections \ref{sec:framework-redundancy} and
 \ref{sec:concrete-redundancy}, erasure codes
@@ -1546,6 +1557,10 @@ See section \ref{appendix:RS} for a breakdown of how varying the erasure code
 parameters affects availability and redundancy.
 
 \subsection{Erasure Shares as Pieces}
+
+\begin{center}
+\includegraphics[width=.6\textwidth]{images/share-piece.eps}
+\end{center}
 
 Because stripes are already small, erasure shares are often much
 smaller, and the metadata to keep track of all of them separately will be
@@ -1913,8 +1928,7 @@ the formerly missing pieces get sent back out.
 While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers which offer free ingress
 make for an especially attractive hosting location for users of this system.
-See section \ref{sec:future-distributed-repair} for a planned distributed
-repair method that
+In the future, a distributed repair method could be constructed that
 does not rely on the favorable pricing model of current hosting providers.
 
 \subsection{Merkle trees}
@@ -2100,8 +2114,7 @@ the Satellite adds another day's worth
 of credits to each Storage Node for every file
 piece
 it will be storing.
-Satellites will track utilized bandwidth through a bandwidth allocation
-protocol (see section \ref{bap}.
+Satellites will track utilized bandwidth (see section \ref{bap}).
 At the end of the month, each Satellite
 adds up all bandwidth and storage payments each Storage Node has earned and
 makes
@@ -2133,27 +2146,32 @@ file pieces and to pay new Storage Nodes for storing the data.
 To reduce transaction fees and other overhead as much as possible, payments
 will be recipient-initiated and must be worth at least some minimum value.
 
-\subsection{Bandwidth allocation protocol}\label{bap}
+\subsection{Bandwidth allocation and exchange reporting}\label{bap}
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{diagram-drafts/bandwidth-allocation/bandwidth-put.pdf}
-\caption{Diagram of a put operation with the bandwidth allocation protocol}
+\includegraphics[height=.4\textheight]{images/put.eps}
+\caption{Diagram of a put operation}
 \label{fig:bap-put}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{diagram-drafts/bandwidth-allocation/bandwidth-get.pdf}
-\caption{Diagram of a get operation with the bandwidth allocation protocol}
+\includegraphics[height=.4\textheight]{images/get.eps}
+\caption{Diagram of a get operation}
 \label{fig:bap-get}
 \end{figure}
 
 A core component of our system requires knowing how much bandwidth is used
-between two peers. Therefore, we introduce a protocol we call the Bandwidth Allocation
-Protocol for correctly verifying that a certain amount of bandwidth was used
-between two peers with incentives.
-We don't measure all peer-to-peer traffic;
+between two peers. In our previous version \cite{storj-v2, sip9}, we used
+{\em exchange reports} to gather information about what transpired between
+two peers.
+
+We extend exchange reports with a simple signing and incentive process to
+more correctly verify that a certain amount of bandwidth was used between two
+peers. This system is inspired by Filecoin's off-chain retrieval market,
+wherein only small amounts of data are transferred at a time \cite{filecoin}.
+As before, we don't measure all peer-to-peer traffic;
 this bandwidth traffic measurement only tracks
 bandwidth used during storage operations, storage and retrievals of pieces,
 and does not apply to overlay traffic (Kademlia DHT) or other generic
@@ -2168,10 +2186,6 @@ the identity of the client, an expiration timestamp, a serial number,
 the maximum amount of bytes authorized $x$, and the direction the bytes will flow
 (whether or not the data will be transferred from or to the client).
 The message will be signed by the Satellite.
-
-%To use a metaphor, the Satellite is
-%creating a blank check that is authorized up to $x$ in byte value and sending
-%it to the client.
 
 Once the client has an unrestricted bandwidth allocation, the client will then
 create {\em restricted bandwidth allocations},
@@ -2381,7 +2395,7 @@ Upon receiving the request, the Satellite will:
 \end{itemize}
 
 Next, the Uplink will take this information and begin parallel connections to
-  all of the chosen Storage Nodes via the bandwidth allocation protocol
+  all of the chosen Storage Nodes while measuring bandwidth
   (section \ref{bap}).
 
 \begin{itemize}
@@ -2474,7 +2488,7 @@ The Uplink will determine whether more segments are necessary for the
 
 Once all necessary segment pointers have been returned, if the requested
   segments are not inline, the Uplink will initiate parallel requests
-  via the bandwidth allocation protocol (section \ref{bap}) to all appropriate Storage
+  while measuring bandwidth (section \ref{bap}) to all appropriate Storage
   Nodes for the appropriate erasure share ranges inside of each stored piece.
 
 \begin{itemize}
@@ -2707,8 +2721,8 @@ opportunity to be paid for more bandwidth usage for the data they already have,
 demand for these popular files might outstrip available bandwidth capacity,
 and a form of dynamic scaling is needed.
 
-Fortunately, Satellites authorize all accesses to files via the bandwidth
-allocation protocol, and can therefore meter and rate limit access to popular
+Fortunately, Satellites authorize all accesses to pieces already anyway, and
+can therefore meter and rate limit access to popular
 files. If a file's demand starts to grow more than current resources can serve,
 the Satellite has an opportunity to temporarily pause accesses if necessary,
 increase the redundancy of the file over more Storage Nodes, and then continue
@@ -2738,41 +2752,6 @@ content delivery in this manner has increased at-rest costs during high
 demand, in addition to bandwidth costs. However, content delivery is often
 desired to be highly geographically redundant, which this scheme provides
 naturally.
-
-\section{Distributed repair}\label{sec:future-distributed-repair}
-
-As mentioned, the audit process checks continually for files whose Reed-Solomon
-erasure-encoded pieces have fallen below a certain threshold. When such a file
-is found, it must be repaired, with
-the new pieces being stored on new Storage Nodes.
-Currently, this
-repair process takes place on the Satellite. The Satellite downloads all
-the file fragments needed to repair the file, the file is rebuilt, and the
-previously missing pieces are sent to new Storage Nodes
-selected by the Satellite.
-Long term, it would be better to create a technique where file repair takes
-place in a distributed manner on Storage Nodes, putting their excess processor
-cycles to work.
-
-The system would need more checks and balances to ensure the Storage Node is
-correctly
-executing a repair and that the data inside the encrypted file is accurate.
-Luckily, our existing repair Merkle tree root greatly assists with this
-new distributed repair scheme.
-
-A basic outline is as follows. First, a Storage Node would volunteer to do
-a repair for a Satellite, potentially in exchange for later payment. The
-Satellite would choose a segment that needed repair, determine which pieces
-need to be replaced, and indicate to the volunteer repairing node which
-pieces should be regenerated and on which new Storage Nodes they should be placed.
-By having the Satellite choose the new Storage Nodes, collusion risk is
-limited. Then, the repairing node would download the segment from the existing
-Storage Nodes with the blessing of the Satellite, repair the missing pieces,
-and send the replacement pieces to the desired new Storage Nodes. The new
-Storage Nodes would return signed statements detailing the hash of the contents
-they received. The repairing node would return these signed statements to the
-Satellite, and the Satellite could then use the signed statements along with
-the piece Merkle tree root to confirm that the data was stored correctly.
 
 \section{Order-preserving encryption}\label{section:OPE}
 
@@ -3166,7 +3145,7 @@ under the Honest Geppetto attack can apply here to help avoid this situation.
 
 \section{Cheating Storage Nodes, clients, or Satellites}
 
-The bandwidth allocation protocol minimizes the risk for client and Storage
+Measuring bandwidth with signatures minimizes the risk for client and Storage
 Nodes.
 The client can only interact with the Storage Node by sending a signed
 restricted allocation.
