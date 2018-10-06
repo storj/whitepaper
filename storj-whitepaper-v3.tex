@@ -1941,11 +1941,12 @@ help us solve this problem.
 An assumption in our storage system is that most Storage Nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
 assumption holds, Reed-Solomon is able to detect errors and even correct them,
-via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
-Not only are we are already using Reed-Solomon erasure coding
-\cite{rs} on small ranges, {\em stripes}, but also we use it to issue challenges and
-verify responses. This allows us to run arbitrary audits without
-pre-generated challenges.
+via mechanisms such as the Berlekamp-Welch error correction algorithm
+\cite{bw, rs-intro}.
+We are already using Reed-Solomon erasure coding \cite{rs} on small ranges
+({\em stripes}), so we use it to read a single stripe at a time as a challenge
+and then validate the erasure share responses. This allows us to run arbitrary
+audits without pre-generated challenges.
 
 To perform an audit, we first choose a {\em stripe}. We request that
 {\em stripe's erasure shares} from all Storage Nodes responsible. We then run
@@ -2013,33 +2014,26 @@ make for an especially attractive hosting location for users of this system.
 In the future, a distributed repair method may be constructed that
 does not rely on the favorable pricing model of current hosting providers.
 
-\subsection{Merkle trees}
+\subsection{Piece hashes}\label{sec:concrete-piece-hashes}
 
 Repairs are one of the few places latency matters little. The data repair system
 needs to process as many files as possible, but it doesn't matter if
-a specific file takes longer. Throughput is much more important than
+a specific file takes longer; throughput is much more important than
 latency during repair. However, repair
 is still a costly operation due to significant bandwidth and CPU usage
 impacting a single operator, so repair work will be minimized.
-As a result, when repairing a segment,
-only the minimum number of pieces required will be downloaded.
-Without full redundancy, erasure codes will be less effective at catching
-errors. Furthermore, the fallback safety mechanism that the user has for detecting
-errors (authenticated encryption) is unavailable to the repair system (no
-decryption keys).
-Because full segments are repaired at a time, hashes of
-each {\em piece} will be stored in the system via a Merkle tree
-\cite{merkle-tree}, storing the root of the tree in the {\em pointer}. This allows
-the repair system to correctly assess whether or not repair has been completed
-successfully without using extra redundancy for the same task.
+When repairing a segment, only the minimum number of pieces required will be
+downloaded. Unfortunately, without full redundancy, erasure codes will be less
+effective at catching errors.
 
-A full copy of the leaves of the Merkle tree of pieces (enough to generate
-the full tree) will be stored alongside each {\em piece} on each Storage Node.
-Therefore, the only additional central metadata storage required is just for
-the root of the Merkle tree.
-
-Each repair will validate the tree before the {\em pointer} is updated to
-point to new locations.
+Because full segments are repaired at a time, to solve this problem, hashes of
+every {\em piece} will be stored alongside each piece on each Storage Node.
+A validation hash that the set of hashes is correct will be stored in the
+{\em pointer}. During repair, the hashes of every piece can be retrieved,
+validated for correctness against the pointer, thus allowing each piece to
+be validated in its entirety. This allows the repair system to correctly assess
+whether or not repair has been completed successfully without using extra
+redundancy for the same task.
 
 \section{Storage node reputation}\label{sec:concrete-reputation}
 
@@ -2252,7 +2246,7 @@ between two peers. In our previous version \cite{storj-v2, sip9}, we used
 two peers.
 
 We extend exchange reports with a simple signing and incentive process to
-more correctly verify that a certain amount of bandwidth was used between two
+more correctly verify that a certain amount of bandwidth has passed between two
 peers. This system is inspired by Filecoin's off-chain retrieval market,
 wherein only small amounts of data are transferred at a time \cite{filecoin}.
 As before, we don't measure all peer-to-peer traffic;
@@ -2502,8 +2496,8 @@ Next, the Uplink will take this information and begin parallel connections to
   cancel the slowest uploads.
 \item The data will continue to transfer until the maximum segment size is hit
   or the stream ends, whichever is sooner.
-\item All Merkle tree leaves (the hashes of every piece) will be written to the
-  end of each piece stream.
+\item All of the hashes of every piece will be written to the end of each
+  piece stream.
 \end{itemize}
 
 After that, the Storage Node will store: the largest restricted bandwidth allocation;
@@ -2768,12 +2762,16 @@ A worker process will take segment pointers off the repair queue.
 When a segment pointer is taken off the repair queue:
 
 \begin{itemize}
-\item The worker will download enough pieces to reconstruct the entire segment.
+\item The worker will download enough pieces to reconstruct the entire segment,
+  along with the piece hashes stored with those pieces
+  (see section \ref{sec:concrete-piece-hashes}).
   Unlike audits, only enough pieces for accurate repair are needed.
   Unlike streaming downloads, the repair system can wait for the entire segment
-  before starting. As a result, pieces are compared against a Merkle tree of
-  hashes for correctness prior to repair, where the Merkle root is stored in
-  the pointer.
+  before starting.
+\item The piece hashes are validated against the signature in the pointer,
+  and the downloaded pieces are validated against the validated piece hashes.
+  Incorrect pieces are thrown away and count against the node they came from
+  as failed audits.
 \item Once enough correct pieces are recovered, the missing pieces are
   regenerated.
 \item The Satellite selects some new Nodes and uploads the new pieces to
