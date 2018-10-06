@@ -59,6 +59,8 @@ Storj Labs, Inc.}
 \begin{document}
 
 \raggedbottom
+\widowpenalty10000
+\clubpenalty10000
 
 \thispagestyle{fancy}
 \chapterimage{images/header.eps}
@@ -152,17 +154,20 @@ particular acknowledgement to the teams that built
 Allmydata,
 Ceph,
 Cleversafe,
+CoralCDN,
 Crashplan,
 Ethereum,
 Filecoin,
 Freenet,
 Gluster,
 GFS,
+Hadoop,
 IPFS,
 Kademlia,
 Lustre,
 Maidsafe,
 Minio,
+OceanStore,
 Scality,
 Siacoin,
 SONM,
@@ -329,49 +334,6 @@ serve a wide range of storage use cases from archival to CDN. Whereas,
 centralized storage systems require different architectures, implementations,
 and infrastructure to address each of those same use cases.
 
-\section{Amazon S3 compatibility}
-
-At the time of this paper's publication, the most widely deployed cloud storage
-protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
-Most cloud storage products provide some form of compatibility with the
-Amazon S3 application program interface (API) architecture.
-
-Our objective is to aggressively compete in the wider cloud
-storage industry and bring decentralized cloud storage into the mainstream.
-Until a decentralized cloud storage protocol becomes widely adopted,
-we are creating a graceful transition path from centralized
-providers for our users.
-This will alleviate many switching costs for users with data currently stored on
-a centralized provider.
-To achieve this, the Storj implementation allows
-applications previously built against Amazon S3 to work with Storj with
-minimal friction or changes.
-S3 compatibility adds aggressive requirements for feature set, performance, and
-durability.
-At a bare minimum, this requires the methods described in
-Figure \ref{fig:s3-api-code} to be implemented.
-
-\begin{figure}
-\lstset{language=Golang}
-\begin{lstlisting}
-  // Bucket operations
-	CreateBucket(bucketName string)
-	DeleteBucket(bucketName string)
-	ListBuckets() []BucketInfo
-
-  // Object operations
-	GetObject(bucketName, objectPath string, offset, length int64) (
-	    ObjectData, ObjectInfo)
-	PutObject(bucketName, objectPath string, data ObjectData,
-	    metadata map[string]string) ObjectInfo
-	DeleteObject(bucketName, objectPath string)
-	ListObjects(bucketName, prefix, startKey string,
-	    limit int, delimiter string) ([]ObjectInfo, more bool)
-\end{lstlisting}
-\caption{Minimum S3 API}
-\label{fig:s3-api-code}
-\end{figure}
-
 \section{Marketplace and economics}
 
 Public cloud computing, and public cloud storage in particular, has
@@ -445,7 +407,56 @@ components must be driven by applicability to specific object storage use cases
 and the relationship between features and performance to the price of storage
 and bandwidth relative to those use cases.
 
-\section{Device failure and churn}
+\section{Amazon S3 compatibility}
+
+At the time of this paper's publication, the most widely deployed cloud storage
+protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
+Most cloud storage products provide some form of compatibility with the
+Amazon S3 application program interface (API) architecture.
+
+Our objective is to aggressively compete in the wider cloud
+storage industry and bring decentralized cloud storage into the mainstream.
+Until a decentralized cloud storage protocol becomes widely adopted,
+we are creating a graceful transition path from centralized
+providers for our users.
+This will alleviate many switching costs for users with data currently stored on
+a centralized provider.
+To achieve this, the Storj implementation allows
+applications previously built against Amazon S3 to work with Storj with
+minimal friction or changes.
+S3 compatibility adds aggressive requirements for feature set, performance, and
+durability.
+At a bare minimum, this requires the methods described in
+Figure \ref{fig:s3-api-code} to be implemented.
+
+\begin{figure}
+\lstset{language=Golang}
+\begin{lstlisting}
+  // Bucket operations
+	CreateBucket(bucketName string)
+	DeleteBucket(bucketName string)
+	ListBuckets() []BucketInfo
+
+  // Object operations
+	GetObject(bucketName, objectPath string, offset, length int64) (
+	    ObjectData, ObjectInfo)
+	PutObject(bucketName, objectPath string, data ObjectData,
+	    metadata map[string]string) ObjectInfo
+	DeleteObject(bucketName, objectPath string)
+	ListObjects(bucketName, prefix, startKey string,
+	    limit int, delimiter string) ([]ObjectInfo, more bool)
+\end{lstlisting}
+\caption{Minimum S3 API}
+\label{fig:s3-api-code}
+\end{figure}
+
+\section{Durability, device failure, and churn}
+
+A storage platform is useless unless it also functions as a retrieval platform.
+For any storage platform to be valuable, it must be careful not to lose the
+data it was given, even in the presence of a variety of possible failures within
+the system. Our system must store data with high durability and have negligible
+risk of data loss.
 
 For all devices, component failure is a guarantee.
 All hard drives fail after enough wear
@@ -460,15 +471,18 @@ indefinitely. In such an environment, redundancy, data
 maintenance, repair, and replacement of lost redundancy must be considered
 inevitable, and the system must account for these issues.
 
-Furthermore, decentralized systems are susceptible to high churn rates, where
-participants join the network and then leave for various reasons, well
-before their hardware has actually failed. A network with a high churn rate will
-use large amounts of bandwidth just to ensure durability of the data and
-will fail to scale. As a result, a scalable, highly durable storage
-network must encourage stable nodes and keep the churn rate as low as possible.
+Furthermore, decentralized systems are susceptible to high churn rates
+\cite{dht-churn}, where participants join the network and then leave for
+various reasons, well before their hardware has actually failed. The more
+network churn that exists, the more redundancy is required to make up for
+the greater rate of node loss. The more redundancy that is required, the more
+bandwidth is needed for correct operation of the system. In fact, there is
+a tight relationship between network churn, additional redundancy (or,
+the {\em expansion factor}), and bandwidth availability \cite{pick2-churn}. To
+keep background bandwidth usage and redundancy low, our network must have
+low network churn.
 
-Churn rate affects the network much more than hardware failure. As an
-illustration, Maymounkov {\em et al.} found that in
+As an illustration, Maymounkov {\em et al.} found that in
 decentralized systems, the probability of a node staying connected to the
 network for an additional hour is an {\em increasing}
 function of uptime (Figure \ref{fig:kad-uptime} \cite{kad}).
@@ -488,9 +502,8 @@ $x+60$ minutes. Source: Maymounkov {\em et al.} \cite{kad}}
 \label{fig:kad-uptime}
 \end{figure}
 
-Node churn heavily affects overall system bandwidth usage.
-See appendix \ref{appendix:RS} for a discussion of how repair bandwidth
-varies as a function of node churn.
+See appendix \ref{appendix:RS} and work \cite{pick2-churn} for a discussion of
+how repair bandwidth varies as a function of node churn.
 
 \section{Latency}
 
@@ -512,7 +525,8 @@ Global bandwidth availability is increasing year after year. Unfortunately,
 access to
 high-bandwidth internet connections is unevenly distributed across the world.
 While some users can easily access symmetric, high-speed, unlimited bandwidth
-connections, others have significant difficulty obtaining the same type of access.
+connections, others have significant difficulty obtaining the same type of
+access.
 
 In the United States and other countries,
 the method in which many residential internet service providers (ISPs)
@@ -536,7 +550,7 @@ at any given moment.
 With device failure and churn guaranteed, any decentralized system will have a
 corresponding amount of repair traffic. As a result, it is important to account
 for the bandwidth required not only for data storage and retrieval but also
-for data maintenance and repair. Designing a
+for data maintenance and repair \cite{pick2-churn}. Designing a
 storage system that is careless with bandwidth usage would not only give undue
 preference to Storage Node operators with access to unlimited high-speed
 bandwidth but also centralize the system to some degree. In order to keep the storage
@@ -657,12 +671,12 @@ controllable by each user.
 
 \chapter{Framework}\label{chap:framework}
 
-After having considered our design constraints, the next goal is to design
-a framework consisting of relatively fundamental components.
-The framework should describe
+After having considered our design constraints, this chapter is dedicated
+to outlining the Storj framework, which consists of relatively fundamental
+components. Here, we describe
 all of the components that must exist to satisfy our constraints.
 As long as our design constraints remain constant, this framework will, as
-much as is feasible, describe Storj now and Storj in 10 years from now.
+much as is feasible, describe Storj both now and in 10 years from now.
 While there will be significant design freedom within the framework,
 this framework will obviate the need for future rearchitectures entirely, as
 independent components will be able to be replaced without affecting other
@@ -723,7 +737,7 @@ so forth. In return for their service, nodes are paid.
 
 Because storage
 nodes are selected via changing variables external to the protocol, node
-selection is an explicit, nondeterministic process in our framework. This means
+selection is an explicit, non-deterministic process in our framework. This means
 that we must keep track of which nodes were selected for each upload via a
 small amount of metadata; we can't select nodes for storing data implicitly or
 deterministically as in a system like Dynamo \cite{dynamo}. This decision
@@ -780,10 +794,14 @@ bandwidth usage for a fixed amount of data. As discussed in the protocol design
 constraints, high bandwidth usage prevents scaling, so this is an undesirable
 strategy for ensuring a high degree of file durability.
 
-As an alternative to simple replication, erasure codes provide a much more efficient method to achieve redundancy. Importantly, {\em erasure
-codes} allow changes in durability without changes in expansion factor.
-Erasure codes are an encoding scheme for manipulating
-data durability without tying it to bandwidth usage.
+As an alternative to simple replication, {\em erasure codes} provide a much
+more efficient method to achieve redundancy.
+Erasure codes are well established in use for distributed and peer-to-peer
+storage systems \cite{p2p-lazy}.
+Importantly, they allow changes in durability without changes in expansion
+factor. Erasure codes are an encoding scheme for manipulating
+data durability without tying it to bandwidth usage, and have been found to
+improve repair traffic significantly \cite{pick2-churn}.
 An erasure code is often described by two numbers, $k$ and $n$. If a block of
 data is encoded with a $(k,n)$ erasure code, there are $n$ total generated {\em
 erasure shares}, where only any $k$ of them are required to recover the original
@@ -791,7 +809,7 @@ block of data. If a block of data is $s$ bytes, each of the $n$ erasure shares
 is roughly $s/k$ bytes. Besides the case when $k=1$ (replication), all erasure
 shares are unique. Interestingly, the durability of a $(k=20,n=40)$ erasure code
 is better than a $(k=10,n=20)$ erasure code, even though the expansion factor
-(2x) is the same for both! Intuitively, this is because the risk is spread
+(2x) is the same for both. This is because the risk is spread
 across more nodes in the $(k=20,n=40)$ case. These considerations make erasure
 codes an important part of our general framework.
 
@@ -857,26 +875,44 @@ $k$ & $n$ & Exp. factor & P(D) \\ \hline
 \subsection{Erasure codes' effect on streaming}
 
 Erasure codes are used in many streaming contexts such as audio CDs and
-satellite communications, so it's important to point out that using erasure
-coding in general does not make our streaming design requirement
-(required by Amazon S3 compatibility) more challenging.
-Whatever erasure code is chosen for our framework, streaming can be
-added on top by encoding small portions at a time, instead of attempting to
+satellite communications \cite{rs-cd},
+so it's important to point out that using erasure coding in general does not
+make our streaming design requirement (required by Amazon S3 compatibility)
+more challenging.
+Whatever erasure code is chosen for our framework, as with CDs, streaming can
+be added on top by encoding small portions at a time, instead of attempting to
 encode a file all at once. See section \ref{sec:structured-file-storage} for
 more details.
 
 \subsection{Erasure codes' effect on long tails}
 
 Erasure codes enable an enormous performance benefit, which is the ability to
-avoid waiting for ``long-tail'' response times \cite{tail-at-scale}. For uploads,
-a file can be encoded to a higher $(k, n)$ ratio than necessary for desired
-durability guarantees.
+avoid waiting for ``long-tail'' response times \cite{tail-at-scale}. A
+long-tail response occurs in situations where a needed server has an
+unreasonably slow operation time due to a confluence of unpredictable reasons.
+Long-tail responses are so-named due to their average rare rate of occurrence
+but highly variable nature, which in a probability density graph looks like a
+long tail.
+In aggregate, long-tail responses are a big issue in distributed system design.
+
+In MapReduce \cite{mapreduce}, long-tail responses are called ``stragglers,''
+MapReduce executes ``backup tasks'' (additional, unnecessary work) to make sure
+that if stragglers take too long, the overall operation can proceed without
+waiting. If the backup task mechanism is disabled in MapReduce, basic operations
+can take 44\% longer to complete, even though the backup task mechanism is
+causing more work.
+
+By using erasure codes, we are in a position to create MapReduce-like
+backup tasks for storage \cite{rs-stragglers, rs-intro}.
+For uploads, a file can be encoded to a higher $(k, n)$ ratio than
+necessary for desired durability guarantees.
 During an upload, after enough pieces have uploaded to gain required
-redundancy, the remaining additional uploads can be canceled. This cancellation allows the
-upload to continue as fast as the fastest nodes in a set, instead of waiting
-for the slowest nodes.
-Downloads are similarly improved. Since more redundancy exists
-than is needed, downloads can use the fastest peers to download the starting pieces and slower
+redundancy, the remaining additional uploads can be canceled.
+This cancellation allows the upload to continue as fast as the fastest nodes
+in a set, instead of waiting for the slowest nodes.
+
+Downloads are similarly improved. Since more redundancy exists than is needed,
+downloads can use the fastest peers to download the starting pieces and slower
 nodes to help with the later pieces.
 
 \begin{figure}
@@ -885,9 +921,9 @@ nodes to help with the later pieces.
 \caption{Various outcomes during upload and download}
 \end{figure}
 
-The goal is a protocol that allows for every request to be satisfiable by the
-fastest nodes participating in any given transaction, without needing to wait
-for a slower subset.
+The outcome is that every request is satisfiable by the fastest nodes
+participating in any given transaction, without needing to wait for a slower
+subset.
 Focusing on operations where the result is only dependent on the fastest
 nodes of a random subpopulation turns what could be a potential liability
 (highly variable performance from individual actors) into a great source of
@@ -902,10 +938,15 @@ a discussion on how we plan to address load balancing very active files.
 
 Once we split an object up with erasure codes and select storage nodes on
 which to store the new pieces, we now need to keep track of which storage
-nodes we selected.
-Moreover, to maintain Amazon S3 compatibility, the user must be able to choose an
-arbitrary key, often treated like a path, to identify this mapping of data
-pieces to node. This implies the necessity of a metadata storage system.
+nodes we selected. We allow users to choose storage based on geographic
+location, performance characteristics, available space, and other features,
+so instead of implicit node selection such as a scheme using consistent
+hashing, we must use an explicit node selection scheme such as directory-based
+lookups \cite{p2p-policies}.
+Additionally, to maintain Amazon S3 compatibility, the user must be able to
+choose an arbitrary key, often treated like a path, to identify this mapping
+of data pieces to node. This features implies the necessity of a metadata
+storage system.
 
 Amazon S3 compatibility once again imposes some tight requirements.
 We should support:
@@ -930,7 +971,7 @@ If each metadata element is roughly $40\cdot 64+192$ bytes (info for each
 selected node plus the path and some general overhead), there are over 55
 terabytes of metadata of which to keep track.
 Fortunately, this metadata can be heavily partitioned by the user. A user storing
-100 terabytes of 50MB objects will only incur a metadata overhead of 5.5
+100 terabytes of 50 megabyte objects will only incur a metadata overhead of 5.5
 gigabytes. It's worth pointing out that these numbers vary
 heavily with average object size: the larger the object size, the less the
 metadata overhead.
@@ -1006,7 +1047,8 @@ degree of certainty and a low amount of overhead, that a Storage Node is well-be
 failure or malintent. Audits function as spot checks to help calculate
 the future usefulness of a given Storage Node.
 
-This auditing mechanism does not audit all bytes in all files. This can
+As in \cite{proof-of-retrievability}, this auditing mechanism does not audit
+all bytes in all files. This can
 leave room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
 deleted. Fortunately, the probability of a false positive on an individual
@@ -1024,35 +1066,29 @@ discussion of our initial approach.
 
 Data loss is an ever-present risk in any distributed storage system. While there
 are many potential causes for file loss, storage node churn is the leading
-risk. As evidenced by the findings of Maymounkov {\em et al.}, expected node
-availability is an increasing function of uptime \cite{kad}, implying that node
-churn is the dominant effect. Storage nodes
+risk, to the point where it is orders of magnitude larger than other causes.
+For instance, Rhea {\em et al.} found that in many real world peer-to-peer
+systems, the median time a participant lasts in the network ranges from hours
+to mere minutes \cite{dht-churn}. Storage nodes
 may go offline due to hardware or software failure, intermittent internet
-connectivity, or operator choices.
+connectivity, power loss, complete disk failure, or software shutdown or
+removal.
+While there are many other ways data might get lost such as corruption,
+malicious behavior, bad hardware, software error, or user initiated space
+reclamation, these issues are less serious than full node churn. We expect
+node churn to be the dominant cause of data loss in our network.
+
 Because audits are validating that conforming nodes store data correctly, all
-that remains is to detect when a storage node goes offline or becomes bad and
-then repair at-risk data.
+that remains is to detect when a storage node goes offline or stops storing
+data correctly and then repair the data it had to new nodes.
+To repair the data, we will recover the original data via an erasure code
+reconstruction from the remaining pieces and then regenerate the missing
+pieces and store them back in the network on new storage nodes.
 
-Assuming that probabilistic audits are enough to estimate the likelihood that
-a node will have the data it should represents a huge shortcut in terms
-of work. We can use overall node status,
-which is much more efficient than file-by-file audits,
-to calculate when a file is at risk.
-We don't consider any types of availability other than node availability when
-determining which files to repair.
-
-There are many other ways data might get lost in the network besides node churn, such as corruption, malicious behavior, bad hardware, software error, or
-user initiated space
-reclamation. However, these issues are less serious than full node
-churn issues such as power loss, internet connectivity intermittency, complete disk failure,
-and software shutdown or removal.
-Our spot-check based audits will incentivize storage nodes to reliably store
-data
-while estimating the rate at which data is actually stored reliably.
-Therefore, our repair system only seeks to solve the node churn problem.
-We expect to account for varying
-amounts of other issues by configuring erasure code
-parameters according to differing network conditions.
+It is vital in our system to incentivize storage node participants to remain
+online for much longer than a few hours. Fortunately, our system includes
+payments, so our payment strategy will involve rewarding storage node
+operators that keep their nodes participating for months and years at a time.
 
 \section{Payments}
 
@@ -1076,13 +1112,20 @@ the network cooperate. Storage nodes in our framework should limit their exposur
 to untrusted payers until confidence is gained that those payers are likely
 to pay for services rendered.
 
-The Storj network is payment agnostic.
-The protocol does not require a specific payment type.
-The network assumes the Ethereum-based STORJ token as the default payment
-medium, but many other payment types could be implemented, including Bitcoin,
-Ether, credit or debit card, ACH transfer, or physical transfer of even live goats.
+In addition to the payment for services rendered to those contributing storage
+and bandwidth, the system also tracks and aggregates the value of the
+consumption of those services by those who own the data stored on the network.
+By charging for usage, the framework is able to support the end-to-end
+economics of the storage marketplace ecosystem.
 
-In addition to the payment for services rendered to those contributing storage and bandwidth, the system also tracks and aggregates the value of the consumption of those services by those who own the data stored on the network.  In this way, the framework is able to support the end-to-end economics of the storage marketplace ecosystem.
+Though the Storj network is payment agnostic and
+the protocol does not require a specific payment type,
+the network assumes the Ethereum-based STORJ token as the default mechanism
+for payment. While we intend for the STORJ token to be the primary mechanism
+indefinitely, in the future
+other alternate payment types could be implemented, including Bitcoin,
+Ether, credit or debit card, ACH transfer, or even physical transfer of
+live goats.
 
 \chapter{Concrete implementation}\label{chap:concrete}
 
@@ -1100,7 +1143,8 @@ architecture through our Storj Improvement Proposal process \cite{sips}.
 
 \section{Definitions}
 
-The following defined terms are used throughout the description of the concrete implementation that follows:
+The following defined terms are used throughout the description of the concrete
+implementation that follows:
 
 \subsection{Actors}
 
@@ -1218,6 +1262,31 @@ erasure shares from that segment's stripes.
 inline segment data, or keeps track of which
 Storage Nodes the pieces of a remote segment were stored on.
 \end{description}
+
+\section{Peer classes}
+
+Our overall strategy extends from our previous release \cite{storj-v2} and
+also heavily mirrors the Lustre distributed filesystem \cite{lustre}. In
+both Lustre and our system, there are three major actors in the network -
+metadata servers, object storage servers, and clients. Object
+storage servers hold the bulk of the data stored in the system. Metadata
+servers keep track of per-object metadata and where the objects are located
+on object storage servers. Clients provide a coherent view and easy access
+to files by communicating with both the metadata and object storage servers.
+
+Lustre's architecture is proven for high performance. The majority of the top
+100 fastest supercomputers use Lustre for their high performance, scalable
+storage \cite{lustre}. While we don't expect to achieve equal performance over
+a wide-area network, we expect dramatically better performance than other
+architectures. Any limitation, if any, we experience in performance will be
+due to factors besides our overall architecture.
+
+Our previous release used different names for each component. What we
+previously referred to as Storj Share, we now refer to as simply storage nodes.
+Our single Bridge instance we have finally broken into multiple pieces and now
+refer to as Satellites. Our {\em libstorj} library will be made to be backwards
+compatible where possible, but in general we now refer to client software as
+Uplinks.
 
 \section{Storage Node}\label{sec:concrete-storage-nodes}
 
@@ -1531,7 +1600,7 @@ To support these operations,
 it's useful to be able to decode and decrypt small parts of a segment.
 
 A stripe defines a subset of a segment and should be no more than a
-couple of kilobytes large. Encryption happens on a small multiple of stripes,
+couple of kilobytes in size. Encryption happens on a small multiple of stripes,
 whereas erasure encoding happens on a single stripe at a time.
 Erasure encoding
 a single stripe at a time allows us to read small portions of a
@@ -1749,6 +1818,11 @@ would to a traditional object store but to a lesser degree. Future updates
 will allow for various distributions of responsibilities, and thus levels of
 trust, between customer applications and Satellites.
 
+While our launch goal of many Satellites is a step ahead of our previous
+system's Bridge implementation \cite{storj-v2}, this is still just one point on
+our decentralization journey and we expect to continue to find ways to
+decentralize our components further.
+
 \section{Encryption}\label{sec:concrete-encryption}
 
 Our encryption choice is authenticated encryption, with support for both the
@@ -1858,9 +1932,11 @@ proof of retrievability \cite{proof-of-retrievability}. By using a Merkle tree
 challenges and responses can be negligible.
 
 Unfortunately, in such a scheme, the challenges and expected responses must be
-pre-generated. Without a periodic regeneration of these challenges, a
-Storage Node can begin to pass most audits without storing all of the requested
-data. Finding a solution that avoids pre-generated challenges is preferred.
+pre-generated. As we learned in our previous release, without a periodic
+regeneration of these challenges, a Storage Node can begin to pass most
+audits without storing all of the requested data. During our previous release,
+we began to play with Reed-Solomon erasure coding and learned that it would
+help us solve this problem.
 
 An assumption in our storage system is that most Storage Nodes are
 reasonably well-behaved, and most data is stored faithfully. As long as that
@@ -1869,7 +1945,7 @@ via mechanisms such as the Berlekamp-Welch error correction algorithm \cite{bw}.
 Not only are we are already using Reed-Solomon erasure coding
 \cite{rs} on small ranges, {\em stripes}, but also we use it to issue challenges and
 verify responses. This allows us to run arbitrary audits without
-pre-generated challenges
+pre-generated challenges.
 
 To perform an audit, we first choose a {\em stripe}. We request that
 {\em stripe's erasure shares} from all Storage Nodes responsible. We then run
@@ -1934,7 +2010,7 @@ the formerly missing pieces get sent back out.
 While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers which offer free ingress
 make for an especially attractive hosting location for users of this system.
-In the future, a distributed repair method could be constructed that
+In the future, a distributed repair method may be constructed that
 does not rely on the favorable pricing model of current hosting providers.
 
 \subsection{Merkle trees}
@@ -2074,9 +2150,11 @@ reputation will then be determined globally.
 
 In the Storj network, payments are made by clients who store data on the
 platform to the Satellite they utilize.
-The Satellite then pays Storage Nodes for the amount of storage and bandwidth
-they
-provide on the network.
+The Satellites then pays Storage Nodes for the amount of storage and bandwidth
+they provide on the network.
+Payments by clients may be through any mechanism (STORJ, credit card, invoice),
+but payments to Storage Nodes are via the Ethereum ERC20 \cite{erc20} STORJ
+token.
 
 Previous distributed systems have handled payments as hard-coded contracts.
 For example, the previous Storj network utilized 90-day contracts to maintain
@@ -2195,7 +2273,6 @@ The message will be signed by the Satellite.
 
 Once the client has an unrestricted bandwidth allocation, the client will then
 create {\em restricted bandwidth allocations},
-%or to continue the metaphor, a filled-in check,
 indicating $y$ bytes have been transferred so far. In the case of a {\em Get}
 operation, the client
 will start by sending a restricted allocation for some small amount,

@@ -69,6 +69,13 @@ note   = {\url{https://github.com/storj/sips/blob/master/sip-0001.md}},
 year   = {(2016)},
 },
 
+@misc{erc20,
+title = {{ERC-20 Token Standard}},
+author = {Fabian Vogelsteller and Vitalik Buterin},
+note = {\url{https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md}},
+year = {(2015)},
+}
+
 @inproceedings{raft,
  author = {Ongaro, Diego and Ousterhout, John},
  title = {In Search of an Understandable Consensus Algorithm},
@@ -1121,7 +1128,7 @@ year = {2010},
 month = {12},
 pages = {},
 title = {Peer-to-Peer Storage Systems: A Practical Guideline to be Lazy},
-booktitle = {IEEE Global Communications Conference (GlobeCom)}
+journal = {IEEE Global Communications Conference (GlobeCom)}
 }
 
 @misc{gartner-cloud-growth,
@@ -1253,4 +1260,111 @@ author = "Asit P. Basu and David W. Gaylor and James J. Chen"
     title = {Sia: Simple Decentralized Storage},
     howpublished = {\url{https://sia.tech/sia.pdf}},
     year = {2014}
+}
+
+@Book{rs-cd,
+author = { Bhargava, Vijay K. and Wicker, Stephen B. and IEEE Communications Society. and IEEE Information Theory Society. },
+title = { Reed-Solomon codes and their applications / edited by Stephen B. Wicker, Vijay K. Bhargava ; IEEE Communications Society and IEEE Information Theory Society, co-sponsors },
+isbn = { 078031025 },
+publisher = { IEEE Press Piscataway, NJ },
+pages = { xiv, 322 p. : },
+year = { 1994 },
+type = { Book },
+language = { English },
+subjects = { Data transmission systems -- Design and construction -- Mathematics.; Reed-Solomon codes. },
+life-dates = { 1994 -  },
+catalogue-url = { https://nla.gov.au/nla.cat-vn328165 }
+}
+
+@misc{rs-intro,
+  author = {Jeff Wendling and JT Olds},
+  title = {Introduction to Reed-Solomon},
+  howpublished = {\url{https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8}},
+  year = {2017}
+}
+
+@article{mapreduce,
+ author = {Dean, Jeffrey and Ghemawat, Sanjay},
+ title = {MapReduce: Simplified Data Processing on Large Clusters},
+ journal = {Commun. ACM},
+ issue_date = {January 2008},
+ volume = {51},
+ number = {1},
+ month = jan,
+ year = {2008},
+ issn = {0001-0782},
+ pages = {107--113},
+ numpages = {7},
+ url = {http://doi.acm.org/10.1145/1327452.1327492},
+ doi = {10.1145/1327452.1327492},
+ acmid = {1327492},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@article{rs-stragglers,
+  author    = {Netanel Raviv and
+               Yuval Cassuto and
+               Rami Cohen and
+               Moshe Schwartz},
+  title     = {Erasure correction of scalar codes in the presence of stragglers},
+  journal   = {CoRR},
+  volume    = {abs/1802.02265},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1802.02265},
+  archivePrefix = {arXiv},
+  eprint    = {1802.02265},
+  timestamp = {Mon, 13 Aug 2018 16:48:43 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1802-02265},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{dht-churn,
+ author = {Rhea, Sean and Geels, Dennis and Roscoe, Timothy and Kubiatowicz, John},
+ title = {Handling Churn in a DHT},
+ booktitle = {Proceedings of the Annual Conference on USENIX Annual Technical Conference},
+ series = {ATEC '04},
+ year = {2004},
+ location = {Boston, MA},
+ pages = {10--10},
+ numpages = {1},
+ url = {http://dl.acm.org/citation.cfm?id=1247415.1247425},
+ acmid = {1247425},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@inproceedings{pick2-churn,
+ author = {Blake, Charles and Rodrigues, Rodrigo},
+ title = {High Availability, Scalable Storage, Dynamic Peer Networks: Pick Two},
+ booktitle = {Proceedings of the 9th Conference on Hot Topics in Operating Systems - Volume 9},
+ series = {HOTOS'03},
+ year = {2003},
+ location = {Lihue, Hawaii},
+ pages = {1--1},
+ numpages = {1},
+ url = {http://dl.acm.org/citation.cfm?id=1251054.1251055},
+ acmid = {1251055},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@INPROCEEDINGS{p2p-policies,
+author={J. Paiva and L. Rodrigues},
+booktitle={2013 International Conference on Parallel and Distributed Systems},
+title={Policies for Efficient Data Replication in P2P Systems},
+year={2013},
+volume={},
+number={},
+pages={404-411},
+keywords={data handling;peer-to-peer computing;data replication policies;replicated data;large scale P2P systems;monitoring costs;data transfer costs;load unbalance costs;counter-intuitive approach;Monitoring;Servers;Load management;Measurement;Data transfer;Reliability;Peer-to-peer computing;Fault-tolerance;Data replication;P2P;Bandwidth;Load balancing;Group-based DHTs},
+doi={10.1109/ICPADS.2013.63},
+ISSN={1521-9097},
+month={Dec},}
+
+@misc{lustre,
+author={Lustre authors},
+title={Introduction to Lustre Architecture},
+year={2017},
+howpublished={\url{http://wiki.lustre.org/images/6/64/LustreArchitecture-v4.pdf}}
 }
