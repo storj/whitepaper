@@ -227,7 +227,7 @@ breaches.
 In order to accomplish this task, we've designed our system to be modular,
 consisting of independent components with task-specific jobs.
 We've integrated these components to implement a decentralized object storage
-system that is secure, performant, reliable and significantly more economical than either on premises or traditional, centralized cloud storage.
+system that is not only secure, performant, and reliable but also significantly more economical than either on premises or traditional, centralized cloud storage.
 
 We have organized the rest of this paper into five additional
 chapters. Chapter \ref{chap:design-constraints} discusses the design space
@@ -241,8 +241,8 @@ during each operation in the network. Finally, chapter
 \ref{chap:future-work} covers future work.
 
 As with Google's Chubby lock service \cite{chubby}, the Storj Network is an
-engineering effort required to fill the needs mentioned above and below;
-the concrete implementation detailed here was not research.
+engineering effort required to fill the needs mentioned above and below.
+The concrete implementation detailed here was not research.
 We claim no novel algorithms or techniques. The purpose
 of this paper is to describe what we did, what we plan to do, and why.
 
@@ -309,9 +309,8 @@ in aggregate, enough small operator environments exist such that their
 combination over the internet constitutes
 significant opportunity and advantage for less expensive and faster storage.
 
-Our decentralization goals are also driven by our desire to provide a viable alternative for
-fundamental infrastructure, such as storage, to the few major
-entities who dominate the market at present.
+Our decentralization goals for fundamental infrastructure, such as storage, are also driven by our desire to provide a viable alternative to the few major
+centralized storage entities who dominate the market at present.
 We believe that there exists inherent risk in trusting a single entity,
 company, or organization with a significant percentage of the world's data.
 In fact, we believe that there is an implicit cost associated with the risk of
@@ -371,7 +370,7 @@ situation for four different groups:
   In addition, end users must experience meaningfully better value for given
   levels of capacity, durability, security, and performance.
 
-\item[Storage node operators] - It must be economically attractive for Storage
+\item[Storage node operators] - It must be economically attractive for storage
   node operators to help build out the network.
   They must be paid fairly, transparently, and be able to make a
   reasonable profit relative to any marginal costs they incur.
@@ -391,7 +390,7 @@ situation for four different groups:
 
 \item[Network operator] - To sustain continued investment in code,
 functionality, network maintenance, and demand generation, the network
-operator, currently Storj Labs, Inc.,  must be able to retain a reasonable profit. They must maintain this profit while
+operator, currently Storj Labs, Inc.,  must be able to retain a reasonable profit. The operator must maintain this profit while
 not only charging end users less than the public cloud providers but also margin sharing
 with storage node operators and demand providers.
 \end{description}
@@ -552,7 +551,7 @@ corresponding amount of repair traffic. As a result, it is important to account
 for the bandwidth required not only for data storage and retrieval but also
 for data maintenance and repair \cite{pick2-churn}. Designing a
 storage system that is careless with bandwidth usage would not only give undue
-preference to Storage Node operators with access to unlimited high-speed
+preference to storage node operators with access to unlimited high-speed
 bandwidth but also centralize the system to some degree. In order to keep the storage
 system as decentralized as possible and working in as many environments
 as possible, bandwidth usage must be aggressively minimized.
@@ -629,7 +628,7 @@ This observation happens at all scales and applies not only to distributed
 networks but also to
 concurrent threads of execution coordinating within the same computer.
 As soon as coordination is needed, actors in the system will need to wait for
-other actors, and waiting -- due to coordination issues -- can have significant
+other actors, and waiting -- due to coordination issues -- can have a significant
 cost.
 
 While many types of operations in a network may require coordination
@@ -676,7 +675,7 @@ to outlining the Storj framework, which consists of relatively fundamental
 components. Here, we describe
 all of the components that must exist to satisfy our constraints.
 As long as our design constraints remain constant, this framework will, as
-much as is feasible, describe Storj both now and in 10 years from now.
+much as is feasible, describe Storj both now and 10 years from now.
 While there will be significant design freedom within the framework,
 this framework will obviate the need for future rearchitectures entirely, as
 independent components will be able to be replaced without affecting other
@@ -796,7 +795,7 @@ strategy for ensuring a high degree of file durability.
 
 As an alternative to simple replication, {\em erasure codes} provide a much
 more efficient method to achieve redundancy.
-Erasure codes are well established in use for distributed and peer-to-peer
+Erasure codes are well-established in use for both distributed and peer-to-peer
 storage systems \cite{p2p-lazy}.
 Importantly, they allow changes in durability without changes in expansion
 factor. Erasure codes are an encoding scheme for manipulating
@@ -939,8 +938,8 @@ a discussion on how we plan to address load balancing very active files.
 Once we split an object up with erasure codes and select storage nodes on
 which to store the new pieces, we now need to keep track of which storage
 nodes we selected. We allow users to choose storage based on geographic
-location, performance characteristics, available space, and other features,
-so instead of implicit node selection such as a scheme using consistent
+location, performance characteristics, available space, and other features.
+Therefore, instead of implicit node selection such as a scheme using consistent
 hashing, we must use an explicit node selection scheme such as directory-based
 lookups \cite{p2p-policies}.
 Additionally, to maintain Amazon S3 compatibility, the user must be able to
@@ -1065,15 +1064,15 @@ discussion of our initial approach.
 \section{Data repair}
 
 Data loss is an ever-present risk in any distributed storage system. While there
-are many potential causes for file loss, storage node churn is the leading
-risk, to the point where it is orders of magnitude larger than other causes.
+are many potential causes for file loss, storage node churn is significantly the largest leading
+risk compared to other causes.
 For instance, Rhea {\em et al.} found that in many real world peer-to-peer
 systems, the median time a participant lasts in the network ranges from hours
 to mere minutes \cite{dht-churn}. Storage nodes
 may go offline due to hardware or software failure, intermittent internet
 connectivity, power loss, complete disk failure, or software shutdown or
 removal.
-While there are many other ways data might get lost such as corruption,
+While there are many other ways data might get lost, such as corruption,
 malicious behavior, bad hardware, software error, or user initiated space
 reclamation, these issues are less serious than full node churn. We expect
 node churn to be the dominant cause of data loss in our network.
@@ -1086,8 +1085,8 @@ reconstruction from the remaining pieces and then regenerate the missing
 pieces and store them back in the network on new storage nodes.
 
 It is vital in our system to incentivize storage node participants to remain
-online for much longer than a few hours. Fortunately, our system includes
-payments, so our payment strategy will involve rewarding storage node
+online for much longer than a few hours. The encourage this behavior, 
+our payment strategy will involve rewarding storage node
 operators that keep their nodes participating for months and years at a time.
 
 \section{Payments}
@@ -1118,12 +1117,10 @@ consumption of those services by those who own the data stored on the network.
 By charging for usage, the framework is able to support the end-to-end
 economics of the storage marketplace ecosystem.
 
-Though the Storj network is payment agnostic and
+Although the Storj network is payment agnostic and
 the protocol does not require a specific payment type,
 the network assumes the Ethereum-based STORJ token as the default mechanism
-for payment. While we intend for the STORJ token to be the primary mechanism
-indefinitely, in the future
-other alternate payment types could be implemented, including Bitcoin,
+for payment. While we intend for the STORJ token to be the primary form of payment, in the future other alternate payment types could be implemented, including Bitcoin,
 Ether, credit or debit card, ACH transfer, or even physical transfer of
 live goats.
 
@@ -1134,9 +1131,9 @@ given our design constraints. However, within the framework there remains a
 significant degree of freedom in choosing how to implement each component.
 
 In this section, we lay out our initial implementation strategy. We expect
-the details contained within this section to change over time, but believe the
+the details contained within this section to change over time. However, we believe the
 details outlined here are viable and support a working implementation of our
-framework capable of providing highly secure, performant and durable production-grade cloud storage.
+framework capable of providing highly secure, performant, and durable production-grade cloud storage.
 
 As with our previous network, we will publish changes to this concrete
 architecture through our Storj Improvement Proposal process \cite{sips}.
@@ -1175,9 +1172,9 @@ implementation that follows:
   relatively lightweight. This peer class performs encryption, erasure encoding,
   and coordinates with the other peer classes on behalf of the customer/client.
 
-\item[Uplink CLI] A command line interface for uploading and downloading files from the network, managing permissions and sharing, and managing accounts,
+\item[Uplink CLI] A command line interface for uploading and downloading files from the network, managing permissions and sharing, and managing accounts.
 
-\item[Gateway] A service which provides a compatibility layer between other object storage services like Amazon S3 and Lib Uplink exposing an Amazon S3-compatible API.
+\item[Gateway] A service which provides a compatibility layer between other object storage services such as Amazon S3 and Lib Uplink exposing an Amazon S3-compatible API.
 
 \item[Satellite] This peer class participates in the node discovery system,
   caches node address information, stores per-object metadata, maintains storage
@@ -1267,7 +1264,7 @@ Storage Nodes the pieces of a remote segment were stored on.
 
 Our overall strategy extends from our previous release \cite{storj-v2} and
 also heavily mirrors the Lustre distributed filesystem \cite{lustre}. In
-both Lustre and our system, there are three major actors in the network -
+both Lustre and our system, there are three major actors in the network --
 metadata servers, object storage servers, and clients. Object
 storage servers hold the bulk of the data stored in the system. Metadata
 servers keep track of per-object metadata and where the objects are located
@@ -1275,17 +1272,17 @@ on object storage servers. Clients provide a coherent view and easy access
 to files by communicating with both the metadata and object storage servers.
 
 Lustre's architecture is proven for high performance. The majority of the top
-100 fastest supercomputers use Lustre for their high performance, scalable
+100 fastest supercomputers use Lustre for their high-performance, scalable
 storage \cite{lustre}. While we don't expect to achieve equal performance over
 a wide-area network, we expect dramatically better performance than other
 architectures. Any limitation, if any, we experience in performance will be
 due to factors besides our overall architecture.
 
 Our previous release used different names for each component. What we
-previously referred to as Storj Share, we now refer to as simply storage nodes.
+previously referred to as Storj Share, we now refer to as simply Storage Nodes.
 Our single Bridge instance we have finally broken into multiple pieces and now
 refer to as Satellites. Our {\em libstorj} library will be made to be backwards
-compatible where possible, but in general we now refer to client software as
+compatible where possible, but we now refer to client software as
 Uplinks.
 
 \section{Storage Node}\label{sec:concrete-storage-nodes}
@@ -1318,7 +1315,7 @@ database. Both TTL and bandwidth allocations are stored in a SQLite
 
 Additionally, Storage nodes will track the amount of bandwidth and storage services utilized by each satellite to which the node renders services. Storage Nodes maintain data on reliable Satellites.
 
-Storage Nodes can choose which Satellites to work with. If they work
+Storage Nodes can choose with which Satellites to work. If they work
 with multiple Satellites (the default behavior), then payment may come from
 multiple sources on varying payment schedules.
 Storage Nodes are paid by specific Satellites for (1) returning data when
@@ -1330,7 +1327,7 @@ the Storage Node sends in signed bandwidth allocation messages
 Storage Nodes are expected to reliably store all data sent to them and are
 paid
 with the assumption that they are faithfully storing all data.
-Storage Nodes that fail random audits will be removed from the pool, could lose funds held in escrow to cover additional costs, and will
+Storage Nodes that fail random audits will be removed from the pool, can lose funds held in escrow to cover additional costs, and will
 receive
 limited to no future payments.
 Storage Nodes are {\em not} paid for the initial transfer of data to store
@@ -2029,7 +2026,7 @@ effective at catching errors.
 Because full segments are repaired at a time, to solve this problem, hashes of
 every {\em piece} will be stored alongside each piece on each Storage Node.
 A validation hash that the set of hashes is correct will be stored in the
-{\em pointer}. During repair, the hashes of every piece can be retrieved,
+{\em pointer}. During repair, the hashes of every piece can be retrieved and
 validated for correctness against the pointer, thus allowing each piece to
 be validated in its entirety. This allows the repair system to correctly assess
 whether or not repair has been completed successfully without using extra
@@ -2382,14 +2379,13 @@ Storj network.
 
 Gateways act as compatibility layers between a service or application and the Storj network. They run as a service co-located with wherever data is generated, and will communicate directly with Storage Nodes so as to avoid central bandwidth costs. The Gateway is a simple service layer on top of {\em libuplink}.
 
-Our first is an Amazon S3 gateway. It provides an S3-compatible, drop-in interface for users and
-applications that
+Our first gateway is an Amazon S3 gateway. It provides an S3-compatible, drop-in interface for users and applications that
 need to store data but don't want to bother with the complexities of distributed
 storage directly.
 
 \subsection{Uplink CLI}
 
-The Uplink CLI is a command line application which implements Lib Uplink allowing its user to upload and download files, create and remove buckets, manage file permissions and other related tasks. It aims to provide an experience familiar to what you might expect when using Linux/UNIX tools such as scp or rsync.
+The Uplink CLI is a command line application which implements Lib Uplink allowing its user to upload and download files, create and remove buckets, manage file permissions, and other related tasks. It aims to provide an experience familiar to what you might expect when using Linux/UNIX tools such as scp or rsync.
 
 \section{Quality control and branding}\label{sec:qc}
 
@@ -2427,7 +2423,7 @@ These quality controls will continuously audit and rank Satellites on their
 behavior, durability, compliance, and performance.
 In addition, the satellite operator will have to adhere to particular business
 policies around pricing, storage node recruitment, SLAs, storage node payments,
-etc. Satellite operators in the Tardigrade network will have a business
+and so forth. Satellite operators in the Tardigrade network will have a business
 relationship with Storj Labs that defines, among other things, franchise fees
 and revenue sharing between the entities. Storj Labs will also assume
 responsibilities including demand generation, brand enforcement, satellite
@@ -2560,14 +2556,14 @@ data to the Uplink.
 
 For every segment pointer requested, the Satellite will:
   \begin{itemize}
-  \item validate that the Uplink has access to download the segment pointer
-    and has enough funds to pay for the download
-  \item generate an unrestricted bandwidth allocation for each piece that
-    makes up the segment
-  \item look up the contact information for the Storage Nodes listed in the
-  pointer
-  \item return the requested segment pointer, the bandwidth allocations, and
-    Node contact info for each piece
+  \item Validate that the Uplink has access to download the segment pointer
+    and has enough funds to pay for the download.
+  \item Generate an unrestricted bandwidth allocation for each piece that
+    makes up the segment.
+  \item Look up the contact information for the Storage Nodes listed in the
+  pointer.
+  \item Return the requested segment pointer, the bandwidth allocations, and
+    Node contact info for each piece.
   \end{itemize}
 
 The Uplink will determine whether more segments are necessary for the
@@ -2600,12 +2596,12 @@ by the Uplink. The Uplink then requests all of the segment pointers for the file
 
 For every segment pointer, the Satellite will:
   \begin{itemize}
-  \item validate that the Uplink has access to delete the segment pointer
-  \item generate a signed agreement for the deletion of the segment, so the
-    Storage Node knows the Satellite is expecting the delete to proceed
-  \item look up the contact information for the Storage Nodes listed in the
-  pointer
-  \item return the segments, the agreements, and contact information
+  \item Validate that the Uplink has access to delete the segment pointer.
+  \item Generate a signed agreement for the deletion of the segment, so the
+    Storage Node knows the Satellite is expecting the delete to proceed.
+  \item Look up the contact information for the Storage Nodes listed in the
+  pointer.
+  \item Return the segments, the agreements, and contact information.
   \end{itemize}
 
 For all of the remote segments, the Uplink will
@@ -2641,16 +2637,16 @@ Then, the Uplink requests all of the segment pointers of that file.
 
 For every segment pointer, the Satellite:
   \begin{itemize}
-  \item validates that the Uplink has access to download it
-  \item returns the requested segment metadata
+  \item Validates that the Uplink has access to download it.
+  \item Returns the requested segment metadata.
   \end{itemize}
 
 For every segment pointer, the Uplink:
   \begin{itemize}
-  \item decrypts the metadata with an encryption key derived from the path
-  \item calculates the path at the new destination
-  \item re-encrypts the metadata with a new encryption key derived from the
-    new path
+  \item Decrypts the metadata with an encryption key derived from the path.
+  \item Calculates the path at the new destination.
+  \item Re-encrypts the metadata with a new encryption key derived from the
+    new path.
   \end{itemize}
 
  The Uplink requests that the Satellite add
@@ -2669,23 +2665,23 @@ Then the Uplink requests all of the segment pointers of the file.
 
 For every segment pointer, the Satellite:
   \begin{itemize}
-  \item validates that the Uplink has access to download it
-  \item looks up the contact information for the Storage Nodes listed in the
-    pointer
-  \item returns the requested segment metadata, a new root piece ID, and
-    contact information
+  \item Validates that the Uplink has access to download it.
+  \item Looks up the contact information for the Storage Nodes listed in the
+    pointer.
+  \item Returns the requested segment metadata, a new root piece ID, and
+    contact information.
   \end{itemize}
 
 For every segment pointer, the Uplink:
   \begin{itemize}
-  \item decrypts the metadata with an encryption key derived from the path
-  \item changes the path to the new destination
-  \item invokes a copy operation on each of the Storage Nodes from the pointer
-    to duplicate the piece with a new piece ID
-  \item waits for the Storage Nodes to respond that they have duplicated the
-    data
-  \item re-encrypts the metadata with a new encryption key derived from the
-    new path
+  \item Decrypts the metadata with an encryption key derived from the path.
+  \item Changes the path to the new destination.
+  \item Invokes a copy operation on each of the Storage Nodes from the pointer
+    to duplicate the piece with a new piece ID.
+  \item Waits for the Storage Nodes to respond that they have duplicated the
+    data.
+  \item Re-encrypts the metadata with a new encryption key derived from the
+    new path.
   \end{itemize}
 
 Finally, the Uplink uploads all modified segment pointers to the Satellite.
@@ -2812,7 +2808,7 @@ opportunity to be paid for more bandwidth usage for the data they already have,
 demand for these popular files might outstrip available bandwidth capacity,
 and a form of dynamic scaling is needed.
 
-Fortunately, Satellites authorize all accesses to pieces already anyway, and
+Fortunately, Satellites already authorize all accesses to pieces, and
 can therefore meter and rate limit access to popular
 files. If a file's demand starts to grow more than current resources can serve,
 the Satellite has an opportunity to temporarily pause accesses if necessary,
