@@ -241,10 +241,10 @@ during each operation in the network. Finally, chapter
 \ref{chap:future-work} covers future work.
 
 As with Google's Chubby lock service \cite{chubby}, the Storj Network is an
-engineering effort required to fill the needs mentioned above and below.
+engineering effort required to fill the needs mentioned throughout this paper.
 The concrete implementation detailed here was not research.
 We claim no novel algorithms or techniques. The purpose
-of this paper is to describe what we did, what we plan to do, and why.
+of this paper is to describe what we did, what we plan to do, and why we chose build it in this way.
 
 \chapter{Storj design constraints}\label{chap:design-constraints}
 
@@ -818,7 +818,7 @@ Because of how limited bandwidth is as a resource, completely eliminating replic
 strategy and using erasure codes only for redundancy causes a drastic
 decrease in bandwidth footprint.
 It also results in storage nodes getting paid more. High expansion factors
-dilute the incoming funds per byte across more storage nodes; whereas, low
+dilute the incoming funds per byte across more storage nodes; therefore, low
 expansion factors allow for a much more direct passthrough of income to
 storage node operators.
 
@@ -910,9 +910,8 @@ redundancy, the remaining additional uploads can be canceled.
 This cancellation allows the upload to continue as fast as the fastest nodes
 in a set, instead of waiting for the slowest nodes.
 
-Downloads are similarly improved. Since more redundancy exists than is needed,
-downloads can use the fastest peers to download the starting pieces and slower
-nodes to help with the later pieces.
+Downloads are similarly improved. Since more redundancy exists than is needed, 
+downloads can be served from the fastest peers, eliminating a wait for temporarily slow or offline peers.
 
 \begin{figure}
 \centering
@@ -1085,7 +1084,7 @@ reconstruction from the remaining pieces and then regenerate the missing
 pieces and store them back in the network on new storage nodes.
 
 It is vital in our system to incentivize storage node participants to remain
-online for much longer than a few hours. The encourage this behavior, 
+online for much longer than a few hours. To encourage this behavior, 
 our payment strategy will involve rewarding storage node
 operators that keep their nodes participating for months and years at a time.
 
