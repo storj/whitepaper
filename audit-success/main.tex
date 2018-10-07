@@ -17,28 +17,24 @@ the prior distribution, and $x$ is the number of successes observed in $n$ audit
 Under our assumption that each audit is successful,
 we arrive at the Bayes estimate of the success probability $P=(a+n)/(a+b+n)$.
 
-We now choose a prior to derive a numerical estimate of the audit success probability
-based on the number of audits performed.
-There are many reasonable choices of Bayesian priors, but we restrict our attention to
-two popular choices: the Uniform prior and Jeffrey's prior \cite{jeffrey}.
-Using the Uniform prior $\beta(1,1)$ initializes the experiment
-by assigning an equal probability to
-all possible outcomes;
-that is, the probability of success is drawn from the uniform
-distribution on $(0,1)$.
-Under Jeffrey's prior $\beta(0.5,0.5)$,
-it is assumed that the probability of
-success falls towards either extreme, so that a node will return a successful audit
-either with probability near 0 or with probability near 1.
-We present results obtained from using both priors.
-We remark that the well-established Bayesian approach
-allows us to rapidly gain more confidence
-in a node's ability to return a successful audit,
-given that the success probability estimate tends closer to 1
-with each consecutive audit success. In Figure \ref{fig:jeff_prior} we plot
-Jeffrey's prior, as well as the estimate of success probability obtained from using this prior, plotted as a function of the number of (successful) audits performed. In Figure \ref{fig:unif_prior} we plot the Uniform prior, along with a plot of the resulting success probability estimate.
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[height=.22\textheight]{audit-success/jeffrey_prior.eps}
+    \includegraphics[height=.22\textheight]{audit-success/jeffrey_estimate.eps}
+\caption{In Jeffrey's prior, we see the estimate for audit success probability is heavily weighted to be near 0 or near 1.}
+\label{fig:jeff_prior}
+\end{figure}
 
-\begin{table}[h]
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[height=.22\textheight]{audit-success/uniform_prior.eps}
+    \includegraphics[height=.22\textheight]{audit-success/uniform_estimate.eps}
+\caption{Using a Uniform prior, there is no assumption placed on the estimated
+audit success probability, and all probabilities are assumed to be equally likely.}
+\label{fig:unif_prior}
+\end{figure}
+
+\begin{table}[!htbp]
 \centering
 
 \begin{tabular}{| c | c | c |}\hline
@@ -57,19 +53,26 @@ no information known about the node (no audits have been performed),
 with the estimate quickly jumping to above 99\% in as few as 80 audits using Jeffrey's prior.}
 \end{table}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale=0.8]{audit-success/jeffrey_prior.eps}
-    \includegraphics[scale=0.8]{audit-success/jeffrey_estimate.eps}
-\caption{In Jeffrey's prior, we see the estimate for audit success probability is heavily weighted to be near 0 or near 1.}
-\label{fig:jeff_prior}
-\end{figure}
+We now choose a prior to derive a numerical estimate of the audit success probability
+based on the number of audits performed.
+There are many reasonable choices of Bayesian priors, but we restrict our attention to
+two popular choices: the Uniform prior and Jeffrey's prior \cite{jeffrey}.
+Using the Uniform prior $\beta(1,1)$ initializes the experiment
+by assigning an equal probability to
+all possible outcomes;
+that is, the probability of success is drawn from the uniform
+distribution on $(0,1)$.
+Under Jeffrey's prior $\beta(0.5,0.5)$,
+it is assumed that the probability of
+success falls towards either extreme, so that a node will return a successful audit
+either with probability near 0 or with probability near 1.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale=0.8]{audit-success/uniform_prior.eps}
-    \includegraphics[scale=0.8]{audit-success/uniform_estimate.eps}
-\caption{Using a Uniform prior, there is no assumption placed on the estimated
-audit success probability, and all probabilities are assumed to be equally likely.}
-\label{fig:unif_prior}
-\end{figure}
+We present results obtained from using both priors.
+We remark that the well-established Bayesian approach
+allows us to rapidly gain more confidence
+in a node's ability to return a successful audit,
+given that the success probability estimate tends closer to 1
+with each consecutive audit success. In Figure \ref{fig:jeff_prior} we plot
+Jeffrey's prior, as well as the estimate of success probability obtained from using this prior, plotted as a function of the number of (successful) audits performed. In Figure \ref{fig:unif_prior} we plot the Uniform prior, along with a plot of the resulting success probability estimate.
+
+\FloatBarrier
