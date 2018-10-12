@@ -6,7 +6,7 @@
 \definecolor{ForestGreen}{RGB}{34,139,34}
 \usepackage{tabulary}
 
-\usepackage{hyperref} \def\UrlBreaks{\do\/\do-} % breaks long url in references
+\usepackage{hyperref} \def\UrlBreaks{\do\/\do-}
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{listings}
@@ -74,13 +74,7 @@ at (current page.center) {DRAFT};
 
 \newpage
 
-%% TODO:
-%% * more citations than proofs of retrievability for audits and reputation
-%% * citation for distributing load by segmenting I know I read that
-%% * more citations for exchange reports
-%% * stream in graphic
-%% * keypair dotted line
-%% * ben's gdoc
+%% TODO ben's gdoc
 
 \tableofcontents\newpage
 
@@ -416,9 +410,12 @@ and bandwidth relative to those use cases.
 
 \section{Amazon S3 compatibility}\label{constraint-amazon}
 
-At the time of this paper's publication, the most widely deployed cloud storage
-protocol is Amazon Web Services' Simple Storage Service protocol (Amazon S3).
-%% TODO citation?
+At the time of this paper's publication, the most widely deployed public cloud
+is Amazon Web Services \cite{aws-dominates}. Amazon Web Services is not only
+the largest cloud services ecosystem but also has the benefit of first mover
+advantage. Amazon's first cloud services product was Amazon Simple Storage
+Service, or Amazon S3 for short. Public numbers are hard to come by but
+Amazon S3 is likely the most widely deployed cloud storage protocol in existence.
 Most cloud storage products provide some form of compatibility with the
 Amazon S3 application program interface (API) architecture.
 
@@ -1043,6 +1040,8 @@ hierarchical deterministic encryption scheme.
 
 \section{Audits and reputation}\label{sec:framework-audits}
 
+%% TODO more citations than proofs of retrievability for audits and reputation
+
 Incentivizing storage nodes to accurately store data is of paramount importance
 to
 the viability of this whole system. It is essential to be able to
@@ -1243,16 +1242,17 @@ extended attributes are stored encrypted.
 
 \item[Segment] A {\em segment} represents a single array of bytes, between 0 and a
 user-configurable maximum {\em segment} size.
+See section \ref{files-as-segments} for more.
 
 \item[Remote Segment] A {\em remote segment} is a segment that will be
 encoded and distributed across the network. A {\em remote segment} is larger than
-the metadata required to keep track of its bookkeeping, which includes information such as the IDs of the Nodes that the data is stored on.
+the metadata required to keep track of its bookkeeping, which includes
+information such as the IDs of the Nodes that the data is stored on.
 
 \item[Inline Segment] An {\em inline segment} is a segment that is small
 enough where the data it represents takes less space than the corresponding
 data a remote segment will need to keep track of which Nodes had the data.
 In these cases, the data is stored ``inline'' instead of being stored on Nodes.
-%% TODO: ref
 
 \item[Stripe] A {\em stripe} is a further subdivision of a segment. A
 {\em stripe} is a fixed amount of bytes that is used as an encryption and erasure
@@ -1260,7 +1260,7 @@ encoding boundary size. Erasure encoding happen on {\em stripes} individually;
 whereas, encryption may happen on a small multiple of {\em stripes at a time}. All
 segments are encrypted, but only remote segments are erasure encoded.
 A {\em stripe} is the unit on which audits are performed.
-%% TODO: ref
+See section \ref{segments-as-stripes} for more.
 
 \item[Erasure Share] When a stripe is erasure encoded, it generates
 multiple pieces called {\em erasure shares}. Only a subset of the {\em erasure
@@ -1275,7 +1275,7 @@ shares is called a {\em piece}. If there are $n$ erasure shares after erasure
 encoding a stripe, there are $n$ {\em pieces} after processing a remote
 segment. The $i$th {\em piece} is the concatenation of all of the $i$th
 erasure shares from that segment's stripes.
-%% TODO: zfec ref
+See section \ref{erasure-shares-as-pieces} for more.
 
 \item[Pointer] A {\em pointer} is a data structure that either contains the
 inline segment data, or keeps track of which
@@ -1584,7 +1584,7 @@ Every file will include a limited set of user-specified key-value pairs
 (extended attributes) that will be stored alongside other metadata about the
 file.
 
-\subsection{Files as Segments}
+\subsection{Files as Segments}\label{files-as-segments}
 
 \begin{center}
 \includegraphics[width=.9\textwidth]{images/stream-segment.eps}
@@ -1600,19 +1600,25 @@ The sharding process is now called segmenting, and the highest level
 subdivision of a file's primary stream of data is called a ``segment.''
 A file may be small enough that it consists of only one segment.
 If that segment is smaller than the metadata required to store it on the
-network, the data will be stored inline with the metadata. We call this an
-``inline segment.''
+network, the data will be stored inline with the metadata.\footnote{
+The Linux filesystem Ext4 does something
+similar with inline {\em inodes} \cite{ext4-inline}.}
+We call this an ``inline segment.''
+
+Unfortunately, there is general inconsistency using these terms in the
+literature. Lustre refers to segments as stripes, but we use the term stripes
+for a further subdelineation \cite{lustre}.
 
 For larger files, the data will be broken
 into one or more large remote segments. Segmenting in this manner offers
 numerous advantages to security, privacy, performance, and availability.
 
-Segmenting large files (e.g. videos) and distributing the segments
+As in Lustre, segmenting large files (e.g. videos) and distributing the segments
 across the network reduces the impact of content delivery on any
 given Node, as
 bandwidth demands are distributed more evenly across the network.
-%% TODO citation
-Standardized sizes help frustrate attempts to determine the content of a given
+As with our previous version \cite{storj-v2},
+standardized sizes help frustrate attempts to determine the content of a given
 segment and can help obscure the flow of data through the network.
 In addition, the end user can take advantage of parallel transfer, similar to
 BitTorrent \cite{bittorrent} or other peer-to-peer networks.
@@ -1622,7 +1628,7 @@ space to store a segment to participate in the network,
 and a client doesn't need
 to find Nodes that have enough space for a large file.
 
-\subsection{Segments as Stripes}
+\subsection{Segments as Stripes}\label{segments-as-stripes}
 
 \begin{center}
 \includegraphics[width=.65\textwidth]{images/segment-stripe.eps}
@@ -1631,22 +1637,22 @@ to find Nodes that have enough space for a large file.
 In many situations, it's important to access a subsection of a larger piece of
 data. Some file formats, such as video files or disk images, support seeking,
 where only a subset of the data is needed for read operations.
-To support these operations,
-it's useful to be able to decode and decrypt small parts of a segment.
+As the creators of audio CDs found out,
+it's useful to be able to decode and decrypt small parts of a segment
+to support these operations \cite{rs-cd}.
 
 A stripe defines a subset of a segment and should be no more than a
 couple of kilobytes in size. Encryption happens on a small multiple of stripes,
 whereas erasure encoding happens on a single stripe at a time.
 
-%% TODO reference to CDs
+For the reader familiar with the {\em zfec} library, in {\em filefec} mode,
+{\em zfec} refers to a stripe as a chunk \cite{filefec-packing}.
 
-\subsection{Stripes as Erasure Shares}
+\subsection{Stripes as Erasure Shares}\label{stripes-as-erasure-shares}
 
 \begin{center}
 \includegraphics[width=.45\textwidth]{images/stripe-share.eps}
 \end{center}
-
-%% TODO reference to erasure code tutorial
 
 As discussed in sections \ref{sec:framework-redundancy} and
 \ref{sec:concrete-redundancy}, erasure codes
@@ -1655,7 +1661,7 @@ of unreliable Storage Nodes.
 
 Stripes are the boundary by which we perform erasure encoding.
 In a $(k, n$) erasure code scheme, $n$ erasure shares are generated for
-every stripe.
+every stripe \cite{rs}.
 For example, perhaps a {\em stripe} is broken into 40 {\em erasure shares}
 ($n=40$), where any 20 ($k=20$) are needed to reconstruct the {\em stripe}. Each
 of the 40 {\em erasure shares} will be $1/20$th the size of the original
@@ -1663,7 +1669,7 @@ of the 40 {\em erasure shares} will be $1/20$th the size of the original
 
 Erasure encoding
 a single stripe at a time allows us to read small portions of a
-large segment without retrieving the entire segment first.
+large segment without retrieving the entire segment first \cite{rs-cd}.
 It also allows us to stream data into the
 network without staging it beforehand, and it enables a number of other useful
 features.
@@ -1671,13 +1677,11 @@ features.
 See section \ref{sec:RS-sim} for a breakdown of how varying the erasure code
 parameters affects availability and redundancy.
 
-\subsection{Erasure Shares as Pieces}
+\subsection{Erasure Shares as Pieces}\label{erasure-shares-as-pieces}
 
 \begin{center}
 \includegraphics[width=.6\textwidth]{images/share-piece.eps}
 \end{center}
-
-%% TODO zfec ref
 
 Because stripes are already small, erasure shares are often much
 smaller, and the metadata to keep track of all of them separately will be
@@ -1686,7 +1690,8 @@ All $n$ erasure shares have a well-defined index associated
 with them. More specifically, for
 a fixed stripe and any given $n$, the $i$th share of an erasure
 code will always be the same.
-Instead of keeping track of all of the
+As with the {\em zfec} library's {\em filefec} mode \cite{filefec-packing},
+instead of keeping track of all of the
 erasure shares separately, we pack all of the erasure shares with the
 same index into a piece.
 In a $(k, n)$ scheme, there are $n$ pieces, where each
