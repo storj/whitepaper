@@ -1658,7 +1658,10 @@ to support these operations \cite{rs-cd}.
 
 A stripe defines a subset of a segment and should be no more than a
 couple of kilobytes in size. Encryption happens on a small multiple of stripes,
-whereas erasure encoding happens on a single stripe at a time.
+whereas erasure encoding happens on a single stripe at a time. Because we
+use authenticated encryption, every encryption batch has a slight overhead,
+so slightly larger encryption sizes are preferred. On the other hand, audits
+happen on stripes, and we want audit bandwidth usage to be small.
 
 For the reader familiar with the {\em zfec} library, in {\em filefec} mode,
 {\em zfec} refers to a stripe as a chunk \cite{filefec-packing}.
