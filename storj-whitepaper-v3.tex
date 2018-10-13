@@ -49,7 +49,7 @@
 Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
-\date{\small\sffamily\color{white} v3.0, October 11, 2018\\
+\date{\small\sffamily\color{white} v3.0, October 13, 2018\\
 \small\colorlet{urllinkcolor}{white}\url{https://github.com/storj/whitepaper}
 }
 
@@ -73,8 +73,6 @@ at (current page.center) {DRAFT};
 \end{tikzpicture}
 
 \newpage
-
-%% TODO ben's gdoc
 
 \tableofcontents\newpage
 
@@ -166,6 +164,7 @@ Kademlia,
 Lustre,
 Maidsafe,
 Minio,
+MojoNation,
 OceanStore,
 Scality,
 Siacoin,
@@ -481,8 +480,14 @@ where participants join the network and then leave for
 various reasons, well before their hardware has actually failed.
 For instance, Rhea {\em et al.} found that in many real world peer-to-peer
 systems, the median time a participant lasts in the network ranges from hours
-to mere minutes \cite{dht-churn}. Churn could be caused by any number of
-factors. Storage nodes
+to mere minutes \cite{dht-churn}.
+Maymounkov {\em et al.} found that the probability of a node staying connected
+to a decentralized network for an additional hour is an {\em increasing}
+function of uptime (Figure \ref{fig:kad-uptime} \cite{kad}).
+In other words, nodes that have been online for a long time are less likely
+to contribute to overall node churn.
+
+Churn could be caused by any number of factors. Storage nodes
 may go offline due to hardware or software failure, intermittent internet
 connectivity, power loss, complete disk failure, or software shutdown or
 removal. The more
@@ -492,7 +497,19 @@ bandwidth is needed for correct operation of the system. In fact, there is
 a tight relationship between network churn, additional redundancy,
 and bandwidth availability \cite{pick2-churn}. To
 keep background bandwidth usage and redundancy low, our network must have
-low network churn.
+low network churn and has a strong incentive to favor prefer long-lived, stable
+nodes.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.6\textwidth]{images/uptime.png}
+\caption{Probability of remaining online an additional hour as a function of
+uptime.
+The $x$ axis represents minutes. The $y$ axis shows the fraction of Nodes
+that stayed online at least $x$ minutes that also stayed online at least
+$x+60$ minutes. Source: Maymounkov {\em et al.} \cite{kad}}
+\label{fig:kad-uptime}
+\end{figure}
 
 See section \ref{sec:RS-sim} and Blake {\em et al.} \cite{pick2-churn} for a
 discussion of how repair bandwidth varies as a function of node churn.
@@ -1040,8 +1057,6 @@ hierarchical deterministic encryption scheme.
 
 \section{Audits and reputation}\label{sec:framework-audits}
 
-%% TODO more citations than proofs of retrievability for audits and reputation
-
 Incentivizing storage nodes to accurately store data is of paramount importance
 to
 the viability of this whole system. It is essential to be able to
@@ -1049,16 +1064,15 @@ validate and verify that storage nodes are accurately storing what they have
 been
 asked to store.
 
-Many storage systems use per-file audits as a way of determining when and
-where to repair files. Our storage system does not use auditing for this purpose.
-Instead, we are extending the probabilistic nature of
-common per-file {\em proofs of retrievability} \cite{proof-of-retrievability}
-to range across all possible files.
+Many storage systems use probabilistic per-file audits as a way of determining
+when and where to repair files \cite{juels, shacham}.
+We are extending the probabilistic nature of common per-file
+{\em proofs of retrievability} to range across all possible files.
 Audits, in this case, are probabilistic challenges that confirm, with a high
 degree of certainty and a low amount of overhead, that a storage node is
 well-behaved, keeping the data it claims, and not susceptible to hardware
-failure or malintent. Audits function as spot checks to help calculate
-the future usefulness of a given storage node.
+failure or malintent. Audits function as ``spot checks'' \cite{juels2} to help
+calculate the future usefulness of a given storage node.
 
 In our storage system,
 audits are simply a mechanism used to determine a node's degree of stability.
@@ -1067,7 +1081,7 @@ will result in redistributing data to new nodes and avoiding that node altogethe
 in the future. Storage node uptime and overall health are the primary metrics
 used to determine which files need repair.
 
-As in \cite{proof-of-retrievability}, this auditing mechanism does not audit
+As in \cite{juels, shacham}, this auditing mechanism does not audit
 all bytes in all files. This can
 leave room for false positives, where the verifier believes the storage node
 retains the intact data when it has actually been modified or partially
@@ -1985,7 +1999,7 @@ Storage Node in order to to prove it has the expected data.
 Some distributed storage systems, including the previous version of Storj
 \cite{storj-v2}, discuss {\em Merkle tree proofs}, in which audit challenges
 and expected responses are generated at the time of storage as a form of compact
-proof of retrievability \cite{proof-of-retrievability}. By using a Merkle tree
+proof of retrievability \cite{juels}. By using a Merkle tree
 \cite{merkle-tree}, the amount of metadata needed to store these pre-generated
 challenges and responses is negligible.
 
@@ -2001,15 +2015,16 @@ assumption holds, Reed-Solomon is able to detect errors and even correct them,
 via mechanisms such as the Berlekamp-Welch error correction algorithm
 \cite{bw, rs-intro}.
 We are already using Reed-Solomon erasure coding \cite{rs} on small ranges
-({\em stripes}), so we use it to read a single stripe at a time as a challenge
+({\em stripes}), so as discussed in the HAIL system \cite{hail},
+we use erasure coding to read a single stripe at a time as a challenge
 and then validate the erasure share responses. This allows us to run arbitrary
 audits without pre-generated challenges.
 
 To perform an audit, we first choose a {\em stripe}. We request that
 {\em stripe's erasure shares} from all Storage Nodes responsible. We then run
-the Berlekamp-Welch algorithm \cite{bw} across all the {\em erasure shares}. When
-enough Storage Nodes return correct information, any faulty or missing responses
-can easily be identified.
+the Berlekamp-Welch algorithm \cite{bw, rs-intro} across all the
+{\em erasure shares}. When enough Storage Nodes return correct information,
+any faulty or missing responses can easily be identified.
 
 Given a specific Storage Node, an audit might reveal that it is offline,
 incorrect, or correct. In the case of a Node being offline, the audit failure
@@ -2021,8 +2036,8 @@ is disqualified from being offline too long.
 These audit failures will be stored and saved in the reputation system.
 
 It is important that every Storage Node has a frequent set of random audits to
-gain statistical power on how well-behaved that Storage Node is operating. However, as
-discussed in section \ref{sec:framework-audits}, it is
+gain statistical power on how well-behaved that Storage Node is operating.
+However, as discussed in section \ref{sec:framework-audits}, it is
 not a requirement that audits are performed on every byte, or even on every
 file.
 
@@ -2298,7 +2313,7 @@ file pieces and to pay new Storage Nodes for storing the data.
 To reduce transaction fees and other overhead as much as possible, payments
 will be recipient-initiated and must be worth at least some minimum value.
 
-\subsection{Bandwidth allocation and exchange reporting}\label{baer}
+\subsection{Bandwidth allocation}\label{baer}
 
 \begin{figure}[!htbp]
 \centering
@@ -2314,68 +2329,107 @@ will be recipient-initiated and must be worth at least some minimum value.
 \label{fig:bap-get}
 \end{figure}
 
-%% TODO more citations
-
 A core component of our system requires knowing how much bandwidth is used
-between two peers. In our previous version \cite{storj-v2, sip9}, we used
+between two peers.
+
+In our previous version \cite{storj-v2, sip9}, we used
 {\em exchange reports} to gather information about what transpired between
-two peers.
+two peers. At the end of an operation, both peers would send reports to a
+central collection service for settlement. When both peers mutually agreed,
+it was straightforward to determine how much bandwidth had been used.
+When they disagreed, however, we resorted to data analysis and regression to
+determine which peer had a greater propensity for dishonesty in an effort to
+``catch cheaters.''
+With our new version, we want to make cheating impossible from the protocol
+level.
 
-We extend exchange reports with a simple signing and incentive process to
-more correctly verify that a certain amount of bandwidth has passed between two
-peers. This system is inspired by Filecoin's off-chain retrieval market,
+To solve this problem, We turn to Neuman's {\em Proxy-based authorization
+and accounting for distributed systems} \cite{proxy-accounting}. This accounting
+protocol more correctly measures resource usage in a delegated and decentralized
+way.
+
+In Neuman's accounting protocol, if an account holder has enough funds to
+cover the operation, an account server creates a signed,
+digital check. The protocol refers to this check as a {\em proxy}, but we refer
+to it as a {\em bandwidth allocation}. This check contains information
+identifying the account server, the payer, the payee, the maximum amount of
+resources available to be used in the operation, a check number to prevent
+any double spending problems \cite{schneier}, and an expiration date.
+
+In our case, the account server is the
+Satellite, the payer is the Uplink, the payee is the storage node, and the
+resource in question is bandwidth. The Satellite will only create a bandwidth
+allocation if the Uplink is authorized for the request.
+At the beginning of a storage operation, the Uplink can transfer the bandwidth
+allocation to a Storage Node. The Storage Node can validate the Satellite's
+signature and perform the requested operation up to the allowed bandwidth
+limit, storing and later sending the bandwidth allocation to the Satellite for
+payment.
+
+We're further inspired by Filecoin's off-chain retrieval market,
 wherein only small amounts of data are transferred at a time \cite{filecoin}.
-As before, we don't measure all peer-to-peer traffic;
-this bandwidth traffic measurement only tracks
-bandwidth used during storage operations, storage and retrievals of pieces,
-and does not apply to node discovery traffic (Kademlia DHT) or other generic
-maintenance overhead.
+Instead of allowing the Storage Node to save the bandwidth allocation
+without performing the requested operation and thus getting paid for nothing,
+we break each operation into smaller requests such that if either the Storage
+Node or Uplink stop participating in the protocol prematurely, neither peer
+class is exposed too much.
 
-When a client wants to perform an operation for $x$ bytes of bandwidth, it must
-first get authorization from a Satellite
-that it has enough funds and is authorized to perform that operation.
-The Satellite will return an {\em unrestricted
-bandwidth allocation} message. This message will include the satellite ID,
-the identity of the client, an expiration timestamp, a serial number,
-the maximum amount of bytes authorized $x$, and the direction the bytes will flow
-(whether or not the data will be transferred from or to the client).
-The message will be signed by the Satellite.
+To support this with Neuman's accounting protocol and little Satellite overhead,
+we use {\em restricted bandwidth allocations}
+(referred to as {\em restricted proxies} in \cite{proxy-accounting}).
+Neuman's restricted proxies work much like Macaroons
+\cite{macaroons} in which further caveats can be added in a way that can't be
+removed, limiting the capabilities of the proxy. Unlike Macaroons, proxies
+can use public/private key cryptography, which means that anyone can validate
+the proxy, instead of just the original issuer.
 
-Once the client has an unrestricted bandwidth allocation, the client will then
-create {\em restricted bandwidth allocations},
-indicating $y$ bytes have been transferred so far. In the case of a {\em Get}
-operation, the client
-will start by sending a restricted allocation for some small amount,
+Restricted bandwidth allocations in our case are restricted by the Uplink to
+limit the bandwidth allocation's value to only what has transferred so far.
+In this way, the Storage Node will only keep the largest bandwidth allocation
+it has received so far, and the Uplink will only send bandwidth allocations
+that are slightly larger than what it has received.
+The Storage Node has no incentive to keep more than the largest allocation, as
+they all share the same ``check number,'' which can only be cashed once.
+
+We then pipeline these requests to avoid pipeline stall performance penalties.
+
+In the case of a {\em Get} operation, assume the Satellite-signed bandwidth
+allocation allows up to $x$ bytes total. The Uplink
+will start by sending a restricted allocation for some small amount ($y$ bytes),
 perhaps only a few kilobytes,
-so the Storage Node can verify the client's authorization.
+so the Storage Node can verify the Uplink's authorization.
 If the allocation is signed correctly, the Storage Node will
 transfer up to the amount listed in the restricted allocation ($y$ bytes) before
-awaiting another allocation. The client will then send another allocation where
+awaiting another allocation. The Uplink will then send another allocation where
 $y$ is larger, continuing to send allocations for data until $y$ has grown to
 the full $x$ value.
 For each transaction, the Storage Node only sends previously-unsent data,
-so that the Storage Node only sends $y$ bytes total.
+so that the Storage Node only sends $x$ bytes total.
 
 If the request is terminated at any time,
 either planned or unexpectedly,
 the Storage Node will keep the largest restricted bandwidth allocation it has
 received.
 This largest restricted bandwidth allocation is the signed confirmation
-by the client that the client agreed to bandwidth usage of up to $y$
-bytes, along with the Satellite's confirmation of the client's bandwidth
+by the Uplink that the Uplink agreed to bandwidth usage of up to $y$
+bytes, along with the Satellite's confirmation of the Uplink's bandwidth
 allowance.
 The Storage Node will periodically send the largest restricted bandwidth
 allocations it has received to appropriate Satellites, at which point
 Satellites will pay the Storage Node for that bandwidth.
 
-If the client can't afford the bandwidth usage, the Satellite will not sign an
-unrestricted bandwidth allocation, protecting the satellite's reputation.
-Likewise, if the client tries to use more bandwidth than allocated,
+If the Uplink can't afford the bandwidth usage, the Satellite will not sign an
+bandwidth allocation, protecting the satellite's reputation.
+Likewise, if the Uplink tries to use more bandwidth than allocated,
 the Storage Node will decline the request.
-The Storage Node can only get paid for the maximum amount a client has agreed
-to,
-as it otherwise has no valid bandwidth allocations to return for
-payment.
+The Storage Node can only get paid for the maximum amount a client has agreed to,
+as it otherwise has no valid bandwidth allocations to return for payment.
+
+As before, we don't measure all peer-to-peer traffic;
+this bandwidth traffic measurement only tracks
+bandwidth used during storage operations, storage and retrievals of pieces,
+and does not apply to node discovery traffic (Kademlia DHT) or other generic
+maintenance overhead.
 
 \section{Satellite reputation}\label{sec:concrete-satellite-reputation}
 
@@ -3332,6 +3386,111 @@ New Storage Nodes will be placed into a vetting process until enough audits
 have passed.
 
 See section \ref{sec:concrete-reputation} for more.
+
+\chapter{Primary user benefits}
+
+We have designed the Storj network to provide users better security,
+availability, performance, and economics--across a wide variety of use
+cases--than either on premises storage solutions or traditional, centralized
+cloud storage. While the bulk of the paper describes the design considerations
+to overcome the challenges of a highly decentralized system, this appendix
+describes why the end result should be a significant improvement over
+traditional approaches.
+
+\section{Security}
+
+We have designed our system to be the equivalent of spreading encrypted sand
+on an encrypted beach. All data is encrypted client side before reaching our
+system. Data is sharded and distributed across a large number of independently
+operated disk drives which are part of a much larger network of independently
+operated storage nodes.
+
+In a typical scenario (with a 20/40 Reed-Solomon
+setup), each file is distributed across 40 different disk drives in a global
+network of over 100,000 independently operated nodes. (The previous version of
+the Storj network had over 150,000 independently operated nodes.) To compromise
+an individual file, a would-be bad actor would have to locate and compromise
+roughly 40 different drives, each operated by a different provider, in a
+network of over 100,000 drives. Even if the actor were somehow able to
+compromise those drives, to reconstruct the file, the would-be bad-actor would
+then have to decrypt 256-bit AES encrypted data, with keys that are only held
+by the end user. And, the would-be bad actor would have to repeat this process
+with an entirely different set of potential drives for the next file they wish
+to obtain.
+
+By design, it is not possible for Storj, satellite operators,
+storage node operators, or would-be bad actors to mine or compromise end user
+data. The level of decentralization creates powerful disincentives for
+malicious actors, as there is no centralized trove of data to target.
+
+\section{Availability}
+
+While most centralized cloud providers employ various strategies to provide
+protection against individual drive failures, they are not immune to
+system-wide events. Storms, power outages, floods, earthquakes, operator error,
+design flaws, network overload, or attacks can compromise entire data centers.
+
+While the centralized providers may calculate and publish theoretically high
+availability numbers, these calculations depend on drive failures being
+uncorrelated. In fact, in any data center, the chances of an individual drive
+failing is highly correlated with the chances of another drive failing.
+
+In a decentralized system, by contrast, each node is operated by a different
+individual, in a different location, with separate personnel, power, network
+access, etc. Thus, the chance of an individual node failing is almost entirely
+uncorrelated with the chances of other drives failing. As a result, the kinds
+of availability we obtain are not subject to storms, power outages, or other
+``black swan'' events. Even if the chance of an individual drive failing in the
+Storj network is higher than in a centralized cloud, the chance of collective
+failure (e.g. losing 20 out of 40 independent drives) is vanishingly small.
+And, the chance of losing one file is not correlated with the chances of
+losing a second file.
+
+\section{Performance}
+
+For read-intensive use cases, the Storj network can deliver superior
+performance by taking advantage of parallelism. The storage nodes are located
+close to ``the edge,'' reducing the latency experienced when recipients of
+data are physically far from the data center that houses the data.
+Read performance benefits from parallelism. The particular erasure coding
+scheme that we use ensures that slow drives, slow networks, or networks and
+drives experiencing temporarily high load do not limit throughput. We can
+adjust the $k/n$ ratio so that we dramatically improve download and streaming
+speeds, without imposing the kinds of high costs associated with CDN networks.
+
+\section{Economics}
+
+While the amount of data created has doubled every year, the price of cloud
+storage has only declined about 10\% per year over the last three years.
+There are a number of potential explanations, both on the supply and demand
+side.
+
+Public cloud storage operators must make large capital investments in
+building out a network of data centers and must incur significant costs for
+power, personnel, security, fire suppression, etc. Their pricing structure
+must allow them to recoup those costs. Moreover, the structure of the
+industry is such that it is inherently oligopolistic: there are only a
+handful of public cloud companies, and they comprise the largest companies by
+market cap on the planet (Microsoft, Google, Amazon, Alibaba).
+As any price decreases by one provider are quickly matched by the other
+providers, there has been little incentive for providers to drop prices to
+gain market share.
+
+In a decentralized network, by contrast, there is little
+marginal cost to being a storage node operator. In our experience, the vast
+majority of operators are using existing live equipment with significant spare
+capacity. There is no additional cost to a storage node operator in terms of
+capital or personnel. Running a drive at low capacity does not consume
+significantly more power than running a drive at near full capacity. And, with
+careful management relative to caps, most operators do not experience
+increased bandwidth costs. Consequently, operating a node represents nearly
+pure margin, and these supply cost savings can be passed on to end users.
+
+We have designed market mechanisms on the demand side as well, to prevent any
+satellite operator from cornering the market. Even after providing a healthy
+margin to farmers, demand partners, and satellite operators, we believe we
+hould be able to provide storage services profitably at a fraction of the cost
+of equivalent centralized cloud services.
 
 \newpage
 \bibliographystyle{unsrt}
