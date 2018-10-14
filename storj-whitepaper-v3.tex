@@ -2344,7 +2344,7 @@ determine which peer had a greater propensity for dishonesty in an effort to
 With our new version, we want to make cheating impossible from the protocol
 level.
 
-To solve this problem, We turn to Neuman's {\em Proxy-based authorization
+To solve this problem, we turn to Neuman's {\em Proxy-based authorization
 and accounting for distributed systems} \cite{proxy-accounting}. This accounting
 protocol more correctly measures resource usage in a delegated and decentralized
 way.
@@ -2392,7 +2392,7 @@ that are slightly larger than what it has received.
 The Storage Node has no incentive to keep more than the largest allocation, as
 they all share the same ``check number,'' which can only be cashed once.
 
-We then pipeline these requests to avoid pipeline stall performance penalties.
+We then pipeline these requests to avoid pipeline stall performance penalties. See figure \ref{fig:bap-get}.
 
 In the case of a {\em Get} operation, assume the Satellite-signed bandwidth
 allocation allows up to $x$ bytes total. The Uplink
