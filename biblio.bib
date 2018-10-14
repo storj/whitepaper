@@ -49,21 +49,21 @@
 }
 
 @misc{sybil-cost,
-title  = {{Bounding Sybil Attacks with Identity Cost}},
+title  = {{SIP02: Bounding Sybil Attacks with Identity Cost}},
 author = {Shawn Wilkinson and James Prestwich},
 note   = {\url{https://github.com/Storj/sips/blob/master/sip-0002.md}},
 year   = {(2016)},
 },
 
 @misc{sip9,
-title  = {Bandwidth Reputation and Accounting},
+title  = {{SIP09: Bandwidth Reputation and Accounting}},
 author = {Braydon Fuller},
 note   = {\url{https://github.com/Storj/sips/blob/master/sip-0009.md}},
 year   = {(2017)},
 },
 
 @misc{sips,
-title  = {{SIP Purpose and Guidelines}},
+title  = {{SIP01: SIP Purpose and Guidelines}},
 author = {Shawn Wilkinson},
 note   = {\url{https://github.com/storj/sips/blob/master/sip-0001.md}},
 year   = {(2016)},
@@ -269,6 +269,7 @@ archivePrefix = "arXiv",
 @misc{paxos-note,
   author = {Lamport, Leslie},
   title = {The Part-Time Parliament Website Note},
+  year = {Accessed 2018},
   howpublished = {\url{https://www.microsoft.com/en-us/research/publication/part-time-parliament/}},
 }
 
@@ -807,14 +808,6 @@ booktitle	= {OSDI}
  acmid = {723863},
  publisher = {Springer-Verlag},
  address = {London, UK, UK},
-}
-
-@article{mastodon,
-  author = {Matteo Zignani and Sabrina Gaito and Gian Paolo Rossi},
-  title = {{Follow the "Mastodon": Structure and Evolution of a Decentralized Online Social Network}},
-  journal = {International AAAI Conference on Web and Social Media},
-  year = {2018},
-	url = {https://www.aaai.org/ocs/index.php/ICWSM/ICWSM18/paper/view/17862}
 }
 
 @inproceedings{bigtable,
@@ -1495,9 +1488,16 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
   howpublished = {\url{https://lwn.net/Articles/468678/}},
 }
 
+@misc{mastodon,
+  author={{Eugen Rochko et al.}},
+  title = {{Mastodon: Your self-hosted, globally interconnected microblogging community}},
+  year = {2016},
+  howpublished = {\url{https://github.com/tootsuite/mastodon}},
+}
+
 @book{schneier,
  author = {Schneier, Bruce},
- title = {Applied Cryptography (2Nd Ed.): Protocols, Algorithms, and Source Code in C},
+ title = {Applied Cryptography (2nd Ed.): Protocols, Algorithms, and Source Code in C},
  year = {1995},
  isbn = {0-471-11709-9},
  publisher = {John Wiley \& Sons, Inc.},
@@ -1506,7 +1506,7 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
 
 @inproceedings{juels,
  author = {Juels, Ari and Kaliski,Jr., Burton S.},
- title = {Pors: Proofs of Retrievability for Large Files},
+ title = {{PORs: Proofs of Retrievability for Large Files}},
  booktitle = {Proceedings of the 14th ACM Conference on Computer and Communications Security},
  series = {CCS '07},
  year = {2007},
@@ -1542,7 +1542,7 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
 
 @inproceedings{hail,
  author = {Bowers, Kevin D. and Juels, Ari and Oprea, Alina},
- title = {HAIL: A High-availability and Integrity Layer for Cloud Storage},
+ title = {{HAIL: A High-availability and Integrity Layer for Cloud Storage}},
  booktitle = {Proceedings of the 16th ACM Conference on Computer and Communications Security},
  series = {CCS '09},
  year = {2009},
@@ -1556,4 +1556,19 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
  publisher = {ACM},
  address = {New York, NY, USA},
  keywords = {cloud storage, data availability, distributed storage systems, erasure codes, proofs of retrievability},
+}
+
+@techreport{tls,
+  author = {T. Dierks and E. Rescorla},
+  title = {{The Transport Layer Security (TLS) Protocol Version 1.2}},
+  howpublished = {Internet Requests for Comments},
+  type = {RFC},
+  number = {5246},
+  year = {2008},
+  month = {August},
+  issn = {2070-1721},
+  publisher = {RFC Editor},
+  institution = {RFC Editor},
+  url = {http://www.rfc-editor.org/rfc/rfc5246.txt},
+  note = {\url{http://www.rfc-editor.org/rfc/rfc5246.txt}},
 }

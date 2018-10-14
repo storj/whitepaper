@@ -1,5 +1,4 @@
-\begin{table}[H]\centering
-
+\begin{table}[!htpb]\centering
 
 \begin{tabular}{| c | c c c | c | c|}\hline
 MTTF (months) &$k$& $n$ & $m$ &Repair Bandwidth Ratio&Durability (\# nines) \\\hline
@@ -16,4 +15,7 @@ MTTF (months) &$k$& $n$ & $m$ &Repair Bandwidth Ratio&Durability (\# nines) \\\h
 12 &40&120&45 & 0.24 &0.9999 (11)\\\hline
 
 \end{tabular}
+\caption{Decision tables showing the relationship between churn (MTTF),
+  Reed-Solomon parameters ($k$, $n$, $m$), repair bandwidth, and durability}
+\label{rs:decision-tables}
 \end{table}
