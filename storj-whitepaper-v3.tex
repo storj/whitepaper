@@ -21,6 +21,7 @@
 \usepackage{cite}
 \usepackage{placeins}
 \usepackage{tabulary}
+\usepackage{pdfrender}
 
 \usepackage{inconsolata}
 \usepackage[defaultfam,light]{montserrat}
@@ -33,6 +34,7 @@
 \renewcommand{\baselinestretch}{1.15}
 
 \newcommand{\code}[1]{{\em #1}}
+\newcommand{\semibold}[1]{\textpdfrender{TextRenderingMode=FillStroke,LineWidth=.1pt,FillColor=black}{#1}}
 
 \lstset{
     basicstyle=\footnotesize\tt,
@@ -1949,8 +1951,8 @@ BIP32 \cite{bip32}, the encryption is hierarchical and deterministic, and
 each path component is encrypted separately. To explain how we do this,
 we start with a scheme for determining a secret value for each path
 component.
-Let's say a given path $\vec{p}$ has path components $p_1, p_2, \ldots, p_n$
-and we want to determine an encrypted path $\vec{e}$ with path components
+Let's say a given path $\semibold{p}$ has path components $p_1, p_2, \ldots, p_n$
+and we want to determine an encrypted path $\semibold{e}$ with path components
 $e_1, e_2, \ldots, e_n$.
 We assume a predetermined root secret, $s_0$. This root secret is chosen
 by the user and like all other encryption secrets, never leaves the client
@@ -1959,7 +1961,7 @@ $s_i = \mbox{HMAC}(s_{i-1}, p_i)$.
 A key can be deterministically generated from $s_i$, $K(s_i)$.
 We then define the encrypted path component
 $e_i = \mbox{enc}(K(s_{i-1}), p_i)$, such that the new path
-$\vec{e}$ is $e_1, e_2, \ldots, e_n$.
+$\semibold{e}$ is $e_1, e_2, \ldots, e_n$.
 HMAC-SHA256 or HMAC-SHA512 are used for key derivations.
 
 This construction allows a client to share access to some subtree of the
