@@ -412,8 +412,8 @@ and bandwidth relative to those use cases.
 \section{Amazon S3 compatibility}\label{constraint-amazon}
 
 At the time of this paper's publication, the most widely deployed public cloud
-is Amazon Web Services \cite{aws-dominates}. Amazon Web Services is not only
-the largest cloud services ecosystem but also has the benefit of first mover
+is Amazon Web Services \cite{aws-dominates}. Amazon Web Services not only
+is the largest cloud services ecosystem but also has the benefit of first mover
 advantage. Amazon's first cloud services product was Amazon Simple Storage
 Service, or Amazon S3 for short. Public numbers are hard to come by but
 Amazon S3 is likely the most widely deployed cloud storage protocol in existence.
@@ -499,7 +499,7 @@ bandwidth is needed for correct operation of the system. In fact, there is
 a tight relationship between network churn, additional redundancy,
 and bandwidth availability \cite{pick2-churn}. To
 keep background bandwidth usage and redundancy low, our network must have
-low network churn and has a strong incentive to favor prefer long-lived, stable
+low network churn and a strong incentive to favor long-lived, stable
 nodes.
 
 \begin{figure}[!htbp]
@@ -576,8 +576,8 @@ bandwidth availability and repair traffic limit usable space.
 We can broadly classify large storage systems into two groups by average
 object size. To differentiate between the two groups, we classify a ``large'' file as a
 few megabytes or greater in size. A database is the
-preferred solution for storing many small pieces of information.
-Whereas, an object store or filesystem is ideal for storing many large files.
+preferred solution for storing many small pieces of information,
+whereas an object store or filesystem is ideal for storing many large files.
 
 The initial product offering by Storj Labs is designed to function primarily as
 a decentralized object store for larger files.
@@ -1038,9 +1038,9 @@ Amazon S3-compatible interface or appropriate similar client library should run
 colocated on the same computer as the user's application.
 
 Encryption should use a pluggable mechanism that allows users to choose their
-desired encryption scheme as well as store metadata about that encryption
-scheme to allow them to recover their data using the appropriate decryption
-mechanism, should their encryption choices ever be changed or upgraded.
+desired encryption scheme. It should also store metadata about that encryption
+scheme to allow users to recover their data using the appropriate decryption
+mechanism, even when their encryption choices are changed or upgraded.
 
 To support rich access management features, the same encryption key should not
 be used for every file, as having access to one file would result in access
@@ -1105,8 +1105,8 @@ discussion of our initial approach.
 \section{Data repair}
 
 Data loss is an ever-present risk in any distributed storage system. While there
-are many potential causes for file loss, storage node churn, or storage
-nodes joining and leaving the network, is the largest leading risk by a
+are many potential causes for file loss, storage node churn (storage
+nodes joining and leaving the network) is the largest leading risk by a
 significant degree compared to other causes.
 As discussed in section \ref{sec:constraint-churn}, network session time in
 many real world systems range from hours to mere minutes \cite{dht-churn}.
@@ -2432,7 +2432,7 @@ removed, limiting the capabilities of the proxy. Unlike Macaroons, proxies
 can use public/private key cryptography, which means that anyone can validate
 the proxy, instead of just the original issuer.
 
-Restricted bandwidth allocations in our case are restricted by the Uplink to
+Restricted bandwidth allocations, in our case, are restricted by the Uplink to
 limit the bandwidth allocation's value to only what has transferred so far.
 In this way, the storage node will only keep the largest bandwidth allocation
 it has received up to that point, and the Uplink will only send bandwidth allocations
