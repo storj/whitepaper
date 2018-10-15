@@ -1678,7 +1678,8 @@ As the creators of audio CDs discovered,
 it's useful to be able to decode small parts of a segment
 to support these operations \cite{rs-cd}.
 
-A stripe defines a subset of a segment for this purpose and should be no more than a
+A stripe defines a subset of a segment for the purpose of seeking
+and should be no more than a
 couple of kilobytes in size. Encryption happens on a small multiple of stripes,
 whereas erasure encoding happens on a single stripe at a time. Because we
 use authenticated encryption, every encryption batch has a slight overhead,
