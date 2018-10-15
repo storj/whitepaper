@@ -333,7 +333,7 @@ We have decided to adopt a decentralized architecture because, despite the trade
 and resolves many core limitations, risks, and cost factors that result from
 centralization. Within this context,
 decentralization results in a globally distributed network that can
-serve a wide range of storage use cases from archival to CDN. Whereas,
+serve a wide range of storage use cases from archival to CDN. However,
 centralized storage systems require different architectures, implementations,
 and infrastructure to address each of those same use cases.
 
@@ -1288,8 +1288,8 @@ In these cases, the data is stored ``inline'' instead of being stored on nodes.
 
 \item[Stripe] A {\em stripe} is a further subdivision of a segment. A
 {\em stripe} is a fixed amount of bytes that is used as an encryption and erasure
-encoding boundary size. Erasure encoding happen on {\em stripes} individually;
-whereas, encryption may happen on a small multiple of {\em stripes} at a time.
+encoding boundary size. Erasure encoding happen on {\em stripes} individually,
+whereas encryption may happen on a small multiple of {\em stripes} at a time.
 All segments are encrypted, but only remote segments erasure encode stripes.
 A {\em stripe} is the unit on which audits are performed.
 See section \ref{segments-as-stripes} for more.
@@ -1409,7 +1409,7 @@ The \code{put} operation will take a stream of bytes and an optional TTL and
 store the bytes such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
 \code{Get} operations are expected to work until the TTL expires (if a TTL was
-provided), or until a \code{delete} operation is received, whichever comes
+provided) or until a \code{delete} operation is received, whichever comes
 first.
 Storage nodes will {\em not} be penalized for rejecting initial \code{put}
 operations.
@@ -1552,7 +1552,7 @@ sometimes returns faulty
 or deliberately misleading address lookup responses can only cause a
 loss of performance but not correctness.
 
-Even though the Satellite caches are not the primary source of truth, because repair
+Although the Satellite caches are not the primary source of truth, because repair
 (section \ref{sec:concrete-data-repair}) requires rapid determination of
 whether a node is online or offline, lookups in our system will stop with the
 cache lookup and will not attempt a lookup using Kademlia.
@@ -1569,14 +1569,13 @@ With each Kademlia message shared on the network, nodes will include their
 available disk space, per-Satellite bandwidth availability,
 STORJ wallet address, and any other metadata the network needs.
 The node discovery cache will collect this information provided by the nodes,
-allowing faster lookups for it as well.
+allowing faster lookups for it.
 
 \section{Redundancy}\label{sec:concrete-redundancy}
 
 We use the Reed-Solomon erasure code \cite{rs}.
 To implement our solution for reducing the effects of long-tails (see section
-\ref{sec:long-tail}), for each object that we store
-we choose 4 numbers, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
+\ref{sec:long-tail}), we choose 4 numbers for each object that we store, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
 The standard Reed-Solomon numbers are $k$ and $n$, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
@@ -1683,7 +1682,7 @@ A stripe defines a subset of a segment for this purpose and should be no more th
 couple of kilobytes in size. Encryption happens on a small multiple of stripes,
 whereas erasure encoding happens on a single stripe at a time. Because we
 use authenticated encryption, every encryption batch has a slight overhead,
-so slightly larger encryption sizes are preferred. On the other hand, audits
+so slightly larger encryption sizes are preferred. However, audits
 happen on stripes, and we want audit bandwidth usage to be small.
 
 For the reader familiar with the {\em zfec} library, in {\em filefec} mode,
@@ -1770,7 +1769,7 @@ data instead of which nodes store the pieces.
 In our previous version \cite{storj-v2}, we used two data structures to keep
 track of the aforementioned kinds of information:
 {\em frames} and {\em pointers}.
-In this version we have combined these data structures into a single data
+In this version, we have combined these data structures into a single data
 structure and elected to call the new combined data structure a {\em pointer}.
 
 \section{Metadata}\label{sec:concrete-metadata}
@@ -1789,14 +1788,14 @@ backups of their metadata. Indeed, the types of users who have petabytes of data
 to store can most likely manage reliable backups of a single relational database
 storing only metadata.
 
-There are a few downsides to letting clients manage their metadata in a
+On one hand, there are a few downsides to letting clients manage their metadata in a
 traditional database system, such as:
 \begin{itemize}
 \item {\bf Availability} - The availability of the user's data
 is tied entirely to the availability of their metadata server. The counterpoint
 is that availability can be made arbitrarily good with existing trusted
 distributed solutions, such as Cassandra, Spanner, or CockroachDB, assuming an
-appropriate amount of effort put into maintaining operations. Furthermore, any
+appropriate amount of effort is put into maintaining operations. Furthermore, any
 individual metadata service downtime does not affect the rest of the network. In
 fact, the network as a whole can never go down.
 \item {\bf Durability} -
@@ -1955,7 +1954,7 @@ Let's say a given path $\semibold{p}$ has path components $p_1, p_2, \ldots, p_n
 and we want to determine an encrypted path $\semibold{e}$ with path components
 $e_1, e_2, \ldots, e_n$.
 We assume a predetermined root secret, $s_0$. This root secret is chosen
-by the user and like all other encryption secrets, never leaves the client
+by the user and, like all other encryption secrets, never leaves the client
 computer. We recursively define
 $s_i = \mbox{HMAC}(s_{i-1}, p_i)$.
 A key can be deterministically generated from $s_i$, $K(s_i)$.
@@ -2168,9 +2167,9 @@ the second subsystem is the initial vetting process,
 the third subsystem is a filtering system, and finally,
 the fourth system is a preference system.
 
-The goal of the first system is require a short proof that the storage node
-operator is invested, either via time, stake, or resources. We are using
-proof of work initially.
+The goal of the first system is to require a short proof that the storage node
+operator is invested, through time, stake, or resources. Initially, we are using
+proof of work.
 As mentioned in section \ref{sec:concrete-storage-nodes}, storage nodes require
 a proof of work as part of identity generation. This helps the network avoid
 some Sybil attacks \cite{sybil-attack}, but we glossed over how proof of work
@@ -2287,8 +2286,7 @@ data on the network. After that period of time, the file was deleted.
 Other distributed storage platforms use 15-day renewable contracts that delete
 data if the user does not login every 15 days. Others use 30-day contracts.
 We believe that the most common use case is indefinite storage. To best solve
-this use case,
-moving forward, our network will not use contracts at all to manage payments
+this use case, our network will no longer use contracts to manage payments
 and file storage durations. The default assumption is that data will last
 indefinitely.
 
@@ -2422,8 +2420,7 @@ Instead of allowing the storage node to cheat and save the bandwidth allocation
 without performing the requested operation,
 we break each operation into smaller requests such that if either the storage
 node or Uplink stop participating in the protocol prematurely, neither peer
-class is exposed to too much loss. This is similar to an optimistic, gradual
-release, fair exchange protocol \cite{schneier}.
+class is exposed to too much loss. This is similar to an optimistic, gradual-release, fair-exchange protocol \cite{schneier}.
 
 To support this with Neuman's accounting protocol and little Satellite overhead,
 we use {\em restricted bandwidth allocations}
@@ -2476,10 +2473,9 @@ the storage node will decline the request.
 The storage node can only get paid for the maximum amount a client has agreed to,
 as it otherwise has no valid bandwidth allocations to return for payment.
 
-As before, we don't measure all peer-to-peer traffic;
-this bandwidth traffic measurement system only tracks
-bandwidth used during storage operations, storage and retrievals of pieces,
-and does not apply to node discovery traffic (Kademlia DHT) or other generic
+As before, we don't measure all peer-to-peer traffic.
+This bandwidth traffic measurement system only tracks
+bandwidth used during not only storage operations but also the storage and retrievals of pieces. However, it  does not apply to node discovery traffic (Kademlia DHT) or other generic
 maintenance overhead.
 
 \section{Satellite reputation}\label{sec:concrete-satellite-reputation}
@@ -2805,9 +2801,9 @@ For all of the remote segments, the Uplink will
   pieces are being removed.
 
 \begin{itemize}
-\item The storage nodes will return a signed message indicating the storage node
+\item The storage nodes will return a signed message indicating either that the storage node
 received the
-delete operation and will delete both the file and its bookkeeping information,
+delete operation and will delete both the file and its bookkeeping information
 or that it was already removed.
 \item The Uplink will upload all of the signed messages that it received from
   working storage nodes back to the Satellite. The Satellite will require an
@@ -2886,7 +2882,7 @@ For every segment pointer, the Uplink:
   \item Invokes a copy operation on each of the storage nodes from the pointer
     to duplicate the piece with a new piece ID.
   \item Waits for the storage nodes to respond that they have duplicated the
-    data, and removes nodes that were unsuccessful.
+    data and it removes nodes that were unsuccessful.
   \item Re-encrypts the metadata with the new piece ID and a new encryption key
     derived from the new path.
   \end{itemize}
@@ -3010,7 +3006,7 @@ When a
 \chapter{Future work}\label{chap:future-work}
 
 Storj is a work in progress, and many features are planned for future
-versions. In this chapter we discuss a few especially interesting areas in
+versions. In this chapter, we discuss a few especially interesting areas in
 which we want to consider improvements to our concrete implementation.
 
 \section{Hot files and content delivery}\label{sec:future-hot-files}
@@ -3047,7 +3043,7 @@ redundancy to $(20, 1000)$, where requests are load balanced across 1,000 nodes,
 such that every piece of all 1,000 are unique, and any 20 of those pieces are
 all that is required to regenerate the original file.
 
-The Satellite will need to pay storage nodes for the increased redundancy, so
+On one hand, the Satellite will need to pay storage nodes for the increased redundancy, so
 content delivery in this manner has increased at-rest costs during high
 demand, in addition to bandwidth costs. On the other hand, content delivery is often
 desired to be highly geographically redundant, which this scheme provides
@@ -3080,8 +3076,8 @@ We hope to eliminate Satellite control of the metadata
 entirely via a viable Byzantine fault tolerant consensus algorithm, should
 one arise.
 The biggest challenge to this is finding the right balance between coordination
-avoidance and Byzantine fault tolerant consensus, where storage nodes can
-interact with one another, share encoded pieces of files, and still operate
+avoidance and Byzantine fault tolerant consensus, where storage nodes can not only
+interact with one another but also share encoded pieces of files while still operating
 within the performance levels users will expect from a platform that is
 competing with traditional cloud storage providers.
 Our team will continue to research viable means to achieve this end.
@@ -3503,20 +3499,19 @@ protection against individual drive failures, they are not immune to
 system-wide events. Storms, power outages, floods, earthquakes, operator error,
 design flaws, network overload, or attacks can compromise entire data centers.
 
-While the centralized providers may calculate and publish theoretically high
-availability numbers, these calculations depend on drive failures being
+While the centralized providers may calculate and publish theoretically high-availability numbers, these calculations depend on drive failures being
 uncorrelated. In fact, in any data center, the chances of an individual drive
 failing is highly correlated with the chances of another drive failing.
 
 In a decentralized system, by contrast, each node is operated by a different
 individual, in a different location, with separate personnel, power, network
-access, etc. Thus, the chance of an individual node failing is almost entirely
+access, and so forth. Therefore, the chance of an individual node failing is almost entirely
 uncorrelated with the chances of other drives failing. As a result, the kinds
 of availability we obtain are not subject to storms, power outages, or other
 ``black swan'' events. Even if the chance of an individual drive failing in the
 Storj network is higher than in a centralized cloud, the chance of collective
 failure (e.g. losing 20 out of 40 independent drives) is vanishingly small.
-And, the chance of losing one file is not correlated with the chances of
+In addition, the chance of losing one file is not correlated with the chances of
 losing a second file.
 
 \section{Performance}
@@ -3540,7 +3535,7 @@ side.
 
 Public cloud storage operators must make large capital investments in
 building out a network of data centers and must incur significant costs for
-power, personnel, security, fire suppression, etc. Their pricing structure
+power, personnel, security, fire suppression, and so forth. Their pricing structure
 must allow them to recoup those costs. Moreover, the structure of the
 industry is such that it is inherently oligopolistic: there are only a
 handful of public cloud companies, and they comprise the largest companies by
@@ -3562,7 +3557,7 @@ pure margin, and these supply cost savings can be passed on to end users.
 We have designed market mechanisms on the demand side as well, to prevent any
 Satellite operator from cornering the market. Even after providing a healthy
 margin to farmers, demand partners, and Satellite operators, we believe we
-hould be able to provide storage services profitably at a fraction of the cost
+should be able to provide profitable storage services at a fraction of the cost
 of equivalent centralized cloud services.
 
 \newpage
