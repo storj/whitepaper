@@ -1288,7 +1288,7 @@ In these cases, the data is stored ``inline'' instead of being stored on nodes.
 
 \item[Stripe] A {\em stripe} is a further subdivision of a segment. A
 {\em stripe} is a fixed amount of bytes that is used as an encryption and erasure
-encoding boundary size. Erasure encoding happen on {\em stripes} individually,
+encoding boundary size. Erasure encoding happens on {\em stripes} individually,
 whereas encryption may happen on a small multiple of {\em stripes} at a time.
 All segments are encrypted, but only remote segments erasure encode stripes.
 A {\em stripe} is the unit on which audits are performed.
@@ -2475,7 +2475,8 @@ as it otherwise has no valid bandwidth allocations to return for payment.
 
 As before, we don't measure all peer-to-peer traffic.
 This bandwidth traffic measurement system only tracks
-bandwidth used during not only storage operations but also the storage and retrievals of pieces. However, it  does not apply to node discovery traffic (Kademlia DHT) or other generic
+bandwidth used during storage operations (storage and retrievals of pieces).
+However, it  does not apply to node discovery traffic (Kademlia DHT) or other generic
 maintenance overhead.
 
 \section{Satellite reputation}\label{sec:concrete-satellite-reputation}
@@ -3076,8 +3077,8 @@ We hope to eliminate Satellite control of the metadata
 entirely via a viable Byzantine fault tolerant consensus algorithm, should
 one arise.
 The biggest challenge to this is finding the right balance between coordination
-avoidance and Byzantine fault tolerant consensus, where storage nodes can not only
-interact with one another but also share encoded pieces of files while still operating
+avoidance and Byzantine fault tolerant consensus, where storage nodes can
+interact with one another and share encoded pieces of files while still operating
 within the performance levels users will expect from a platform that is
 competing with traditional cloud storage providers.
 Our team will continue to research viable means to achieve this end.
@@ -3499,7 +3500,8 @@ protection against individual drive failures, they are not immune to
 system-wide events. Storms, power outages, floods, earthquakes, operator error,
 design flaws, network overload, or attacks can compromise entire data centers.
 
-While the centralized providers may calculate and publish theoretically high-availability numbers, these calculations depend on drive failures being
+While the centralized providers may calculate and publish theoretically high
+availability numbers, these calculations depend on drive failures being
 uncorrelated. In fact, in any data center, the chances of an individual drive
 failing is highly correlated with the chances of another drive failing.
 
