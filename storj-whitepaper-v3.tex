@@ -2722,14 +2722,12 @@ process segments until the entire stream has completed. Each segment gets
 a new encryption key, but the segment's starting nonce monotonically increases
 from the previous segment.
 
+The last segment stored in the stream will contain additional metadata:
 \begin{itemize}
-\item The last segment stored in the stream will contain additional metadata:
-  \begin{itemize}
-  \item how many segments the stream contained
-  \item how large the segments are, in bytes
-  \item the starting nonce of the first segment
-  \item file extended attributes and other metadata
-  \end{itemize}
+\item how many segments the stream contained
+\item how large the segments are, in bytes
+\item the starting nonce of the first segment
+\item file extended attributes and other metadata
 \end{itemize}
 
 Periodically, the storage nodes will later send the largest restricted
