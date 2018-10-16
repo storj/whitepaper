@@ -18,6 +18,20 @@
 # *.ps
 # *.eps
 # *.pdf
+*.epub
+*.mobi
+*.ptc
+
+## htlatex
+*.4ct
+*.4tc
+*.css
+*.html
+*.idv
+*.lg
+*.tmp
+*.xref
+storj-whitepaper-v3*x.png
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
@@ -178,3 +192,6 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
+
+# macOS 
+.DS_Store

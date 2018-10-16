@@ -1,0 +1,25 @@
+In the context of storing an erasure-coded segment on a decentralized network, we consider the loss of a {\em piece} from two different perspectives.
+
+\subsection{Direct piece loss}
+With direct piece loss, we assume that for a specific segment, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate.\footnote{So if we assume a proportion of $p=0.1$ pieces are lost per month, $t$ is given in months.}
+To account for $a$ multiple checks per month, we may extend this to $n(1-p/a)^{at}$. If $m$ is the rebuild threshold which controls when a segment is rebuilt, we may solve $n(1-p/a)^{at}=m$ for $t$ (taking the ceiling when necessary) to determine how long it will take for the $n$ pieces of a segment to decay to less than $m$ pieces. This works out to the smallest $t$ for which
+$t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a$ and $p$, how long we expect a segment to last between repairs.
+
+\subsection{Indirect piece loss}
+
+When modeling indirect piece loss, we suppose that a fixed rate of nodes
+drop out of the network each month,\footnote{Though the rate may be taken over
+any desired time interval.} whether or not they are holding pieces of the segment
+under consideration. To describe the probability that $d$ of the dropped nodes
+were each storing one of the $n$ pieces of a specific segment, we turn to the
+hypergeometric probability distribution. Suppose $c$ nodes are replaced per
+month out of $C$ total nodes on the network. Then the probability that $d$
+nodes were each storing a piece of the segment is given by
+\begin{align}
+&&    P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom} &&
+\end{align}
+which has mean $nc/C$. We then determine how long it will take for the number of pieces to fall below the desired threshold $m$ by iterating, holding the overall churn $c$ fixed but reducing the number of existing pieces by the distribution's mean in each iteration and counting the number of iterations required. For example, after one iteration, the number of existing pieces is reduced by $nc/C$, so instead of $n$ pieces on the network (as the parameter in \eqref{hgeom}), there are $n-nc/C$ pieces, changing both the parameter and the mean for \eqref{hgeom} in iteration 2.
+
+We may extend this model by considering multiple checks per month (as in the direct piece loss case), assuming that $c/a$ nodes are lost every $1/a$-th of a month instead of assuming that $c$ nodes are lost per month, where $a$ is the number of checks per month. This yields an initial hypergeometric probability distribution with mean $nc/aC$.
+
+In either of these two cases (single or multiple segment integrity checks per month), we track the number of iterations until the number of available pieces fall below the repair threshold. This number may then be used to determine the expected number of rebuilds per month for any given segment.
