@@ -10,7 +10,7 @@
  url = {http://dl.acm.org/citation.cfm?id=646334.687801},
  acmid = {687801},
  publisher = {Springer-Verlag},
- address = {London, UK, UK},
+ address = {London, UK},
 },
 
 @inproceedings{skad,
@@ -95,13 +95,15 @@ year = {(2015)},
 @misc{s3-object-meta,
 	author = {Amazon Inc.},
 	title  = {{Amazon Simple Storage Service - Object Metadata}},
+  year = {Accessed 2018},
 	howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html}},
 }
 
 @misc{s3-consistency,
   author = {Amazon Inc.},
+  year = {Accessed 2018},
   title = {{Amazon Simple Storage Service - Data Consistency Model}},
-  howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html}},
+  howpublished = {\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html#ConsistencyModel}},
 }
 
 @article{tail-at-scale,
@@ -117,7 +119,7 @@ year = {(2015)},
 @misc{backblaze-hd-2018-q1,
 	author = {Backblaze Inc.},
 	title = {{How Long Do Hard Drives Last: 2018 Hard Drive Stats}},
-	year = 2018,
+	year = {2018},
 	howpublished = {\url{https://www.backblaze.com/blog/hard-drive-stats-for-q1-2018/}},
 }
 
@@ -142,7 +144,7 @@ year = {(2015)},
 @misc{bitcoin,
     author = {Satoshi Nakamoto},
     title = {Bitcoin: A peer-to-peer electronic cash system},
-    howpublished = {\url{http://bitcoin.org/bitcoin.pdf}},
+    howpublished = {\url{https://bitcoin.org/bitcoin.pdf}},
     year = {2008}
 }
 
@@ -158,6 +160,7 @@ year = {(2015)},
 @misc{grpc,
 	howpublished = {\url{https://grpc.io/docs/guides/index.html}},
 	title = {{What is gRPC?}},
+  year = {Accessed 2018},
 	author = {Google Inc.}
 }
 
@@ -528,7 +531,7 @@ isbn = {},
  series = {OSDI'04},
  year = {2004},
  location = {San Francisco, CA},
- pages = {7--7},
+ pages = {7},
  numpages = {1},
  url = {http://dl.acm.org/citation.cfm?id=1251254.1251261},
  acmid = {1251261},
@@ -603,24 +606,6 @@ chapter = {},
 isbn = {},
 }
 
-@article{bailis-consistency,
- author = {Bailis, Peter and Davidson, Aaron and Fekete, Alan and Ghodsi, Ali and Hellerstein, Joseph M. and Stoica, Ion},
- title = {{Highly Available Transactions: Virtues and Limitations}},
- journal = {Proc. VLDB Endow.},
- issue_date = {November 2013},
- volume = {7},
- number = {3},
- month = nov,
- year = {2013},
- issn = {2150-8097},
- pages = {181--192},
- numpages = {12},
- url = {http://dx.doi.org/10.14778/2732232.2732237},
- doi = {10.14778/2732232.2732237},
- acmid = {2732237},
- publisher = {VLDB Endowment},
-}
-
 @article{cap1,
  author = {Gilbert, Seth and Lynch, Nancy},
  title = {Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-tolerant Web Services},
@@ -663,7 +648,7 @@ isbn = {},
 @article{zab,
   title={Zab: High-performance broadcast for primary-backup systems},
   author={Flavio Paiva Junqueira and Benjamin C. Reed and Marco Serafini},
-  journal={2011 IEEE/IFIP 41st International Conference on Dependable Systems \& Networks (DSN)},
+  journal={IEEE/IFIP 41st International Conference on Dependable Systems \& Networks (DSN)},
   year={2011},
   pages={245-256}
 }
@@ -807,7 +792,7 @@ booktitle	= {OSDI}
  url = {http://dl.acm.org/citation.cfm?id=647433.723863},
  acmid = {723863},
  publisher = {Springer-Verlag},
- address = {London, UK, UK},
+ address = {London, UK},
 }
 
 @inproceedings{bigtable,
@@ -890,7 +875,7 @@ pages	= {205--218}
 
 @INPROCEEDINGS{proxy-accounting,
 author={B. C. Neuman},
-booktitle={[1993] Proceedings. The 13th International Conference on Distributed Computing Systems},
+booktitle={The 13th International Conference on Distributed Computing Systems},
 title={Proxy-based authorization and accounting for distributed systems},
 year={1993},
 volume={},
@@ -903,7 +888,7 @@ month={May},}
 
 @inproceedings{macaroons,
 title	= {Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud},
-author	= {Arnar Birgisson and Joe Gibbs Politz and Úlfar Erlingsson and Ankur Taly and Michael Vrable and Mark Lentczner},
+author	= {Arnar Birgisson and Joe Gibbs Politz and \'Ulfar Erlingsson and Ankur Taly and Michael Vrable and Mark Lentczner},
 year	= {2014},
 booktitle	= {Network and Distributed System Security Symposium}
 }
@@ -954,24 +939,10 @@ editor="Pomerance, Carl",
 title="A Digital Signature Based on a Conventional Encryption Function",
 booktitle="Advances in Cryptology --- CRYPTO '87",
 year="1988",
-publisher="Springer Berlin Heidelberg",
+publisher="Springer",
 address="Berlin, Heidelberg",
 pages="369--378",
 isbn="978-3-540-48184-3"
-}
-
-@article{sybil-attack,
-title = {{Sybil Nodes as a Mitigation Strategy Against Sybil Attack}},
-journal = "Procedia Computer Science",
-volume = "32",
-pages = "1135 - 1140",
-year = "2014",
-note = "The 5th International Conference on Ambient Systems, Networks and Technologies (ANT-2014), the 4th International Conference on Sustainable Energy Information Technology (SEIT-2014)",
-issn = "1877-0509",
-doi = "https://doi.org/10.1016/j.procs.2014.05.544",
-url = "http://www.sciencedirect.com/science/article/pii/S1877050914007443",
-author = "Zied Trifa and Maher Khemakhem",
-keywords = "Structured p2p overlay networks, Chord, Sybil Attack, Monitoring, Tracking ;"
 }
 
 @misc{sqlite,
@@ -1331,7 +1302,7 @@ catalogue-url = { https://nla.gov.au/nla.cat-vn328165 }
  series = {ATEC '04},
  year = {2004},
  location = {Boston, MA},
- pages = {10--10},
+ pages = {10},
  numpages = {1},
  url = {http://dl.acm.org/citation.cfm?id=1247415.1247425},
  acmid = {1247425},
@@ -1346,7 +1317,7 @@ catalogue-url = { https://nla.gov.au/nla.cat-vn328165 }
  series = {HOTOS'03},
  year = {2003},
  location = {Lihue, Hawaii},
- pages = {1--1},
+ pages = {1},
  numpages = {1},
  url = {http://dl.acm.org/citation.cfm?id=1251054.1251055},
  acmid = {1251055},
@@ -1368,7 +1339,7 @@ ISSN={1521-9097},
 month={Dec},}
 
 @misc{lustre,
-author={Lustre authors},
+author={Lustre},
 title={{Introduction to Lustre Architecture}},
 year={2017},
 howpublished={\url{http://wiki.lustre.org/images/6/64/LustreArchitecture-v4.pdf}}
@@ -1464,7 +1435,7 @@ howpublished={\url{http://www.bittorrent.org/beps/bep_0003.html}}
  url = {http://dl.acm.org/citation.cfm?id=646591.697650},
  acmid = {697650},
  publisher = {Springer-Verlag},
- address = {London, UK, UK},
+ address = {London, UK},
 }
 
 @misc{aws-dominates,
@@ -1489,7 +1460,7 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
 }
 
 @misc{mastodon,
-  author={{Eugen Rochko et al.}},
+  author={{Eugen Rochko and others}},
   title = {{Mastodon: Your self-hosted, globally interconnected microblogging community}},
   year = {2016},
   howpublished = {\url{https://github.com/tootsuite/mastodon}},
@@ -1571,4 +1542,148 @@ howpublished = {\url{https://github.com/tahoe-lafs/zfec/commit/2594d395923dd945c
   institution = {RFC Editor},
   url = {http://www.rfc-editor.org/rfc/rfc5246.txt},
   note = {\url{http://www.rfc-editor.org/rfc/rfc5246.txt}},
+}
+
+@inproceedings{sundr,
+ author = {Li, Jinyuan and Krohn, Maxwell and Mazi\`{e}res, David and Shasha, Dennis},
+ title = {{Secure Untrusted Data Repository (SUNDR)}},
+ booktitle = {Proceedings of the 6th Conference on Symposium on Opearting Systems Design \& Implementation - Volume 6},
+ series = {OSDI'04},
+ year = {2004},
+ location = {San Francisco, CA},
+ pages = {9--9},
+ numpages = {1},
+ url = {http://dl.acm.org/citation.cfm?id=1251254.1251263},
+ acmid = {1251263},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@inproceedings{sirius,
+  title={{SiRiUS: Securing Remote Untrusted Storage}},
+  author={Goh, Eu-Jin and Shacham, Hovav and Modadugu, Nagendra and Boneh, Dan},
+  booktitle={NDSS},
+  volume={3},
+  pages={131--145},
+  year={2003}
+}
+
+@inproceedings{plutus,
+ author = {Kallahalla, Mahesh and Riedel, Erik and Swaminathan, Ram and Wang, Qian and Fu, Kevin},
+ title = {{Plutus: Scalable Secure File Sharing on Untrusted Storage}},
+ booktitle = {Proceedings of the 2Nd USENIX Conference on File and Storage Technologies},
+ series = {FAST '03},
+ year = {2003},
+ location = {San Francisco, CA},
+ pages = {29--42},
+ numpages = {14},
+ url = {http://dl.acm.org/citation.cfm?id=1090694.1090698},
+ acmid = {1090698},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@inproceedings{gfs,
+ author = {Ghemawat, Sanjay and Gobioff, Howard and Leung, Shun-Tak},
+ title = {{The Google File System}},
+ booktitle = {Proceedings of the Nineteenth ACM Symposium on Operating Systems Principles},
+ series = {SOSP '03},
+ year = {2003},
+ isbn = {1-58113-757-5},
+ location = {Bolton Landing, NY, USA},
+ pages = {29--43},
+ numpages = {15},
+ url = {http://doi.acm.org/10.1145/945445.945450},
+ doi = {10.1145/945445.945450},
+ acmid = {945450},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {clustered storage, data storage, fault tolerance, scalability},
+}
+
+@inproceedings{hdfs,
+ author = {Shvachko, Konstantin and Kuang, Hairong and Radia, Sanjay and Chansler, Robert},
+ title = {{The Hadoop Distributed File System}},
+ booktitle = {Proceedings of the 2010 IEEE 26th Symposium on Mass Storage Systems and Technologies (MSST)},
+ series = {MSST '10},
+ year = {2010},
+ isbn = {978-1-4244-7152-2},
+ pages = {1--10},
+ numpages = {10},
+ url = {http://dx.doi.org/10.1109/MSST.2010.5496972},
+ doi = {10.1109/MSST.2010.5496972},
+ acmid = {1914427},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+}
+
+@article{qfs,
+ author = {Ovsiannikov, Michael and Rus, Silvius and Reeves, Damian and Sutter, Paul and Rao, Sriram and Kelly, Jim},
+ title = {{The Quantcast File System}},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {August 2013},
+ volume = {6},
+ number = {11},
+ month = aug,
+ year = {2013},
+ issn = {2150-8097},
+ pages = {1092--1101},
+ numpages = {10},
+ url = {http://dx.doi.org/10.14778/2536222.2536234},
+ doi = {10.14778/2536222.2536234},
+ acmid = {2536234},
+ publisher = {VLDB Endowment},
+}
+
+@inproceedings{hopsfs,
+ author = {Niazi, Salman and Ismail, Mahmoud and Haridi, Seif and Dowling, Jim and Grohsschmiedt, Steffen and Ronstr\"{o}m, Mikael},
+ title = {{HopsFS: Scaling Hierarchical File System Metadata Using newSQL Databases}},
+ booktitle = {Proceedings of the 15th Usenix Conference on File and Storage Technologies},
+ series = {FAST'17},
+ year = {2017},
+ isbn = {978-1-931971-36-2},
+ location = {Santa clara, CA, USA},
+ pages = {89--103},
+ numpages = {15},
+ url = {http://dl.acm.org/citation.cfm?id=3129633.3129642},
+ acmid = {3129642},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@techreport{ledbat,
+  author = {S. Shalunov and G. Hazel and J. Iyengar and M. Kuehlewind},
+  title = {{Low Extra Delay Background Transport (LEDBAT)}},
+  howpublished = {Internet Requests for Comments},
+  type = {RFC},
+  number = {6817},
+  year = {2012},
+  month = {December},
+  issn = {2070-1721},
+  publisher = {RFC Editor},
+  institution = {RFC Editor},
+  url = {http://www.rfc-editor.org/rfc/rfc6817.txt},
+  note = {\url{http://www.rfc-editor.org/rfc/rfc6817.txt}},
+}
+
+@inproceedings{sybil-attack,
+ author = {Douceur, John R.},
+ title = {{The Sybil Attack}},
+ booktitle = {Revised Papers from the First International Workshop on Peer-to-Peer Systems},
+ series = {IPTPS '01},
+ year = {2002},
+ isbn = {3-540-44179-4},
+ pages = {251--260},
+ numpages = {10},
+ url = {http://dl.acm.org/citation.cfm?id=646334.687813},
+ acmid = {687813},
+ publisher = {Springer-Verlag},
+ address = {London, UK},
+}
+
+@misc{kopano,
+  author = {Dan Shearer},
+  title = {{EU-US Cloud Privacy Crash}},
+  year = {2017},
+  howpublished = {\url{https://kopano.com/kopano-documents/EU-US-Cloud-Privacy.pdf}}
 }
