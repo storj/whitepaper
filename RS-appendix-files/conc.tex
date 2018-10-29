@@ -7,5 +7,5 @@ Informally, it takes longer to lose more pieces under a given fixed network size
 For example, assume we have a network with a mean time to failure of six months.
 Suppose we consider the same file encoded with two different RS parameters:
 one under a $(20,40)$ schema and the other as an $(30,80)$ schema. If we set $m$ so that $m=k+10$ for both cases, we observe from the above table
-that the bandwidth repair ratio is is $0.87$ in the $(20,40)$ case and is $0.60$ in the $(40,80)$ case. Both encoding schemes have similar durability, as a repair in both cases is triggered when there are $k+10$ pieces left; even though, the mean rebuilds per month
+that the bandwidth repair ratio is $0.87$ in the $(20,40)$ case and is $0.60$ in the $(40,80)$ case. Both encoding schemes have similar durability, as a repair in both cases is triggered when there are $k+10$ pieces left; even though the mean of rebuilds per month
 is empirically and theoretically lower for the $(40,80)$ case using $m=k+10$.

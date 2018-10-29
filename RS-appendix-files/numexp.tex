@@ -3,22 +3,22 @@
 
 We produce decision tables (Table \ref{rs:decision-tables}) showcasing
 worst-case mean segment rebuild outcomes based on simulating piece loss for segments encoded with varying Reed-Solomon parameters.
-We assume an $(k,n)$ RS encoding scheme, where $n$ pieces are generated, with
+We assume a $(k,n)$ RS encoding scheme, where $n$ pieces are generated, with
 $k$ pieces needed for reconstruction, using three different values for $n$.
-We assume that a segment undergoes the process of repair when less than $m$ pieces remain on the network, using three different values of $m$ for each $n$.
+We also assume that a segment undergoes the process of repair when less than $m$ pieces remain on the network, using three different values of $m$ for each $n$.
 For the initial table, we use a simplifying assumption that pieces on the network are lost at a constant rate per month,\footnote{This constant rate may be viewed as the mean of the Poisson distribution modeling piece loss per month.} which may be due to node churn, data corruption, or other problems.
 
 To arrive at the value for mean rebuilds per month, we consider a single segment that is encoded with $n$ pieces which are distributed uniformly randomly to nodes on the network. To simulate conditions leading to a rebuild, we uniformly randomly select a subset of nodes from the total population and designate them as failed. We do this multiple times per (simulated) month, scaling the piece loss rate linearly according to the number of segment integrity checks per month.\footnote{
 For example, if the monthly network piece loss rate is assumed to be 0.1 of the network size (or 10\%), and if 10 segment integrity checks are performed per month, we assume that, on average, 1\% of pieces are lost between checks.}
 
 Once enough nodes have failed to bring the number of pieces above the repair threshold $m$, the segment is rebuilt, and we track the number of rebuilds over the course of 24 months.
-We repeat this simulation for 1000 iterations, simulating 1000 2-year periods for a single segment. We then take the number of rebuilds at the 99th percentile (or higher) of the number of rebuilds occurring over these 1000 iterations. In other words, we choose the value for which the value of the observed cumulative distribution function (CDF), describing the number of rebuilds over this 2 year period, is at least 0.99. This value is then divided by the number of months to arrive at the mean rebuilds/month value. An example of the approach is shown in Figure \ref{fig:sim_method}. We perform the experiment on a network of 10,000 nodes, observing that the network size will not directly impact the mean rebuilds/month value for a single segment under our working assumption of a constant rate of loss per month.\footnote{We represent piece loss as a proportion of nodes selected uniformly randomly from the total network. The proportion scales directly with network size, so the overall number of pieces lost stays the same for networks of different sizes.}
+We repeat this simulation for 1000 iterations, simulating 1000 two-year periods for a single segment. We then take the number of rebuilds at the 99th percentile (or higher) of the number of rebuilds occurring over these 1000 iterations. In other words, we choose the value for which the value of the observed cumulative distribution function (CDF), describing the number of rebuilds over this two-year period, is at least 0.99. This value is then divided by the number of months to arrive at the mean rebuilds/month value. An example of the approach is shown in Figure \ref{fig:sim_method}. We perform the experiment on a network of 10,000 nodes, observing that the network size will not directly impact the mean rebuilds/month value for a single segment under our working assumption of a constant rate of loss per month.\footnote{We represent piece loss as a proportion of nodes selected uniformly randomly from the total network. The proportion scales directly with network size, so the overall number of pieces lost stays the same for networks of different sizes.}
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[scale=0.5]{RS-appendix-files/example_pmf.eps}
     \includegraphics[scale=0.5]{RS-appendix-files/example_cdf.eps}
-    \caption{Top: Density for the number of rebuilds over a 24 month period, repeated for 1000 iterations. Bottom: CDF of the number of rebuilds. In this case, the mean rebuilds/month value would be taken as $26/24\approx1.083$, with there being a 99.7\% chance that a segment is rebuilt at most 26 times over the course of 24 months.}
+    \caption{Left: Density for the number of rebuilds over a 24 month period, repeated for 1000 iterations. Right: CDF of the number of rebuilds. In this case, the mean rebuilds/month value would be taken as $26/24\approx1.083$, with there being a 99.7\% chance that a segment is rebuilt at most 26 times over the course of 24 months.}
     \label{fig:sim_method}
 \end{figure}
 

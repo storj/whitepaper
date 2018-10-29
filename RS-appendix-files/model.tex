@@ -1,7 +1,7 @@
 In the context of storing an erasure-coded segment on a decentralized network, we consider the loss of a {\em piece} from two different perspectives.
 
 \subsection{Direct piece loss}
-With direct piece loss, we assume that for a specific segment, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate.\footnote{So if we assume a proportion of $p=.1$ pieces are lost per month, $t$ is given in months.}
+With direct piece loss, we assume that for a specific segment, its erasure pieces are lost according to a certain rate. We point out that modeling this is straightforward: if pieces are lost at a rate $0<p<1$ and we start with $n$ pieces, then piece decay follows an exponential decay pattern of the form $n(1-p)^t$, with $t$ being the time elapsed according to the units used for the rate.\footnote{So if we assume a proportion of $p=0.1$ pieces are lost per month, $t$ is given in months.}
 To account for $a$ multiple checks per month, we may extend this to $n(1-p/a)^{at}$. If $m$ is the rebuild threshold which controls when a segment is rebuilt, we may solve $n(1-p/a)^{at}=m$ for $t$ (taking the ceiling when necessary) to determine how long it will take for the $n$ pieces of a segment to decay to less than $m$ pieces. This works out to the smallest $t$ for which
 $t>\frac{\ln(m/n)}{a\ln(1-p/a)}$. Thus it becomes clear, given parameters $n,m,a$ and $p$, how long we expect a segment to last between repairs.
 

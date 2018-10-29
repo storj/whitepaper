@@ -53,7 +53,7 @@
 Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
-\date{\small\sffamily\color{white} October 26, 2018\\v3.0\\
+\date{\small\sffamily\color{white} October 28, 2018\\v3.0\\
 \small\colorlet{urllinkcolor}{white}\url{https://github.com/storj/whitepaper}
 }
 
@@ -241,7 +241,7 @@ is subject to a specific set of design constraints which
 define the overall requirements and implementation of
 the network. When designing a distributed storage system,
 there are many parameters to be optimized such as speed, capacity,
-trustlessness, byzantine fault tolerance, cost, bandwidth, and latency.
+trustlessness, Byzantine fault tolerance, cost, bandwidth, and latency.
 
 We propose a framework that scales horizontally to exabytes of data storage
 across the globe. Our system, the Storj Network, is a robust object store
@@ -651,17 +651,17 @@ because Amazon owns and runs all of them.
 In contrast, Storj operates in an environment where every node is
 managed by its own independent operator.
 In this environment, we can expect that a majority
-of storage nodes are {\em rational} and a minority are {\em byzantine}. Storj assumes no
+of storage nodes are {\em rational} and a minority are {\em Byzantine}. Storj assumes no
 {\em altruistic} nodes.
 
 We must include incentives that encourage the network to ensure that the
 rational nodes on the network (the majority of operators) behave as similarly
 as possible to the expected behavior of altruistic nodes.
-Likewise, the effects of byzantine behavior must be minimized or eliminated.
+Likewise, the effects of Byzantine behavior must be minimized or eliminated.
 
-Note that creating a system that is robust in the face of byzantine behavior
-does not require a byzantine fault tolerant consensus protocol---we avoid
-byzantine consensus. See sections \ref{sec:concrete-metadata},
+Note that creating a system that is robust in the face of Byzantine behavior
+does not require a Byzantine fault tolerant consensus protocol---we avoid
+Byzantine consensus. See sections \ref{sec:concrete-metadata},
 \ref{sec:distributed-metadata}, and appendix \ref{chap:dist-consensus} for
 more details.
 
@@ -1893,7 +1893,7 @@ On the other hand, there are a few upsides:
   catastrophic scenario, this design is no worse than most other technologies or
   techniques application developers frequently use (databases).
 \item {\bf Simplicity} - Other projects have spent multiple years on shaky
-  implementations of byzantine-fault tolerant consensus metadata storage,
+  implementations of Byzantine-fault tolerant consensus metadata storage,
   with expected performance and complexity trade-offs
   (see appendix \ref{chap:dist-consensus}).
   We can get a useful product to market without doing this work at all.
@@ -1991,9 +1991,6 @@ While our launch goal of many Satellites is a step ahead of our previous
 system's Bridge implementation \cite{storj-v2}, this is still just one point on
 our decentralization journey and we expect to continue to find ways to
 decentralize our components further.
-Future releases will see significant improvements to and potentially
-rearchitectures of these systems, such as the removal of the Satellite
-entirely.
 
 \section{Encryption}\label{sec:concrete-encryption}
 
@@ -2120,7 +2117,7 @@ SUNDR, SiRiUS, or Plutus \cite{sundr, sirius, plutus}.
 
 \section{Audits}\label{sec:concrete-audits}
 
-In a network with untrusted nodes, validating that nodes are returning data
+In a network with untrusted nodes, validating that those nodes are returning data
 accurately and otherwise behaving as expected is vital to ensuring a properly
 functioning system. Audits are a way to confirm that nodes have the data they
 claim to have. Auditors, such as Satellites, will send a {\em challenge} to a
@@ -2168,11 +2165,11 @@ Given a specific storage node, an audit might reveal that it is offline or
 incorrect. In the case of a node being offline, the audit failure
 may be due to the address in the node discovery cache being stale, so another,
 fresh Kademlia lookup will be attempted. If the node still appears to be offline,
-the Satellite places the node in {\em containment} mode. In containment
+the Satellite places the node in {\em containment} mode. In this
 mode, the Satellite will calculate and save the expected response, then
 continue to try the same audit with that node
 until the node either responds successfully, actively fails the audit, or
-is disqualified from being offline too long. Once the node responds
+is disqualified for being offline too long. Once the node responds
 successfully, it leaves containment mode.
 
 All audit failures will be stored and saved in the reputation system.
@@ -2227,7 +2224,7 @@ Kademlia \cite{kad}, which requires the owner to stay online.
 
 The {\em ingress} (or inbound) bandwidth demands of the audit and repair system are large, but
 given standard configuration, the {\em egress} (or outbound) demands are relatively small.
-A large amount of data comes in to the system for audits and repairs, but only
+A large amount of data comes into the system for audits and repairs, but only
 the formerly missing pieces are sent back out.
 While the repair and audit system can run anywhere, the bandwidth usage
 asymmetry means that hosting providers which offer free ingress
@@ -2240,7 +2237,7 @@ bandwidth, memory, and processing power, often impacting a single operator.
 As a result, repair resource usage should be aggressively minimized as much as
 possible.
 
-For repairing a segment to be effective at minimizing bandwidth usage, as few
+For repairing a segment to be effective at minimizing bandwidth usage, only as few
 pieces as needed for reconstruction should be downloaded. Unfortunately,
 Reed-Solomon is insufficient on its own for correcting errors when only a few redundant
 pieces are provided. Instead, piece hashes provide a better way to be
@@ -2324,7 +2321,7 @@ If a storage node is disqualified, that node will no longer be selected for
 future data storage and the data that node stores will be moved to new
 storage nodes.
 Likewise, if a client attempts to download a piece from a storage node that
-the node should have and the node fails to return it, the
+the node should have stored and the node fails to return it, the
 node will be disqualified. Importantly, storage nodes will be allowed to reject
 and fail {\em put} operations without penalty, as nodes will be allowed to
 choose which
@@ -2375,8 +2372,7 @@ incentivized to treat storage nodes fairly.
 Initially, storage node reputation will be individually determined by each
 Satellite. If a node is disqualified by one Satellite, it may still
 store data for other Satellites. Reputation will not initially be shared between
-Satellites. Over time, as we plan to eliminate Satellites,
-reputation will then be determined globally.
+Satellites. Over time, reputation will be determined globally.
 
 \section{Payments}\label{sec:concrete-payments}
 
@@ -2384,8 +2380,9 @@ In the Storj network, payments are made by clients who store data on the
 platform to the Satellite they utilize.
 The Satellites then pays storage nodes for the amount of storage and bandwidth
 they provide on the network.
-Payments by clients may be through any mechanism (STORJ, credit card, invoice),
-but payments to storage nodes are via the Ethereum ERC20 \cite{erc20} STORJ
+Payments by clients may be through any mechanism (STORJ, credit card, invoice,
+etc.),
+but payments to storage nodes are via the Ethereum-based ERC20 \cite{erc20} STORJ
 token.
 
 Previous distributed systems have handled payments as hard-coded contracts.
@@ -2568,7 +2565,7 @@ received.
 This largest restricted bandwidth allocation is the signed confirmation
 by the Uplink that the Uplink agreed to bandwidth usage of up to $y$
 bytes, along with the Satellite's confirmation of the Uplink's bandwidth
-allowance, $x$.
+allowance $x$.
 The storage node will periodically send the largest restricted bandwidth
 allocations it has received to appropriate Satellites, at which point
 Satellites will pay the storage node for that bandwidth.
@@ -2664,7 +2661,7 @@ Uplink is the term which we use to identify any software or service that invokes
 in a few forms:
 
 \begin{description}
-\item[libuplink] - {\em libuplink} is a library that
+\item[Libuplink] - {\em libuplink} is a library that
   provides access to storing and retrieving data in the Storj network.
 
 \item[Gateways] - Gateways act as compatibility layers between a service or
@@ -2679,7 +2676,7 @@ in a few forms:
   don't want to bother with the complexities of distributed storage directly.
 
 \item[Uplink CLI] - The Uplink CLI is a command line application which
-  invokes {\em libuplink} allowing its user to upload and download files,
+  invokes {\em libuplink}, allowing its user to upload and download files,
   create and remove buckets, manage file permissions, and other related tasks.
   It aims to provide an experience familiar to what you might expect when
   using Linux/UNIX tools such as {\em scp} or {\em rsync}.
@@ -2813,7 +2810,7 @@ behalf of the Satellite, but will throw away all other relevant request data.
 Assuming success:
 
 \begin{itemize}
-\item The Uplink encrypts the random encryption key it chose for this file
+\item The Uplink encrypts the random encryption key it chose for this file,
   utilizing a deterministic hierarchical key.
 \item The Uplink will upload a {\em pointer} object back to the Satellite, which
   contains the following information:
@@ -2894,7 +2891,7 @@ Either way, the storage nodes will later send the largest restricted
 
 \section{Delete}
 
-When a user wants to delete a file, the delete operation is first recieved
+When a user wants to delete a file, the delete operation is first received
 by the Uplink. The Uplink then requests all of the segment pointers for the file.
 
 For every segment pointer, the Satellite will:
@@ -2936,7 +2933,7 @@ Periodically, storage nodes will ask the Satellite for generated garbage
 \section{Move}
 
 When a user wants to move a file,
-first, the Uplink receives a request for moving a file to a new path.
+first, the Uplink receives a request for moving the file to a new path.
 Then, the Uplink requests all of the segment pointers of that file.
 
 For every segment pointer, the Satellite:
@@ -2969,7 +2966,7 @@ If the validation is successful, the Satellite will perform the operation.
  No storage node will receive any request related to the file move.
 
 Because of the complexity around atomic pointer batch modifications, efficient
-move operations may not be implemented right away.
+move operations may not be implemented in the first release of this network.
 
 \section{Copy}
 
@@ -3018,7 +3015,7 @@ When a user wants to list files:
   encrypted paths.
 \item After that, the Satellite will validate that the Uplink has appropriate access
   and then return the requested list page.
-\item Finally, the Uplink will decrypt the return results and return them.
+\item Finally, the Uplink will decrypt the results and return them.
 \end{itemize}
 
 \section{Audit}
@@ -3100,19 +3097,20 @@ When a segment pointer is taken off the repair queue:
 The payment process works as follows:
 
 \begin{itemize}
-\item First, the Satellite will choose a roll-up period. This is a period of
+\item First, the Satellite will choose a rollup period. This is a period of
   time---defaulting to a day---that payment for data at rest is calculated.
+  This is purely a period chosen for accounting; actual payments will happen
+  on a less frequent schedule.
 \item During each roll-up period, a Satellite will consider all of the files it
   believes are currently stored on each storage node. Satellites will keep track
 of payments owed to each storage node for each rollup period, based on
 the data kept on each storage node.
-\item Finally, storage nodes will periodically send in bandwidth allocation reports.
-\end{itemize}
-
-When a
+\item Finally, storage nodes will periodically---defaulting to monthly---send in
+  bandwidth allocation reports. When a
   Satellite receives a bandwidth allocation report, it calculates the owed
   funds along with the outstanding data at rest calculations. It then sends the
   funds to the storage node's requested wallet address.
+\end{itemize}
 
 \chapter{Future work}\label{chap:future-work}
 
@@ -3165,7 +3163,7 @@ naturally.
 In our initial concrete implementation, we place significant burdens on the
 Satellite operator to maintain a good service level with high availability,
 high durability, regular payments, and regular backups. We expect a large
-degree of variation in quality of Satellites, which led us to our quality
+degree of variation in quality of Satellites, which led us to implement our quality
 control program (see section \ref{sec:qc}).
 
 Over time, clients of Satellites will want to reduce their dependence on Satellite
@@ -3184,7 +3182,7 @@ directly to the network.
 
 In the long term, we plan to architect the Satellite out of the platform.
 We hope to eliminate Satellite control of the metadata
-entirely via a viable Byzantine fault tolerant consensus algorithm, should
+entirely via a viable Byzantine-fault tolerant consensus algorithm, should
 one arise.
 The biggest challenge to this is finding the right balance between coordination
 avoidance and Byzantine fault tolerant consensus, where storage nodes can
@@ -3229,26 +3227,27 @@ $LR$ & Loss rate\\
 1-$LR$ & Durability\\
 $E_D$ & Expansion factor\\
 $B_R$ & Ratio of data that is repair bandwidth\\
+$BW_R$ & Total repair bandwidth in the network\\
 \hline
 \end{tabular}
 \end{center}
 
 \begin{align*}
-&&BW_R&=\frac{\alpha D(n-m+k)}{k\ln(n/m)}&\\
 &&LR&=\frac{1}{(m+1)\ln(n/m)}\frac{m!}{(k-1)!}\left(\frac{\alpha}{\gamma}\right)^{m-k+2}&\\
 &&E_D&=n/k&\\
-&&B_R&=BW_R/D&\\
+&&B_R&=\frac{\alpha (n-m+k)}{k\ln(n/m)}&\\
+&&BW_R&=D\cdot B_R&\\
 \end{align*}
 
 The equations demonstrate that repair bandwidth is impacted by node churn
 linearly, which is expected.
 Lower mean time to node failure triggers more frequent rebuilds and,
 therefore, more bandwidth usage.
-Loss rate is much more sensitive to high node churn; it increases
+Loss rate is much more sensitive to high node churn, as it increases
 exponentially with $\alpha$.
 This necessitates very stable nodes, with lifetimes of several months, to
 achieve acceptable network durability.
-See section \ref{sec:RS} for a more in depth discussion of how node churn
+See section \ref{sec:RS} for a more in-depth discussion of how node churn
 affects erasure code parameters.
 
 \subsection{Bandwidth limits usable space}\label{sec:bandwidth-space-limits}
@@ -3262,10 +3261,10 @@ repair 50\% of its data in a given month, and assuming each stored object
 is served at least once, then we can store no more than 333 GB on this node
 since anything more than that causes more bandwidth than allowed.
 In other words, paid bandwidth plus repair bandwidth must always be less than
-or equal to the limit.
+or equal to the bandwidth limit.
 
 Higher repair rates equal lower effective storage size, but nodes serving paid
-data more frequently are more sensitive to the effect.
+data more frequently are more sensitive to this effect.
 In practice, the paid bandwidth rate will vary with the type of data being
 stored on each node.
 These ratios must be monitored closely to determine appropriate usable space
@@ -3289,10 +3288,10 @@ limits as the network evolves over time.
 
 \chapter{Distributed consensus}\label{chap:dist-consensus}
 
-To discuss why we are not trying to solve byzantine distributed consensus,
+To explain why we are not trying to solve Byzantine distributed consensus,
 it's worth a brief discussion of the history of distributed consensus.
 
-\section{Non-byzantine distributed consensus}
+\section{Non-Byzantine distributed consensus}
 
 Computerized data storage systems began by necessity with single computers
 storing and retrieving data on their own. Unfortunately, in environments where
@@ -3365,7 +3364,7 @@ publication, Leslie Lamport set out to prove linearizable distributed consensus
 was impossible \cite{paxos-note}, but instead in 1989 proved it was possible by
 publishing his own Paxos algorithm \cite{paxos}, which became
 significantly more popular, even though it wasn't officially published in a
-journal until 1998. Ultimately both algorithms have a large amount in
+journal until 1998. Ultimately, both algorithms have a large amount in
 common.
 
 Despite Lamport's claims that Paxos is simple \cite{paxos-simple},
@@ -3390,12 +3389,12 @@ multiple Paxos groups.
 \section{Byzantine distributed consensus}
 
 As mentioned in our design constraints, we expect most nodes to be {\em
-rational} and some to be {\em byzantine}, but few-to-none to be {\em
+rational} and some to be {\em Byzantine}, but few-to-none to be {\em
 altruistic}. Unfortunately, all of the previous algorithms we discussed assume a
 collection of altruistic nodes.
 Reliable distributed consensus algorithms have been game-changing for many
 applications requiring fault-tolerant storage. However, success has been much
-more mixed in the byzantine fault tolerant world.
+more mixed in the Byzantine fault tolerant world.
 
 There have been a number of attempts to solve the Byzantine fault tolerant
 distributed consensus problem. The field exploded after the release of Bitcoin
@@ -3425,11 +3424,11 @@ Ultimately, all of the existing solutions fall short of our goal of minimizing
 coordination (see section \ref{sec:coordination-avoidance}). Flexible Paxos
 \cite{paxos-flexible} does significantly better than normal Paxos in the
 steady-state for avoiding coordination, but is completely unusable in a
-byzantine environment. Distributed ledger or ``tangle-like'' approaches suffer
+Byzantine environment. Distributed ledger or ``tangle-like'' approaches suffer
 from an inability to prune history and retain significant global coordination
 overhead.
 
-We are excited and look forward to a fast, scalable byzantine fault tolerant
+We are excited about and look forward to a fast, scalable Byzantine fault tolerant
 solution. The building blocks of one may already be listed in the previous
 discussion. Until it is clear that one has arisen, we are reducing our risk
 by avoiding the problem entirely.
@@ -3472,7 +3471,7 @@ their longevity.
 
 \section{Eclipse}
 
-An eclipse attack attempts to isolate a node or set of node in the network
+An eclipse attack attempts to isolate a node or set of nodes in the network
 graph by ensuring that all outbound connections reach malicious nodes. Eclipse
 attacks can be hard to identify, as malicious nodes can be made to function
 normally in most cases, only eclipsing certain important messages or
@@ -3498,8 +3497,8 @@ To that end, Storj Labs will run some well-known, verified bootstrap nodes.
 
 In this attack,
 the attacker operates a large number of ``puppet'' storage nodes on the network,
-accumulating trust and contracts over time. Once a certain threshold is reached,
-he pulls the strings on each puppet to execute a hostage attack with the data
+accumulating reputation and data over time. Once a certain threshold is reached,
+she pulls the strings on each puppet to execute a hostage attack with the data
 involved, or simply drops each storage node from the network. The best defense
 against this attack is to create a network of sufficient scale that this attack
 is ineffective. In the meantime, this can be partially prevented by relatedness
@@ -3526,7 +3525,7 @@ Measuring bandwidth with signatures minimizes the risk for Uplink and storage
 nodes.
 The Uplink can only interact with the storage node by sending a signed
 restricted allocation.
-The restriction limits the risk to a very low amount.
+The restriction limits the risk to a very low level.
 The storage node has to comply with the protocol as expected in order to get
 more restricted allocations.
 Storage nodes and Satellites will commence a vetting process that limits their
@@ -3565,7 +3564,7 @@ See section \ref{sec:concrete-reputation} for more details.
 We have designed the Storj network to provide users better security,
 availability, performance, and economics---across a wide variety of use
 cases---than either on-premise storage solutions or traditional, centralized
-cloud storage. While the bulk of the paper describes the design considerations
+cloud storage. While the bulk of this paper describes the design considerations
 to overcome the challenges of a highly decentralized system, this appendix
 describes why the end result should be a significant improvement over
 traditional approaches.
@@ -3573,7 +3572,7 @@ traditional approaches.
 \section{Security}
 
 We have designed our system to be the equivalent of spreading encrypted sand
-on an encrypted beach. All data is encrypted client side before reaching our
+on an encrypted beach. All data is encrypted client-side before reaching our
 system. Data is sharded and distributed across a large number of independently
 operated disk drives which are part of a much larger network of independently
 operated storage nodes.
@@ -3585,7 +3584,7 @@ the Storj network had over 150,000 independently operated nodes.) To compromise
 an individual file, a would-be bad actor would have to locate and compromise
 roughly 40 different drives, each operated by a different provider, in a
 network of over 100,000 drives. Even if the actor were somehow able to
-compromise those drives, to reconstruct the file, the would-be bad-actor would
+compromise those drives, to reconstruct the file, the would-be bad actor would
 then have to decrypt 256-bit AES encrypted data, with keys that are only held
 by the end user. And, the would-be bad actor would have to repeat this process
 with an entirely different set of potential drives for the next file they wish
@@ -3593,7 +3592,7 @@ to obtain.
 
 By design, it is not possible for Storj, Satellite operators,
 storage node operators, or would-be bad actors to mine or compromise end user
-data. The level of decentralization creates powerful disincentives for
+data. The level of decentralization on the network creates powerful disincentives for
 malicious actors, as there is no centralized trove of data to target.
 
 \section{Availability}
@@ -3633,7 +3632,7 @@ speeds, without imposing the kinds of high costs associated with CDN networks.
 
 \section{Economics}
 
-While the amount of data created has doubled every year, the price of cloud
+While the amount of data created around the world has doubled every year, the price of cloud
 storage has only declined about 10\% per year over the last three years.
 There are a number of potential explanations, both on the supply and demand
 side.
@@ -3655,7 +3654,7 @@ majority of operators are using existing live equipment with significant spare
 capacity. There is no additional cost to a storage node operator in terms of
 capital or personnel. Running a drive at full capacity does not consume
 significantly more power than running a drive with excess space. And, with
-careful management relative to caps, most operators do not experience
+careful management relative to caps, most operators should not experience
 increased bandwidth costs. Consequently, operating a node represents nearly
 pure margin, and these supply cost savings can be passed on to end users.
 
@@ -3663,13 +3662,11 @@ We have designed market mechanisms on the demand side as well, to prevent any
 Satellite operator from cornering the market. Even after providing a healthy
 margin to farmers, demand partners, and Satellite operators, we believe we
 should be able to provide profitable storage services at a fraction of the cost
-of equivalent centralized cloud services.
+of equivalent centralized cloud storage providers.
 
 \newpage
-\bibliographystyle{unsrt}
-\begingroup
 \raggedright
+\bibliographystyle{unsrt}
 \bibliography{biblio}
-\endgroup
 
 \end{document}
