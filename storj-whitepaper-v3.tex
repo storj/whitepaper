@@ -1289,14 +1289,14 @@ implementation that follows:
 identified by paths. Every file has a unique path within a bucket.
 
 \item[Path] A {\em path} is a unique identifier for a file within a
-bucket. A {\em path} is a string of bytes that begins with a forward
-slash byte and ends with something besides a forward slash byte. Forward
-slashes (referred to as the path separator) separate non-empty path components.
-An example {\em path} might be \code{/etc/hosts}, where the path components are
-\code{etc} and \code{hosts}.
-Unless otherwise requested,
-we encrypt paths before they ever leave the customer's application's
-computer.
+bucket. A {\em path} is an arbitrary string of bytes. Paths contain forward
+slashes at access control boundaries. Forward slashes (referred to as the path
+separator) separate path components.
+An example {\em path} might be \code{videos/carlsagan/gloriousdawn.mp4}, where
+the path components are \code{videos}, \code{carlsagan}, and
+\code{gloriousdawn.mp4}.
+Unless otherwise requested, we encrypt paths before they ever leave the
+customer's application's computer.
 
 \item[File or Object] A {\em file} (or {\em object}) is the main data type in
 our system. A file is referred to by a path, contains an arbitrary amount of
@@ -1315,7 +1315,7 @@ extended attributes are stored encrypted.
 user-configurable maximum {\em segment} size.
 See section \ref{files-as-segments} for more details.
 
-\item[Remote Segment] A {\em remote segment} is a segment that will be
+\item[Remote Segment] A {\em remote segment} is a segment that will be erasure
 encoded and distributed across the network. A {\em remote segment} is larger than
 the metadata required to keep track of its bookkeeping, which includes
 information such as the IDs of the nodes that the data is stored on.
@@ -1397,7 +1397,7 @@ They will then configure disk space and per-Satellite bandwidth allowance.
 During node discovery, storage nodes will advertise how much bandwidth and
 hard drive space is available, and their designated STORJ token wallet address.
 
-To support Amazon S3 functionality,
+To simplify lifecycle management for ephemeral files,
 storage nodes also keep track of optional per-piece ``time-to-live'', or TTL,
 designations.
 Pieces may be stored with a specific TTL expiry where data is expected to
@@ -1447,8 +1447,6 @@ that any subrange of bytes can be retrieved again via a \code{get} operation.
 \code{Get} operations are expected to work until the TTL expires (if a TTL was
 provided) or until a \code{delete} operation is received, whichever comes
 first.
-Storage nodes will {\em not} be penalized for rejecting initial \code{put}
-operations.
 
 Storage nodes will allow administrators to configure maximum allowed disk
 space and per-Satellite bandwidth usage over the last rolling 30 days.
@@ -2446,10 +2444,9 @@ charges cover the cost of pointer metadata, whereas per-byte charges cover the
 cost of data maintenance on the network.
 Every day, each Satellite will execute
 a number of audits across all of its storage nodes on the network.
-The Satellite will charge for both completing the audit
-and for the repair,
-once that segment falls below the piece threshold needed for
-repair.
+The Satellite will charge for both completing audits
+and repairs,
+once segments fall below the piece threshold needed for repair.
 
 When it is detected that a storage node acts
 maliciously and does not store files properly or maintain sufficient
