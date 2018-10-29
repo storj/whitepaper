@@ -463,18 +463,15 @@ Figure \ref{fig:s3-api-code} to be implemented.
 \lstset{language=Golang}
 \begin{lstlisting}
   // Bucket operations
-	CreateBucket(bucketName string)
-	DeleteBucket(bucketName string)
-	ListBuckets() []BucketInfo
+	CreateBucket(bucketName)
+	DeleteBucket(bucketName)
+	ListBuckets()
 
   // Object operations
-	GetObject(bucketName, objectPath string, offset, length int64) (
-	    ObjectData, ObjectInfo)
-	PutObject(bucketName, objectPath string, data ObjectData,
-	    metadata map[string]string) ObjectInfo
-	DeleteObject(bucketName, objectPath string)
-	ListObjects(bucketName, prefix, startKey string,
-	    limit int, delimiter string) ([]ObjectInfo, more bool)
+	GetObject(bucketName, objectPath, offset, length)
+	PutObject(bucketName, objectPath, data, metadata)
+	DeleteObject(bucketName, objectPath)
+	ListObjects(bucketName, prefix, startKey, limit, delimiter)
 \end{lstlisting}
 \caption{Minimum S3 API}
 \label{fig:s3-api-code}
@@ -1619,6 +1616,10 @@ STORJ wallet address, and any other metadata the network needs.
 The node discovery cache will collect this information provided by the nodes,
 allowing faster lookups for it.
 
+%% TODO: we don't really have a concrete node selection section. probably
+%%  should discuss how we require that we filter nodes based on geographic
+%%  and ip range similarity?
+
 \subsection{Mitigating Sybil attacks}\label{sec:concrete-sybil}
 
 While we've adopted the proof-of-work scheme S/Kademlia proposes to partially
@@ -2439,9 +2440,13 @@ makes
 the payments to the appropriate storage nodes.
 
 Satellites will also earn revenue from account holders for executing audits,
-repairing segments, and storing metadata. Every day, each Satellite will execute
+repairing segments, and storing metadata. Satellites charge a per-segment and
+per-byte cost, in addition to charging for access and retrieval. Per-segment
+charges cover the cost of pointer metadata, whereas per-byte charges cover the
+cost of data maintenance on the network.
+Every day, each Satellite will execute
 a number of audits across all of its storage nodes on the network.
-The Satellite will be paid for both completing the audit
+The Satellite will charge for both completing the audit
 and for the repair,
 once that segment falls below the piece threshold needed for
 repair.
@@ -2852,8 +2857,10 @@ data to the Uplink.
   The Uplink then tries to reduce the number of round trips to the Satellite
   by speculatively requesting the pointers for the first few segments in
   addition to the pointer for the last segment. The Uplink needs the last
-  segment to learn the size of the object, the size and number of segments,
-  and how to decrypt the data.
+  segment pointer to learn the size of the object, the size and number of segments,
+  and how to decrypt the data. In a future release, the Uplink may just tell
+  the Satellite which byte ranges are needed and the Satellite can respond with
+  the appropriate segment pointers.
 
 For every segment pointer requested, the Satellite will:
   \begin{itemize}
