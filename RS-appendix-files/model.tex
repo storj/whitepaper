@@ -11,10 +11,10 @@ When modeling indirect piece loss, we suppose that a fixed rate of nodes
 drop out of the network each month,\footnote{Though the rate may be taken over
 any desired time interval.} whether or not they are holding pieces of the segment
 under consideration. To describe the probability that $d$ of the dropped nodes
-were delegates for a specific segment coded into $n$ pieces, we turn to the
+were each storing one of the $n$ pieces of a specific segment, we turn to the
 hypergeometric probability distribution. Suppose $c$ nodes are replaced per
 month out of $C$ total nodes on the network. Then the probability that $d$
-nodes were delegates for the segment is given by
+nodes were each storing a piece of the segment is given by
 \begin{align}
 &&    P(X=d)&=\frac{\binom{n}{d}\binom{C-n}{c-d}}{\binom{C}{c}}\label{hgeom} &&
 \end{align}
