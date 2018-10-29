@@ -2010,7 +2010,7 @@ maximum representable nonce.
 To prevent reordering attacks, the starting nonce of each
 segment is deterministically chosen based on the segment number.
 When multiple segments are uploaded in parallel, such as in the case of
-Amazon S3's multipart upload feature, the starting nonce for each segment can be
+Amazon S3's multipart-upload feature, the starting nonce for each segment can be
 calculated from the starting nonce of the file and the segment number.
 This scheme protects the
 content of the data from the storage node housing the data. The data owner
@@ -2398,7 +2398,7 @@ indefinitely.
 
 Satellites will pay storage nodes for the data they store
 and for piece downloads.
-Storage nodes will not be paid for the initial storage of data, but they
+Storage nodes will not be paid for the initial transfer of data, but they
 will be paid for storing the data month-by-month. At the end of the payment
 period, a Satellite will calculate earnings for each of its storage nodes.
 Provided the storage node hasn't been disqualified,
@@ -2847,7 +2847,7 @@ Periodically, the storage nodes will later send the largest restricted
 bandwidth allocation they received as part of the upload to the appropriate
 Satellite for payment.
 
-If an upload happens via the Amazon S3 multipart upload interface, each
+If an upload happens via the Amazon S3 multipart-upload interface, each
 {\em part} is uploaded as a segment individually.
 
 \section{Download}
