@@ -3155,8 +3155,8 @@ as a $(k=20, n=80)$ scheme, where any 20 out of 80 pieces are needed.
 This allows all requests to adequately load balance across the 80 pieces.
 If demand outstrips supply again, only 20 pieces are needed to generate even
 more redundancy. In this manner, a Satellite could temporarily increase
-redundancy to $(20, 1000)$, where requests are load balanced across 1,000 nodes,
-such that every piece of all 1,000 are unique, and any 20 of those pieces are
+redundancy to $(20, 250)$, where requests are load balanced across 250 nodes,
+such that every piece of all 250 are unique, and any 20 of those pieces are
 all that is required to regenerate the original file.
 
 On one hand, the Satellite will need to pay storage nodes for the increased redundancy, so
