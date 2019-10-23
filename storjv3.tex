@@ -53,7 +53,7 @@
 Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
-\date{\small\sffamily\color{white} October 30, 2018\\v3.0\\
+\date{\small\sffamily\color{white} October 30, 2019\\v3.1\\
 \small\colorlet{urllinkcolor}{white}\url{https://github.com/storj/whitepaper}
 }
 
@@ -73,7 +73,7 @@ Storj Labs, Inc.}
 
 \nobreakspace
 
-\vfill{\footnotesize\noindent{}Copyright \textcopyright\ 2018 Storj Labs, Inc.
+\vfill{\footnotesize\noindent{}Copyright \textcopyright\ 2019 Storj Labs, Inc.
 and Subsidiaries\\
 This work is licensed under a Creative Commons Attribution-ShareAlike 3.0
 license (CC BY-SA 3.0).\\\\
@@ -198,6 +198,20 @@ design and architecture of this system for their valuable thoughts, feedback,
 input, and suggestions.
 
 Please address correspondence to \href{mailto:paper@storj.io}{paper@storj.io}.
+
+\section{Changelog}
+
+This section describes updates from the past editions of this white paper. 
+We changed the following features in version 3.1:
+
+\begin{itemize} 
+\item Replaced Kademlia for storage node discovery with a direct node-to-satellite 
+indication of network participation (section \ref{sec:concrete-node-discovery}). 
+\item Added the ability for storage node operators to select the Satellites they would like to work with, 
+eliminating the need for Satellite vetting and opt-out (section \ref{sec:concrete-satellite-reputation}).  
+\item Simplified the Audits service and containment mode (section \ref{sec:concrete-audits}). 
+\item Updated chapter \ref{chap:attacks} about anticipated attacks to reflect the removal of Kademlia. 
+\end{itemize}
 
 \chapter{Introduction}\label{chap:intro}
 
@@ -817,9 +831,8 @@ standard domain name system (DNS) \cite{dns},
 which is a mapping of an identifier to an
 ephemeral connection address, but unlike DNS, there can be no centralized
 registration process.
-To achieve this, a network overlay, such as Chord \cite{chord},
-Pastry \cite{pastry}, or Kademlia \cite{kad}, can be
-built on top of our chosen peer-to-peer communication protocol.
+A network overlay can be built on top of our chosen peer-to-peer communication protocol
+to achieve these goals.
 See Section \ref{sec:concrete-node-discovery} for
 implementation details.
 
@@ -1449,13 +1462,12 @@ space and per-Satellite bandwidth usage over the last rolling 30 days.
 They will keep track of how much is remaining of both, and reject operations
 that do not have a valid signature from the appropriate Satellite.
 
-The storage node is being developed and will be released as open source software.
+The storage node has been released as open source software.
 
 \section{Node identity}\label{sec:node-id}
 
 During setup, storage nodes, Satellites, and Uplinks all generate their own
 identity and certificates for use in the network.
-This node ID is used for node discovery and routing.
 
 Each node will operate its own certificate authority, which requires a
 public/private key pair and a self-signed certificate. The certificate
@@ -1472,16 +1484,14 @@ require a brand new node ID.
 overall identity. Each row represents a private/public key pair.}
 \end{figure}
 
-The public key of the node's certificate authority determines its {\em node ID}.
-As in S/Kademlia \cite{skad}, the node ID will be the hash of the public key
-and will serve as a proof of work for joining the network. Unlike Bitcoin's
-proof of work \cite{bitcoin}, the proof of work will be dependent on how many
+The public key of the node's certificate authority determines its {\em node ID}. 
+ As in S/Kademlia \cite{skad}, the node ID will be the hash of the public key 
+and will serve as a proof of work for joining the network. Unlike Bitcoin's 
+proof of work \cite{bitcoin}, the proof of work will be dependent on how many 
 {\em trailing}
-zero bits one can find in the hash output. This means that the node ID (which
-may end with a number of trailing zero bits) will
-still be usable in a balanced Kademlia \cite{kad} tree.
-This cost is meant to make Sybil attacks prohibitively expensive and time
-consuming.
+zero bits one can find in the hash output. 
+This cost is meant to make Sybil attacks prohibitively expensive and time 
+consuming. 
 
 Each node will have a revocable leaf certificate and key pair that is signed by
 the node's certificate authority. Nodes use the leaf key pair for
@@ -1531,110 +1541,29 @@ and so forth.
 
 \section{Node discovery}\label{sec:concrete-node-discovery}
 
-At this point, we have storage nodes and we have a means to identify and
-communicate with
-them if we know their address. We must account for the fact that storage nodes
-will often be on consumer internet connections and behind routers with
-constantly changing IP
-addresses. Therefore, the node discovery system's goal is to provide a means to look
-up a node's latest address by node ID, somewhat similar to the role DNS
-provides for the public internet.
+At this point, we have storage nodes, and we have the means to identify and communicate 
+with them if we know their address. We must account for the fact that storage nodes will 
+often be on consumer internet connections and behind routers with constantly changing IP 
+addresses. Therefore, the node discovery system's goal is to implement a means to look up 
+a node's latest address by node ID, somewhat similar to the role DNS provides for the public internet. 
 
-The Kademlia distributed hash table (DHT) is a key/value store with a built-in
-node lookup protocol.
-We utilize Kademlia as our primary source of truth for DNS-like
-functionality for node lookup, while ignoring the key/value storage aspects of
-Kademlia.
-Using only Kademlia for node lookup eliminates the need for some other
-functionality Kademlia would otherwise require such as owner-based key
-republishing, neighbor-based key republishing, storage and retrieval of values,
-and so forth. Furthermore, we avoid a number of other known attacks by using the
-S/Kademlia \cite{skad} extensions where appropriate.
+In what we call the node discovery cache, each Satellite stores information to be able to 
+communicate with the nodes in its network, as well as data needed to select nodes on which 
+to store data. This caching service will live independently in each Satellite and is our primary 
+source of truth for DNS-like functionality for node lookups.
 
-Unfortunately, DHTs such as Kademlia require multiple network
-round trips for many operations, which makes it difficult to achieve
-millisecond-level response times. To solve this problem, we add a basic
-decentralized caching service on top of Kademlia.
+When a node joins the network, it reaches out to each Satellite in their Satellite whitelist 
+(see \ref{sec:concrete-satellite-reputation} for details) indicating that it is available and 
+willing to accept data from the Satellite. In return, the Satellite confirms or denies the success 
+of the connection. If it is successful, the Satellite stores the node's available disk space, 
+per-Satellite bandwidth availability, STORJ wallet address, IP address, and any other metadata the 
+network needs in its node discovery cache.
 
-The caching service will live independently in each Satellite and
-attempt to talk to every storage node in the network
-on an ongoing basis, perhaps once per hour.
-The caching service will then cache
-the last known good address for each node, and evict nodes that it hasn't talked
-to after a certain period of time.
-Storage nodes will not need to be extended to know about these caching services.
-We expect this to scale for the
-reasonable future, as ping operations are inexpensive, but admit a new solution
-may ultimately be necessary.
-Fortunately, space requirements are negligible. For instance, caching addresses
-for a network of 80k nodes
-can be done with only 5MB of memory.\footnote{
-This is assuming an ordered in-memory list of 4-tuples of node ID (32 bytes),
-IP address (16 bytes for IPv6), port (2 bytes), and timestamp (4 bytes).
-$80000\cdot(32 \mbox{B}+16 \mbox{B}+2 \mbox{B}+4 \mbox{B}) \approx 4.12 \mbox{MB}$
-}
-
-Based on this design, each Satellite's cache will not be expected to be a primary source
-of truth, and results in the cache may be stale. However, due to our redundant
-storage strategy, the storage network will be resilient against an expected
-degree of node churn and staleness.
-Therefore, the system will be robust even if some lookups in the cache
-fail or return incorrect addresses.
-Furthermore, because our peer-to-peer communication
-system already provides peer authentication, a node discovery cache that
-sometimes returns faulty
-or deliberately misleading address lookup responses can only cause a
-loss of performance but not correctness.
-
-Although the Satellite caches are not the primary source of truth, because repair
-(section \ref{sec:concrete-data-repair}) requires rapid determination of
-whether a node is online or offline, lookups in our system will stop with the
-cache lookup and will not attempt another lookup using Kademlia.
-Only after cases of failed audit requests will a fallback, nonconcurrent
-lookup in Kademlia
-be performed to correct for potentially stale cache information.
-
-In addition to being included in every Satellite,
-we plan to host and help set up some well-known community-run node discovery caches.
-These caches will perform the duty of quickly returning address information
-for a given node ID if the node has been online recently.
-
-Kademlia messages will use our peer-to-peer communication protocol (section
-\ref{sec:concrete-p2p-comms}), which includes confidentiality and peer
-identification. Because this requires cryptographic setup, connections to
-Kademlia neighbors and frequent contacts will be cached where possible.
-
-With each Kademlia message shared on the network, nodes will include their
-available disk space, per-Satellite bandwidth availability,
-STORJ wallet address, and any other metadata the network needs.
-The node discovery cache will collect this information provided by the nodes,
-allowing faster lookups for it.
-
-%% TODO: we don't really have a concrete node selection section. probably
-%%  should discuss how we require that we filter nodes based on geographic
-%%  and ip range similarity?
-
-\subsection{Mitigating Sybil attacks}\label{sec:concrete-sybil}
-
-While we've adopted the proof-of-work scheme S/Kademlia proposes to partially
-address Sybil attacks, we extend Kademlia with application specific integration
-to further defend our network.
-
-Given two storage nodes, $A$ and $B$, storage
-node $B$ is not allowed to enter storage node $A$'s routing table until storage
-node $B$ can present a signed message from a Satellite $C$ that storage node $A$
-trusts claiming that $B$ has passed enough audits that $C$ trusts it
-(sections \ref{sec:concrete-audits} and \ref{sec:concrete-reputation}).
-This ensures that only nodes with verified
-disk space have the opportunity to participate in the routing layer.
-
-A node that
-is allowed to enter routing tables is considered {\em vetted} and lookups
-only progress through vetted nodes. To make sure {\em unvetted} nodes can
-still be found, vetted nodes keep unbounded lists of their unvetted
-neighbors provided that the XOR distance to all unvetted neighbors is no
-farther than the farthest of the $k$-closest vetted neighbors. Unvetted
-nodes keep their $k$-nearest vetted nodes up-to-date.
+The node will subsequently check-in with each of its Satellites on an ongoing basis, perhaps once 
+per hour, to notify the Satellites of any updates. If a node has not communicated with a Satellite 
+after a certain amount of time, the Satellite will reach out to the node to check its status. If it 
+can no longer successfully reach the node, the Satellite
+evicts it from its discovery cache.
 
 \section{Redundancy}\label{sec:concrete-redundancy}
 
@@ -2157,11 +2086,10 @@ erasure shares. When enough storage nodes return correct information,
 any faulty or missing responses can easily be identified.
 
 Given a specific storage node, an audit might reveal that it is offline or
-incorrect. In the case of a node being offline, the audit failure
-may be due to the address in the node discovery cache being stale, so another,
-fresh Kademlia lookup will be attempted. If the node still appears to be offline,
-the Satellite places the node in {\em containment} mode. In this
-mode, the Satellite will calculate and save the expected response, then
+incorrect, or unavailable. If a node is offline, it is simply marked as offline.
+A node is moved into what we call ``containment mode'' if it responds to the initial audit service's dial but fails to send the requested data,
+perhaps because it's busy fulfilling other requests and doesn't respond to the audit in time.
+In this mode, the Satellite will calculate and save the expected response, then
 continue to try the same audit with that node
 until the node either responds successfully, actively fails the audit, or
 is disqualified for being offline too long. Once the node responds
@@ -2297,8 +2225,7 @@ period (at least one payment period),
 the Satellite will then start including that storage
 node in the standard selection process used for general uploads.
 It will also give the node a signed message claiming that the vetting process
-is completed, and that the storage node may now enter other nodes' routing tables
-(section \ref{sec:concrete-sybil}).
+is completed.
 Importantly, storage nodes get paid during this
 vetting period, but don't receive as much data.
 
@@ -2455,9 +2382,8 @@ will be recipient-initiated and must be worth at least some minimum value.
 Certain Satellites may elect to use a portion of the storage nodes' payout to
 cover transaction fees in part or in whole.
 
-See the Satellite reputation section
-(section \ref{sec:concrete-satellite-reputation}) for details on
-how storage nodes will know to trust Satellites.
+See the Satellite reputation section (\ref{sec:concrete-satellite-reputation}) for 
+details on how storage nodes will be able to choose which Satellites they trust.
 
 \section{Bandwidth allocation}\label{baer}
 
@@ -2578,7 +2504,7 @@ as it otherwise has no valid bandwidth allocations to return for payment.
 As before, we don't measure all peer-to-peer traffic.
 This bandwidth traffic measurement system only tracks
 bandwidth used during storage operations (storage and retrievals of pieces).
-However, it  does not apply to node discovery traffic (Kademlia DHT) or other generic
+However, it does not apply to node discovery traffic or other generic
 maintenance overhead.
 
 \section{Satellite reputation}\label{sec:concrete-satellite-reputation}
@@ -2587,16 +2513,8 @@ Whenever a Satellite on the Storj network has a less than stellar payment,
 demand generation, or performance history,
 there is a strong incentive for the storage nodes to avoid accepting its data.
 
-When a new Satellite joins the network, the participating storage nodes will
-commence their own vetting process.
-This process limits their exposure to the new and unknown
-Satellite, while building trust over time to highlight which of the
-Satellites have the best payment record.
-Storage nodes will be able to configure the maximum amount of data they will
-store for an untrusted Satellite, and will build historical data on whether
-that Satellite will be trusted further in the future.
-Storage node operators will also retain manual control on what Satellites they
-will trust, or won't trust, if desired.
+Storage nodes can select which Satellites they want to work with and can remove those 
+that they don't. If a Satellite misbehaves, Nodes can indicate they no longer trust that Satellite.
 
 Storage node operators can elect to automatically trust a Storj Labs
 provided collection of recommended Satellites that adhere to a strict set of
@@ -2614,12 +2532,10 @@ When clients move, replace, or delete data, Satellites, or
 clients on behalf of Satellites, will notify storage nodes
 that they are no longer required to store that data.
 In configurations where delete messages are issued by the client,
-the metadata system (and thus a
-Satellite, with Satellite reputation on the line) will require proof that
-deletes were issued to a configurable minimum number of storage nodes.
-This means that every time
-data is deleted, storage nodes that are online and reachable will receive
-notifications right away.
+the metadata system will require proof that deletes were issued 
+to a configurable minimum number of storage nodes.
+This means that every time data is deleted, storage nodes that 
+are online and reachable will receive notifications right away.
 
 Storage nodes will sometimes be temporarily unavailable and will miss delete
 messages. In these cases, unneeded data is considered
@@ -3433,7 +3349,7 @@ solution. The building blocks of one may already be listed in the previous
 discussion. Until it is clear that one has arisen, we are reducing our risk
 by avoiding the problem entirely.
 
-\chapter{Attacks}
+\chapter{Attacks}\label{chap:attacks}
 
 As with any distributed system, a variety of attack vectors exist. Many of these
 are common to all distributed systems. Some are storage-specific and will apply
@@ -3441,13 +3357,12 @@ to any distributed storage system.
 
 \section{Spartacus}
 
-Spartacus attacks, or identity hijacking, are possible on unmodified Kademlia
-\cite{kad}.
-Any node may assume the identity of another node and receive some fraction of
+Spartacus attacks, or identity hijacking, can occur when 
+any node assumes the identity of another node and receive some fraction of
 messages intended for that node by simply copying its node ID.
 This allows for targeted attacks against specific nodes and data.
-Spartacus attack mitigation is addressed in S/Kademlia \cite{skad} by
-implementing node IDs as public key hashes and requiring messages to be signed.
+Spartacus attacks can be mitgated by
+implementing node IDs as public key hashes and requiring messages to be signed \cite{skad}.
 A Spartacus attacker in this system would be unable to generate the
 corresponding private key, and thus unable to sign messages and participate in
 the network.
@@ -3456,16 +3371,15 @@ the network.
 
 Sybil attacks \cite{sybil-attack}
 involve the creation of large amounts of nodes in an attempt to
-disrupt network operation by hijacking or dropping messages. While Kademlia
-\cite{kad} is vulnerable to Sybil attacks, our adoption of S/Kademlia
-\cite{skad} proof of work identity generation (section \ref{sec:node-id})
-reduces the vulnerability to a degree.
+disrupt network operation by hijacking or dropping messages. Our adoption of 
+proof of work identity generation (section \ref{sec:node-id})
+reduces the vulnerability to a degree \cite{skad}.
 
 Further, our storage node reputation system involves a prolonged initial vetting
 period nodes must complete before they are trusted with significant amounts
-of data or membership in Kademlia routing tables. This vetting system,
-discussed more in sections \ref{sec:concrete-sybil} and
-\ref{sec:concrete-reputation}, prevents a large influx of new nodes from taking
+of data. This vetting system,
+discussed more in section \ref{sec:concrete-reputation}, 
+prevents a large influx of new nodes from taking
 incoming data from existing reputable storage nodes without first proving
 their longevity.
 
@@ -3476,22 +3390,14 @@ graph by ensuring that all outbound connections reach malicious nodes. Eclipse
 attacks can be hard to identify, as malicious nodes can be made to function
 normally in most cases, only eclipsing certain important messages or
 information. Storj addresses eclipse attacks by using public key hashes as node
-IDs, signatures based on those public keys, and multiple disjoint network
-lookups as prescribed by S/Kademlia \cite{skad}.
+IDs and signatures based on those public keys \cite{skad}.
 
 The larger the network is, the harder it will
 be to prevent a node from finding a portion of the network uncontrolled by
 an attacker.
 As long as a storage node or Satellite has been introduced to a portion of
 the network that is not controlled by the attacker at any point, the public
-key hashes and signatures ensure that man-in-the-middle attacks are impossible,
-and multiple disjoint network lookups ensure that Kademlia routing is
-prohibitively expensive to bias.
-
-To avoid an eclipse attack, all that remains
-is to make sure new nodes are appropriately introduced to at least one
-well-behaved node on the network during the bootstrapping process.
-To that end, Storj Labs will run some well-known, verified bootstrap nodes.
+key hashes and signatures ensure that man-in-the-middle attacks are impossible.
 
 \section{Honest Geppetto}
 
