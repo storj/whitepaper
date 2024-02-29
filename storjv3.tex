@@ -22,6 +22,7 @@
 \usepackage{placeins}
 \usepackage{tabulary}
 \usepackage{pdfrender}
+\usepackage{csquotes}
 
 \usepackage{inconsolata}
 \usepackage[defaultfam,light]{montserrat}
@@ -36,6 +37,7 @@
 
 \newcommand{\code}[1]{{\em #1}}
 \newcommand{\semibold}[1]{\textpdfrender{TextRenderingMode=FillStroke,LineWidth=.1pt,FillColor=black}{#1}}
+\newcommand{\TODO}[1]{\textbf{\color{red} TODO: #1}}
 
 \lstset{
     basicstyle=\footnotesize\tt,
@@ -53,7 +55,9 @@
 Storj: A Decentralized Cloud Storage Network Framework}}
 \author{\small\sffamily\color{white}
 Storj Labs, Inc.}
-\date{\small\sffamily\color{white} October 30, 2019\\v3.1\\
+\date{\small\sffamily\color{white}
+October 30, 2018\\v3.0\\
+February 29, 2024\\v3.1\\
 \small\colorlet{urllinkcolor}{white}\url{https://github.com/storj/whitepaper}
 }
 
@@ -73,7 +77,7 @@ Storj Labs, Inc.}
 
 \nobreakspace
 
-\vfill{\footnotesize\noindent{}Copyright \textcopyright\ 2019 Storj Labs, Inc.
+\vfill{\footnotesize\noindent{}Copyright \textcopyright\ 2024 Storj Labs, Inc.
 and Subsidiaries\\
 This work is licensed under a Creative Commons Attribution-ShareAlike 3.0
 license (CC BY-SA 3.0).\\\\
@@ -201,17 +205,25 @@ Please address correspondence to \href{mailto:paper@storj.io}{paper@storj.io}.
 
 \section{Changelog}
 
-This section describes updates from the past editions of this white paper. 
-We changed the following features in version 3.1:
+This section describes updates from the past editions of this white paper.
+Beyond a few trivial wording tweaks, we changed the following aspects in version 3.1:
 
-\begin{itemize} 
-\item Replaced Kademlia for storage node discovery with a direct node-to-satellite 
-indication of network participation (section \ref{sec:concrete-node-discovery}). 
-\item Added the ability for storage node operators to select the Satellites they would like to work with, 
-eliminating the need for Satellite vetting and opt-out (section \ref{sec:concrete-satellite-reputation}).  
-\item Simplified the Audits service and containment mode (section \ref{sec:concrete-audits}). 
-\item Updated chapter \ref{chap:attacks} about anticipated attacks to reflect the removal of Kademlia. 
+\begin{itemize}
+\item Clarified {\em encryption blocks} in section \ref{data-definitions}.
+\item Replaced Kademlia for storage node discovery with a direct node-to-satellite
+indication of network participation (section \ref{sec:concrete-node-discovery}).
+\item Simplified the Audits service and containment mode (section \ref{sec:concrete-audits}).
+\item Added the ability for storage node operators to select the Satellites they would like to work with,
+eliminating the need for Satellite vetting and opt-out (section \ref{sec:concrete-satellite-reputation}).
+\item Removed section 4.21 {\em Quality Control and Branding} about obsolete branding ideas.
+\item Updated appendix \ref{chap:attacks} about anticipated attacks to reflect the removal of Kademlia.
 \end{itemize}
+
+With these changes in mind, we expect that this paper once again matches our
+in-production service at the time of publication.
+
+For more a detailed changelog, please see
+\url{https://github.com/storj/whitepaper/compare/v3.0-merged...v3.1}.
 
 \chapter{Introduction}\label{chap:intro}
 
@@ -222,7 +234,8 @@ and is stored with a handful of technology companies that have the
 experience and capital to build massive data centers capable of handling this
 vast amount of information.
 A few of the challenges faced by data centers are: data breaches, periods of
-unavailability on a grand scale, storage costs, and expanding and upgrading quickly enough to meet user demand for faster data and larger formats.
+unavailability on a grand scale, storage costs, and expanding and upgrading
+quickly enough to meet user demand for faster data and larger formats.
 
 Decentralized storage has emerged as an answer to the challenge of
 providing a performant, secure, private, and economical cloud storage solution.
@@ -271,7 +284,7 @@ in which Storj operates and the specific constraints on which
 our optimization efforts are based.
 Chapter \ref{chap:framework} covers our framework. Chapter
 \ref{chap:concrete}
-proposes a simple concrete implementation of the framework,
+describes the concrete implementation of the framework,
 while chapter \ref{chap:walkthroughs} explains what happens
 during each operation in the network. Chapter
 \ref{chap:future-work} covers future work.
@@ -316,11 +329,11 @@ Customers should be able to
 evaluate that our software is implemented correctly, is resistant to
 attack vectors (known or unknown), is secure, and otherwise fulfills all
 of the customers' requirements.
-Open source software
+The code for the Storj network is open source software and
 provides the level of transparency and assurance needed to prove that the
 behaviors of the system are as advertised.
 
-\section{Decentralization}
+\section{Decentralization}\label{sec:decentralization}
 
 Informally, a decentralized application is a service that has no single
 operator. Furthermore, no single entity should be solely responsible for the
@@ -486,6 +499,12 @@ Figure \ref{fig:s3-api-code} to be implemented.
 \caption{Minimum S3 API}
 \label{fig:s3-api-code}
 \end{figure}
+
+The Storj service supports the majority of the S3 protocol via two different integration patterns that emerged as specific customer requirements:
+\begin{description}
+\item[Single tenant gateway] - a self-hosted, end-to-end encrypted S3 compatible gateway where the customer's equipment is responsible for encryption, erasure coding and direct peer-to-peer transmission of data to storage nodes, including data expansion from erasure coded redundancy and long tail mitigation.
+\item[Multi-tenant gateway] - a hosted S3 compatible gateway where a trusted provider is responsible for encryption, erasure coding, and transmission of data to storage nodes. This gateway requires a key from the customer as part of every request, since the customer's encryption keys are not preserved in the hosted environment.
+\end{description}
 
 \section{Durability, device failure, and churn}\label{sec:constraint-churn}
 
@@ -775,7 +794,7 @@ The individual components are:
 
 \begin{enumerate}
 \item Storage nodes
-\item Peer-to-peer communication and discovery
+\item Peer-to-peer communication
 \item Redundancy
 \item Metadata
 \item Encryption
@@ -792,7 +811,8 @@ network bandwidth and appropriate responsiveness.
 Storage nodes are selected to store data based on various criteria: ping time,
 latency, throughput, bandwidth caps, sufficient disk space,
 geographic location, uptime, history of responding accurately to audits, and
-so forth. In return for their service, nodes are paid.
+so forth. In return for their service, nodes are paid for both data egress and
+data at rest.
 
 Because storage
 nodes are selected via changing variables external to the protocol, node
@@ -804,7 +824,7 @@ GFS \cite{gfs}, HDFS \cite{hdfs}, or Lustre \cite{lustre}, this decision
 implies the requirement of a metadata storage system to keep track
 of selected nodes (see section \ref{sec:framework-metadata}).
 
-\section{Peer-to-peer communication and discovery}
+\section{Peer-to-peer communication}
 
 All peers on the network communicate via a standarized protocol. The
 framework requires that this protocol:
@@ -1072,6 +1092,8 @@ multiple implementations of metadata storage that users will be allowed to
 choose between. This greatly assists with our design goal of coordination
 avoidance between users (see section \ref{sec:coordination-avoidance}).
 
+As metadata retrieval is a prerequisite to data retrieval in any operation, availability of services responsible for metadata storage and retrieval are designed and implemented to be distributed over multiple regions within a geography to provide maximum resistance to any single point of failure, whether is it a device, server, network connection, or entire region within a geography.
+
 Aside from scale requirements, to implement Amazon S3 compatibility,
 the desired API is straightforward and
 simple: {\em Put} (store metadata at a given path), {\em Get} (retrieve metadata at a
@@ -1119,6 +1141,8 @@ the viability of this whole system. It is essential to be able to
 validate and verify that storage nodes are accurately storing what they have
 been
 asked to store.
+
+When storage nodes initially join the network, they generate a unique identity via a small proof of work function. Storage nodes build up an initial reputation score during a vetting period during which they are subject to an increased level of audit and uptime checks to ensure the nodes are properly operated.  During the first 9 months of operation, a portion of storage node earnings are held by a Satellite as an offset against the possibility that a node may leave the network with data stored on the storage node such that some portion of that data may require repair. At all times while a storage node is operating on the network, it is subject to an audit process for each Satellite for which it stores data.
 
 Many storage systems use probabilistic per-file audits, called
 {\em proofs of retrievability}, as a way of determining
@@ -1227,9 +1251,6 @@ However, we believe the details outlined here are viable and support a working
 implementation of our framework capable of providing highly secure, performant,
 and durable production-grade cloud storage.
 
-As with our previous version \cite{storj-v2}, we will publish changes to this
-concrete architecture through our Storj Improvement Proposal process \cite{sips}.
-
 \section{Definitions}
 
 The following defined terms are used throughout the description of the concrete
@@ -1244,8 +1265,7 @@ implementation that follows:
   responsibilities. There are three different peer classes that represent
   services in our network: {\em storage nodes}, {\em Satellites}, and {\em Uplinks}.
 
-\item[Storage node] This peer class participates in the node discovery
-  system, stores data for others, and gets paid for storage and bandwidth.
+\item[Storage node] This peer class stores data for others and gets paid for storage and bandwidth. It registers itself directly with Satellites it trusts.
 
 \item[Uplink] This peer class represents any application or
   service that implements {\em libuplink} and wants to store and/or retrieve data. This peer class
@@ -1267,7 +1287,7 @@ implementation that follows:
     accounts.
   \end{description}
 
-\item[Satellite] This peer class participates in the node discovery system,
+\item[Satellite] This peer class allows storage nodes to register with it,
   caches node address information, stores per-object metadata, maintains storage
   node reputation, aggregates billing data, pays storage nodes, performs audits and repair, and manages
   authorization and user accounts.
@@ -1285,7 +1305,7 @@ implementation that follows:
 \caption{The three different peer classes}
 \end{figure}
 
-\subsection{Data}
+\subsection{Data}\label{data-definitions}
 
 \begin{figure}[!htbp]
 \centering
@@ -1294,35 +1314,35 @@ implementation that follows:
 \end{figure}
 
 \begin{description}
-\item[Bucket] A {\em bucket} is an unbounded but named collection of files
-identified by paths. Every file has a unique path within a bucket.
+\item[Bucket] A {\em bucket} is an unbounded but named collection of objects (or files)
+identified by object keys. Every object has a unique key within a bucket.
 
-\item[Path] A {\em path} is a unique identifier for a file within a
-bucket. A {\em path} is an arbitrary string of bytes. Paths contain forward
+\item[Object Key] An {\em object key} is a unique identifier for an object (or file) within a
+bucket. An {\em object key} is an arbitrary string of bytes. Object keys, like traditional
+filesystem paths, contain forward
 slashes at access control boundaries. Forward slashes (referred to as the path
-separator) separate path components.
-An example {\em path} might be \code{videos/carlsagan/gloriousdawn.mp4}, where
+separator) separate object key path components.
+An example {\em object key} might be \code{videos/carlsagan/gloriousdawn.mp4}, where
 the path components are \code{videos}, \code{carlsagan}, and
 \code{gloriousdawn.mp4}.
 Unless otherwise requested, we encrypt paths before they ever leave the
 customer's application's computer.
 
-\item[File or Object] A {\em file} (or {\em object}) is the main data type in
-our system. A file is referred to by a path, contains an arbitrary amount of
-bytes, and has no minimum or maximum size. A file is represented by an ordered
+\item[Object (or File)] An {\em object} (or {\em file}) is the main data type in
+our system. An object is referred to by an {\em object key}, contains an arbitrary amount of
+bytes, and has no minimum or maximum size. An object is represented by an ordered
 collection of one or more segments. Segments have a fixed maximum size.
-A file also supports a limited amount of key/value user-defined fields
-called extended attributes.
-Like paths, the data contained in a file is encrypted before it ever
+An object also supports a limited amount of key/value user-defined fields
+called object metadata.
+Like object keys, the data contained in an object is encrypted before it ever
 leaves the client computer.
 
-\item[Extended attribute] An {\em extended attribute} is a user defined key/value
-field that is associated with a file. Like other per-file metadata,
-extended attributes are stored encrypted.
+\item[Object metadata] {\em Object metadata} are user defined key/value
+fields that are associated with an object. Object metadata are stored encrypted.
 
 \item[Segment] A {\em segment} represents a single array of bytes, between 0 and a
-user-configurable maximum {\em segment} size.
-See section \ref{files-as-segments} for more details.
+Satellite-defined maximum {\em segment} size.
+See section \ref{objects-as-segments} for more details.
 
 \item[Remote Segment] A {\em remote segment} is a segment that will be erasure
 encoded and distributed across the network. A {\em remote segment} is larger than
@@ -1334,11 +1354,16 @@ enough where the data it represents takes less space than the corresponding
 data a remote segment will need to keep track of which nodes had the data.
 In these cases, the data is stored ``inline'' instead of being stored on nodes.
 
+\item[Encryption block] An encryption block is a small fixed amount of bytes
+that is used as an encryption boundary size. Authenticated encryption happens
+on {\em encryption blocks} individually (with monotonically increasing nonces).
+All segments are encrypted in encryption blocks. Encryption blocks are often
+an integer multiple of the stripe size for alignment reasons.
+
 \item[Stripe] A {\em stripe} is a further subdivision of a segment. A
-{\em stripe} is a fixed amount of bytes that is used as an encryption and erasure
-encoding boundary size. Erasure encoding happens on {\em stripes} individually,
-whereas encryption may happen on a small multiple of {\em stripes} at a time.
-All segments are encrypted, but only remote segments erasure encode stripes.
+{\em stripe} is a fixed amount of bytes that is used as an erasure
+encoding boundary size. Erasure encoding happens on {\em stripes} individually.
+Inline segments do not have erasure encoding, and thus only remote segments erasure encode stripes.
 A {\em stripe} is the unit on which audits are performed.
 See section \ref{segments-as-stripes} for more details.
 
@@ -1401,9 +1426,9 @@ income by renting their space to others. These operators will
 download,
 install, and configure Storj software locally, with no account required
 anywhere.\footnote{Registration with a US-1099 tax form service may be
-required. See section \ref{sec:qc}.}
+required.}
 They will then configure disk space and per-Satellite bandwidth allowance.
-During node discovery, storage nodes will advertise how much bandwidth and
+During Satellite registration and check-in, storage nodes will advertise how much bandwidth and
 hard drive space is available, and their designated STORJ token wallet address.
 
 To simplify lifecycle management for ephemeral files,
@@ -1418,8 +1443,7 @@ times and must occasionally clear out old data.
 Storage nodes must additionally keep track of signed bandwidth allocations
 (see section \ref{baer}) to send to
 Satellites for later settlement and payment. This also requires a small
-database. Both TTL and bandwidth allocations are stored in a SQLite
-\cite{sqlite} database.
+database.
 
 Storage nodes can choose with which Satellites to work. If they work
 with multiple Satellites (the default behavior), then payment may come from
@@ -1429,10 +1453,9 @@ requested in
 the form of egress bandwidth payment, and for (2) storing data at rest.
 Storage nodes are expected to reliably store all data sent to them and are
 paid with the assumption that they are faithfully storing all data.
-Storage nodes that fail random audits will be removed from the pool, can lose
-funds held in escrow to cover additional costs, and will
-receive
-limited to no future payments.
+Storage nodes that fail random audits will be "disqualified" and thus
+removed from the pool, can lose held funds to cover additional costs, and
+will receive limited to no future payments.
 Storage nodes are {\em not} paid for the initial transfer of data to store
 (ingress bandwidth).
 This is to discourage storage nodes from deleting data only to be paid for
@@ -1440,9 +1463,9 @@ storing more, which became a problem with our previous version \cite{storj-v2}.
 While storage nodes are paid for repair egress bandwidth usage,
 some Satellites may opt to pay less than normal retrieval egress bandwidth
 usage.
-Storage nodes are not paid for node discovery or any other maintenance traffic.
+Storage nodes are not paid for Satellite registration operations or any other maintenance traffic.
 
-Storage nodes will support three methods: \code{get}, \code{put}, and
+Storage nodes will support three primary methods: \code{get}, \code{put}, and
 \code{delete}.
 Each method will take a {\em piece ID}, a {\em Satellite ID}, a signature
 from the associated Satellite instance, and a bandwidth allocation (see
@@ -1454,13 +1477,18 @@ The \code{put} operation will take a stream of bytes and an optional TTL and
 store the bytes such
 that any subrange of bytes can be retrieved again via a \code{get} operation.
 \code{Get} operations are expected to work until the TTL expires (if a TTL was
-provided) or until a \code{delete} operation is received, whichever comes
+provided) or until a \code{delete} or garbage collection
+(\ref{sec:garbage-collection}) operation is received, whichever comes
 first.
 
 Storage nodes will allow administrators to configure maximum allowed disk
-space and per-Satellite bandwidth usage over the last rolling 30 days.
-They will keep track of how much is remaining of both, and reject operations
+space.
+They will keep track of how much is remaining, and reject operations
 that do not have a valid signature from the appropriate Satellite.
+
+Storage nodes also support a garbage collection system, where they
+can retrieve a probabilistic data structure called a Bloom filter \cite{bloom-filter}
+that indicates which pieces are no longer tracked and can be safely deleted.
 
 The storage node has been released as open source software.
 
@@ -1484,14 +1512,14 @@ require a brand new node ID.
 overall identity. Each row represents a private/public key pair.}
 \end{figure}
 
-The public key of the node's certificate authority determines its {\em node ID}. 
- As in S/Kademlia \cite{skad}, the node ID will be the hash of the public key 
-and will serve as a proof of work for joining the network. Unlike Bitcoin's 
-proof of work \cite{bitcoin}, the proof of work will be dependent on how many 
+The public key of the node's certificate authority determines its {\em node ID}.
+ As in S/Kademlia \cite{skad}, the node ID will be the hash of the public key
+and will serve as a proof of work for joining the network. Unlike Bitcoin's
+proof of work \cite{bitcoin}, the proof of work will be dependent on how many
 {\em trailing}
-zero bits one can find in the hash output. 
-This cost is meant to make Sybil attacks prohibitively expensive and time 
-consuming. 
+zero bits one can find in the hash output.
+This cost is meant to make Sybil attacks prohibitively expensive and time
+consuming.
 
 Each node will have a revocable leaf certificate and key pair that is signed by
 the node's certificate authority. Nodes use the leaf key pair for
@@ -1504,20 +1532,16 @@ when the leaf certificate and certificate authority share the same timestamp.
 
 \section{Peer-to-peer communication}\label{sec:concrete-p2p-comms}
 
-Initially, we are using the gRPC \cite{grpc} protocol on top of the
-Transport Layer Security protocol (TLS) \cite{tls} on top of the $\mu$TP
-\cite{utp} transport protocol with added Session Traversal Utilities for NAT
-(STUN) functionality \cite{stun}.
-STUN provides NAT traversal; $\mu$TP provides reliable,
-ordered delivery (like TCP would) with LEDBAT \cite{ledbat} functionality;
-TLS provides privacy and authentication;
-and gRPC provides multiplexing and a convenient programmer interface.
-LEDBAT allows competing internet traffic to take priority, providing a more
-graceful user experience to home operators with less network usage interference.
-Over time, we will replace TLS with a more flexible secure transport
-framework (such as the Noise Protocol Framework \cite{noise-proto}) to
-reduce round trips due to connection handshakes in situations where the data is
-already encrypted and forward secrecy isn't necessary.
+We are using a self-made gRPC-like \cite{grpc} application protocol (DRPC). For
+security, it runs on top of either Transport Layer Security (TLS) \cite{tls} or
+the Noise Protocol Framework in IK mode \cite{noise-proto}. That layer then runs
+on top of TCP or QUIC (over UDP).
+TCP and QUIC provide reliable,
+ordered delivery; TLS and Noise provide privacy and authentication;
+and DRPC provides multiplexing and a convenient programmer interface.
+Noise is used in certain cases to reduce round trips due to connection
+handshakes in situations where the data is already encrypted and forward secrecy
+isn't necessary.
 
 When using authenticated communication such as TLS or Noise, every peer can
 ascertain the ID of the node with which it is
@@ -1530,46 +1554,42 @@ audit (section \ref{sec:concrete-audits})
 such that, over time, the network will require greater proofs of work
 due to natural user intervention.
 
-For the few cases where a node cannot achieve a successful connection through a
-NAT or firewall (via STUN \cite{stun}, uPnP \cite{upnp}, NATPmP \cite{natpmp},
-or similar techniques), manual
-intervention and port forwarding will be required. In the future, nodes unable
-to create a connection through their firewalls may rely on traffic proxying from
-other, more available nodes, for a fee. Nodes can also provide
-assistance to other nodes for initial STUN setup, public address validation,
-and so forth.
-
 \section{Node discovery}\label{sec:concrete-node-discovery}
 
-At this point, we have storage nodes, and we have the means to identify and communicate 
-with them if we know their address. We must account for the fact that storage nodes will 
-often be on consumer internet connections and behind routers with constantly changing IP 
-addresses. Therefore, the node discovery system's goal is to implement a means to look up 
-a node's latest address by node ID, somewhat similar to the role DNS provides for the public internet. 
+At this point, we have storage nodes and we have the means to identify and
+communicate with them if we know their address. We must account for the fact
+that storage nodes will often be on consumer internet connections and behind
+routers with constantly changing IP addresses. Therefore, the node discovery
+system's goal is to implement a means to look up a node's latest address by node
+ID, somewhat similar to the role DNS provides for the public internet.
 
-In what we call the node discovery cache, each Satellite stores information to be able to 
-communicate with the nodes in its network, as well as data needed to select nodes on which 
-to store data. This caching service will live independently in each Satellite and is our primary 
-source of truth for DNS-like functionality for node lookups.
+In our per-Satellite node discovery cache, each Satellite stores information to be able to
+communicate with the nodes in its network, as well as data needed to select
+nodes on which to store data. This caching service will live independently in
+each Satellite and is our primary source of truth for DNS-like functionality for
+node lookups.
 
-When a node joins the network, it reaches out to each Satellite in their Satellite whitelist 
-(see \ref{sec:concrete-satellite-reputation} for details) indicating that it is available and 
-willing to accept data from the Satellite. In return, the Satellite confirms or denies the success 
-of the connection. If it is successful, the Satellite stores the node's available disk space, 
-per-Satellite bandwidth availability, STORJ wallet address, IP address, and any other metadata the 
-network needs in its node discovery cache.
+When a node joins the network, it reaches out to each Satellite in its Satellite
+trustlist (see \ref{sec:concrete-satellite-reputation} for details) indicating
+that it is available and willing to accept data from the Satellite. In return,
+the Satellite confirms or denies the success of the connection. If it is
+successful, the Satellite stores the node's available disk space, STORJ wallet
+address, IP address, and any other metadata the Satellite needs in its node
+discovery cache.
 
-The node will subsequently check-in with each of its Satellites on an ongoing basis, perhaps once 
-per hour, to notify the Satellites of any updates. If a node has not communicated with a Satellite 
-after a certain amount of time, the Satellite will reach out to the node to check its status. If it 
-can no longer successfully reach the node, the Satellite
-evicts it from its discovery cache.
+The node will subsequently check-in with each of its Satellites on an ongoing
+basis, perhaps once per hour, to notify the Satellites of any updates. If a node
+has not communicated with a Satellite after a certain amount of time, the
+Satellite will reach out to the node to check its status. If it can no longer
+successfully reach the node, the Satellite will stop suggesting that node to
+clients.
 
 \section{Redundancy}\label{sec:concrete-redundancy}
 
 We use the Reed-Solomon erasure code \cite{rs}.
 To implement our solution for reducing the effects of long-tails (see section
-\ref{sec:long-tail}), we choose 4 numbers for each object that we store, $k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
+\ref{sec:long-tail}), we choose 4 numbers for each object that we store,
+$k$, $m$, $o$, and $n$, such that $k\le m\le o\le n$.
 The standard Reed-Solomon numbers are $k$ and $n$, where $k$ is the minimum
 required number of pieces for reconstruction, and $n$ is the total number of
 pieces generated during creation.
@@ -1606,17 +1626,17 @@ how we repair data as its durability drops over time.
 
 \section{Structured file storage}\label{sec:structured-file-storage}
 
-\subsection{Files with extended attributes}
+\subsection{Object metadata}
 
 Many applications benefit from being able to keep metadata alongside files.
 Amazon S3 supports ``object metadata'' \cite{s3-object-meta} to assist with this
 need. This functionality is called ``extended attributes'' in many POSIX
-compatible systems, which name we continue using in our system.
-Every file will include a limited set of user-specified key-value pairs
-(extended attributes) that will be stored alongside other metadata about the
-file.
+compatible systems.
+Every object will include a limited set of user-specified key-value pairs
+that will be stored alongside other metadata about the
+object.
 
-\subsection{Files as Segments}\label{files-as-segments}
+\subsection{Objects as Segments}\label{objects-as-segments}
 
 \begin{center}
 \includegraphics[width=.9\textwidth]{images/stream-segment.eps}
@@ -1629,7 +1649,7 @@ in our previous version, these terms became somewhat confusing, so we have
 decided to distinguish each meaning with new words.
 
 The sharding process is now called {\em segmenting}, and the highest level
-subdivision of a file's stream of data is called a {\em segment}.
+subdivision of an object's stream of data is called a {\em segment}.
 Unfortunately, there is general inconsistency using these terms in the
 literature. GFS refers to segments as chunks \cite{gfs}.
 Lustre refers to segments as stripes \cite{lustre}, but we use the term
@@ -1677,9 +1697,10 @@ to support these operations \cite{rs-cd}.
 
 For this purpose, a stripe defines a subset of a segment
 and should be no more than a
-couple of kilobytes in size. Encryption happens on a small multiple of stripes,
+couple of kilobytes in size. Encryption happens on an {\em encryption block}
+boundary, which may be a small multiple of stripes,
 whereas erasure encoding happens on a single stripe at a time. Because we
-use authenticated encryption, every encryption batch has a slight overhead,
+use authenticated encryption, every encryption block has a slight overhead,
 so slightly larger encryption sizes are preferred. However, audits
 happen on stripes, and we want audit bandwidth usage to be small.
 
@@ -1840,7 +1861,7 @@ Please see appendix \ref{chap:dist-consensus} for more about why we've chosen
 to currently avoid trying to solve the problem of Byzantine distributed consensus.
 See section \ref{sec:distributed-metadata} for a discussion of future plans.
 
-\section{Satellite}
+\section{Satellite}\label{sec:concrete-satellite}
 
 The collection of services that hold this metadata is called the
 {\em Satellite}. Users of the network will have accounts on a specific
@@ -1858,7 +1879,7 @@ are thus able to support the widest possible array of client applications, while
 Satellites require high uptime and potentially significant infrastructure,
 especially for an active set of files.
 Like storage nodes,
-the Satellite service is being developed and will be released as open source software.
+the Satellite service has been developed and is released as open source software.
 Any individual or organization can run their own Satellite to facilitate
 network access.
 
@@ -1923,7 +1944,7 @@ AES-GCM cipher and the Salsa20 and Poly1305 combination NaCl calls ``Secretbox''
 \cite{nacl-crypto}. Authenticated encryption is used so that the user can know
 if anything has tampered with the data.
 
-Data is encrypted in blocks of small batches of stripes, recommended to be
+Data is encrypted in blocks that may be small batches of stripes, recommended to be
 4KB or less \cite{nacl-packetlen}. While the same encryption key is used for
 every encryption batch in a segment, segments may have
 different encryption keys. However, the nonce for each encryption
@@ -1939,8 +1960,6 @@ This scheme protects the
 content of the data from the storage node housing the data. The data owner
 retains complete control over the encryption key, and thus over access to the
 data.
-
-%% TODO: discuss where the authenticated encryption overhead and padding goes
 
 Paths are also encrypted. Like
 BIP32 \cite{bip32}, the encryption is hierarchical and deterministic, and
@@ -2287,9 +2306,7 @@ There is no process planned in our system for storage nodes to contest their
 reputation scores. It is in the best interest of storage nodes to have good
 uptime, pass audits, and return data. Storage nodes that don't do these things
 are not useful to the network. Storage nodes that are treated by Satellites
-unfairly will not accept future data from those Satellites. See section
-\ref{sec:qc} about quality control for how we plan to ensure Satellites are
-incentivized to treat storage nodes fairly.
+unfairly will not accept future data from those Satellites.
 
 Initially, storage node reputation will be individually determined by each
 Satellite. If a node is disqualified by one Satellite, it may still
@@ -2328,15 +2345,11 @@ over the course of
 the month, per the Satellite's records.
 
 Satellites have a strong incentive to prefer long-lived storage nodes. If
-storage node churn is too high, Satellites will escrow a portion of a storage
+storage node churn is too high, Satellites will hold back a portion of a storage
 node's payment until the storage node has maintained good participation and
 uptime for some minimum amount of time, on the order of greater than half a year.
 If a storage node leaves the network prematurely, the Satellite will reclaim
-escrowed payments to it.
-
-% TODO: instead, escrow until the escrow can cover the repair costs of any data
-% stored on the node. leads to a slow drain for operators to leave the network
-% so they can cash out
+held payments to it.
 
 If a storage node misses a delete command due to the node being
 offline, it will be storing more data than the Satellite credits it for.
@@ -2378,11 +2391,11 @@ allocated to it will instead be used to repair any missing
 file pieces and to pay new storage nodes for storing the data.
 
 To reduce transaction fees and other overhead as much as possible, payments
-will be recipient-initiated and must be worth at least some minimum value.
+must be worth at least some minimum value.
 Certain Satellites may elect to use a portion of the storage nodes' payout to
 cover transaction fees in part or in whole.
 
-See the Satellite reputation section (\ref{sec:concrete-satellite-reputation}) for 
+See the Satellite reputation section (\ref{sec:concrete-satellite-reputation}) for
 details on how storage nodes will be able to choose which Satellites they trust.
 
 \section{Bandwidth allocation}\label{baer}
@@ -2397,7 +2410,7 @@ central collection service for settlement. When both peers mutually agreed,
 it was straightforward to determine how much bandwidth had been used.
 When they disagreed, however, we resorted to data analysis and regression to
 determine which peer had a greater propensity for dishonesty in an effort to
-catch ``cheaters'' (or, rational nodes).
+catch ``cheaters'' (or, self-rational nodes).
 With our new version, we want to make cheating impossible from the protocol
 level.
 
@@ -2410,16 +2423,17 @@ In Neuman's accounting protocol, if an account holder has enough funds to
 cover the operation, an account server will create a signed,
 digital check and transfer it to the account holder.
 The protocol refers to this check as a {\em proxy}, but we refer
-to it as a {\em bandwidth allocation}. This check contains information
-identifying the account server, the payer, the payee, the maximum amount of
-resources available to be used in the operation, a check number to prevent
-any double spending problems \cite{schneier}, and an expiration date.
+to it as a {\em bandwidth allocation} in this paper and as an {\em order limit}
+in our code. This check contains information identifying the account server, the
+payer, the payee, the maximum amount of resources available to be used in the
+operation, a check number to prevent any double spending problems
+\cite{schneier}, and an expiration date.
 
 In our case, the account server is the
 Satellite, the payer is the Uplink, the payee is the storage node, and the
 resource in question is bandwidth. The Satellite will only create a bandwidth
 allocation if the Uplink is authorized for the request.
-At the beginning of a storage operation, the Uplink can transfer the bandwidth
+At the beginning of a storage operation, the Uplink can transfer bandwidth
 allocation to a storage node. The storage node can validate the Satellite's
 signature and perform the requested operation up to the allowed bandwidth
 limit, storing and later sending the bandwidth allocation to the Satellite for
@@ -2435,7 +2449,7 @@ class is exposed to too much loss. This is similar to an optimistic, gradual-rel
 
 To support this with Neuman's accounting protocol and little Satellite overhead,
 we use {\em restricted bandwidth allocations}
-(referred to as {\em restricted proxies} in \cite{proxy-accounting}).
+(referred to as {\em restricted proxies} in \cite{proxy-accounting} and referred to as {\em orders} in our codebase, contrasted with the Satellite's {\em order limits}).
 Neuman's restricted proxies work much like Macaroons
 \cite{macaroons} in which further caveats can be added in a way that can't be
 removed, limiting the capabilities of the proxy. Proxies
@@ -2492,7 +2506,7 @@ bytes, along with the Satellite's confirmation of the Uplink's bandwidth
 allowance $x$.
 The storage node will periodically send the largest restricted bandwidth
 allocations it has received to appropriate Satellites, at which point
-Satellites will pay the storage node for that bandwidth.
+Satellites will add to the overall owed totals for later payment.
 
 If the Uplink can't afford the bandwidth usage, the Satellite will not sign an
 bandwidth allocation, protecting the Satellite's reputation.
@@ -2513,18 +2527,17 @@ Whenever a Satellite on the Storj network has a less than stellar payment,
 demand generation, or performance history,
 there is a strong incentive for the storage nodes to avoid accepting its data.
 
-Storage nodes can select which Satellites they want to work with and can remove those 
-that they don't. If a Satellite misbehaves, Nodes can indicate they no longer trust that Satellite.
+Storage nodes can select which Satellites they want to work with and can remove those
+that they don't. If a Satellite misbehaves, storage nodes can indicate they no longer trust that Satellite.
 
 Storage node operators can elect to automatically trust a Storj Labs
 provided collection of recommended Satellites that adhere to a strict set of
 quality controls and payment service level agreements (SLAs).
 To protect storage node operators, if a Satellite operator wants to be
-included in the ``Tardigrade'' approved list,
+included in the Storj-provided approved list,
 the Satellite operator may be required to
 adhere to a set of operating, payment, and pricing parameters and to sign a
 business arrangement with Storj Labs.
-See section \ref{sec:qc} for more details.
 
 \section{Garbage collection}\label{sec:garbage-collection}
 
@@ -2532,13 +2545,14 @@ When clients move, replace, or delete data, Satellites, or
 clients on behalf of Satellites, will notify storage nodes
 that they are no longer required to store that data.
 In configurations where delete messages are issued by the client,
-the metadata system will require proof that deletes were issued 
+the metadata system will require proof that deletes were issued
 to a configurable minimum number of storage nodes.
-This means that every time data is deleted, storage nodes that 
+In such a configuration, every time data is deleted, storage nodes that
 are online and reachable will receive notifications right away.
 
 Storage nodes will sometimes be temporarily unavailable and will miss delete
-messages. In these cases, unneeded data is considered
+messages. In these cases, and in configurations where delete messages are not issued by
+the client, unneeded data is considered
 {\em garbage}. Satellites only pay for data that they expect to be stored. Storage
 nodes with lots of garbage will earn less than they otherwise would
 unless a garbage collection system is employed. For this reason, we
@@ -2554,10 +2568,10 @@ As long as a conservative garbage collector is used in our system, the payment f
 storage owed to a storage node will be high enough to amortize the cost of
 storing the garbage.
 
-For the nodes that miss initial delete messages,
+For the nodes that miss initial delete messages if they are sent,
 our first release will start with a
 conservative garbage collection strategy,
-though we anticipate a precise strategy in the near future.
+though we anticipate a precise strategy in the future.
 Periodically, storage nodes will request
 a data structure to detect differences. In the simplest form, it can be a hash
 of stored keys, which allows efficient detection of out-of-sync state. After
@@ -2597,62 +2611,8 @@ in a few forms:
 \end{description}
 
 Like storage nodes and Satellites,
-the Uplink software in all three forms is being developed and will be released as
+the Uplink software in all three forms has been developed and released as
 open source software.
-
-\section{Quality control and branding}\label{sec:qc}
-
-The Storj Network has two major product focuses that serve two distinct
-target markets. These focal points are:
-
-\begin{enumerate}
-\item creating storage {\em supply} for the network via recruiting storage node
-  operators and
-\item creating {\em demand} for cloud storage with paying users.
-\end{enumerate}
-
-Storj will differentiate these focuses and the experience design
-for each market segment by separating the supply side of our business from the
-demand side through two brands, {\em Storj} and {\em Tardigrade}.
-
-The supply side of the market will be served by the Storj brand.
-We will retain \url{storj.io} as the place for learning how to contribute extra storage and
-bandwidth to the Storj Network. This includes storage node setup, documentation,
-frequently asked questions (FAQs), and tutorials. Users of both brands will also be able to
-access our source code and community through \url{storj.io}.
-
-The demand side of our business will be served by the Tardigrade brand and
-will be directed through \url{tardigrade.io}.
-This experience will be focused toward our partners and customers who purchased
-decentralized storage and bandwidth from the network with the expectation of
-high durability, resilience, and reliability, backed by an industry-leading
-service level agreement (SLA). This includes any offers, free trials, Satellite
-selection, documentation, FAQs, tutorials, and so forth.
-
-The ``Tardigrade'' brand will additionally serve as a Satellite quality
-credentialing system. Anyone can set up a Satellite via
-\url{storj.io}, but to have a Satellite listed as an official Tardigrade
-Satellite, be considered ``Tardigrade quality,'' and benefit directly from
-Storj Labs' demand generation activities, an operator must pass
-certain compliance and quality requirements.
-These quality controls will continuously audit and rank Satellites on their
-behavior, durability, compliance, and performance.
-In addition, the Satellite operator will have to adhere to particular business
-policies around pricing, storage node recruitment, SLAs, storage node payments,
-and so forth.
-
-Satellite operators in the Tardigrade network will have a business
-relationship with Storj Labs that defines, among other things, franchise fees
-and revenue sharing between the entities. Storj Labs will also assume
-responsibilities including demand generation, brand enforcement, Satellite
-operator support, end user support, United States Form 1099 tax filing
-compliance,\footnote{US Form 1099 is required by law for any payments to an
-individual in a given year exceeding a total of \$600.}
-insurance, and maintenance of overall network quality.
-
-These compliance and quality controls will be implemented to ensure that
-storage nodes are paid fairly and Satellites are able to continuously meet all
-SLAs of the Tardigrade products.
 
 \chapter{Walkthroughs}\label{chap:walkthroughs}
 
@@ -2691,7 +2651,7 @@ Upon receiving the request, the Satellite will:
   bucket's configured durability, performance, geographic, and reputation
   requirements.
 \item Return a list of nodes, along with their contact information and
-  unrestricted bandwidth allocations, and a chosen root piece ID.
+  unrestricted bandwidth allocations (section \ref{baer}), and a chosen root piece ID.
 \end{itemize}
 
 Next, the Uplink will take this information and begin parallel connections to
@@ -2712,7 +2672,7 @@ all of the chosen storage nodes while measuring bandwidth (section \ref{baer}).
   piece stream.
 \end{itemize}
 
-After that, the storage node will store: the largest restricted bandwidth allocation;
+After that, the storage node will store: the largest restricted bandwidth allocation (section \ref{baer});
 the TTL of the segment, if one exists; and the data itself. The data will
 be identified by the storage node-specific piece ID and the delegating Satellite
 ID.
@@ -2744,16 +2704,16 @@ process segments until the entire stream has completed. Each segment gets
 a new encryption key, but the segment's starting nonce monotonically increases
 from the previous segment.
 
-The last segment stored in the stream will contain additional metadata:
+Once the last segment stored, the Uplink will send additional metadata:
 \begin{itemize}
 \item how many segments the stream contained
 \item how large the segments are, in bytes
 \item the starting nonce of the first segment
-\item extended attributes and other metadata
+\item any other object metadata
 \end{itemize}
 
 Periodically, the storage nodes will later send the largest restricted
-bandwidth allocation they received as part of the upload to the appropriate
+bandwidth allocation (section \ref{baer}) they received as part of the upload to the appropriate
 Satellite for payment.
 
 If an upload happens via the Amazon S3 multipart-upload interface, each
@@ -2761,13 +2721,12 @@ If an upload happens via the Amazon S3 multipart-upload interface, each
 
 \section{Download}
 
-When a user wants to download a file, first the user sends a request for
+When a user wants to download an object, first the user sends a request for
 data to the Uplink.
   The Uplink then tries to reduce the number of round trips to the Satellite
-  by speculatively requesting the pointers for the first few segments in
-  addition to the pointer for the last segment. The Uplink needs the last
-  segment pointer to learn the size of the object, the size and number of segments,
-  and how to decrypt the data. In a future release, the Uplink may just tell
+  by speculatively requesting metadata about the object along with the first
+  segment's pointer. If the Uplink knows about the requested byte range,
+  the Uplink may just tell
   the Satellite which byte ranges are needed and the Satellite can respond with
   the appropriate segment pointers.
 
@@ -2775,7 +2734,7 @@ For every segment pointer requested, the Satellite will:
   \begin{itemize}
   \item Validate that the Uplink has access to download the segment pointer
     and has enough funds to pay for the download.
-  \item Generate an unrestricted bandwidth allocation for each piece that
+  \item Generate an unrestricted bandwidth allocation (section \ref{baer}) for each piece that
     makes up the segment.
   \item Look up the contact information for the storage nodes listed in the
   pointer.
@@ -2799,7 +2758,7 @@ The Uplink will determine whether more segments are necessary for the
 \end{itemize}
 
 If the download is aborted for any reason, each storage node will keep the
-  largest restricted bandwidth allocation it received, but it will throw away all
+  largest restricted bandwidth allocation (section \ref{baer}) it received, but it will throw away all
   other relevant request data.
 Either way, the storage nodes will later send the largest restricted
   bandwidth allocation they received as part of the download to the appropriate
@@ -2810,7 +2769,8 @@ Either way, the storage nodes will later send the largest restricted
 When a user wants to delete a file, the delete operation is first received
 by the Uplink. The Uplink then requests all of the segment pointers for the file.
 
-For every segment pointer, the Satellite will:
+If the client and Satellite are configured to issue direct deletes to nodes,
+for every segment pointer, the Satellite will:
   \begin{itemize}
   \item Validate that the Uplink has access to delete the segment pointer.
   \item Generate a signed agreement for the deletion of the segment, so the
@@ -2838,6 +2798,10 @@ or that it was already removed.
   customer and stop paying the storage nodes for them.
 \item The Uplink will return a success status.
 \end{itemize}
+
+Some Satellite and Uplink configurations may elect to simply delete the metadata
+directly and let the garbage collection system recover the free space on storage
+nodes.
 
 Periodically, storage nodes will ask the Satellite for generated garbage
   collection messages that will update storage nodes who were offline during the
@@ -2884,41 +2848,6 @@ If the validation is successful, the Satellite will perform the operation.
 Because of the complexity around atomic pointer batch modifications, efficient
 move operations may not be implemented in the first release of this network.
 
-\section{Copy}
-
-When a user wants to copy a file, first, the Uplink receives a request for
-copying a file to a new path.
-Then the Uplink requests all of the segment pointers of the file.
-
-For every segment pointer, the Satellite:
-  \begin{itemize}
-  \item Validates that the Uplink has access to download it.
-  \item Looks up the contact information for the storage nodes listed in the
-    pointer.
-  \item Returns the requested segment metadata, a new root piece ID, and
-    contact information.
-  \end{itemize}
-
-For every segment pointer, the Uplink:
-  \begin{itemize}
-  \item Decrypts the metadata with an encryption key derived from the path.
-  \item Changes the path to the new destination.
-  \item Invokes a copy operation on each of the storage nodes from the pointer
-    to duplicate the piece with a new piece ID.
-  \item Waits for the storage nodes to respond that they have duplicated the
-    data and it removes nodes that were unsuccessful.
-  \item Re-encrypts the metadata with the new piece ID and a new encryption key
-    derived from the new path.
-  \end{itemize}
-
-Finally, the Uplink uploads all modified segment pointers to the Satellite.
-
-Importantly, it is okay if the storage nodes de-duplicate storage, or only
-store one actual copy of the data. All that matters is that the storage node
-can identify the data by both the old and new piece ID. If one of the piece
-IDs receives a delete operation, the other piece ID will continue working.
-Only after both pieces are deleted will the node free the space.
-
 \section{List}
 
 When a user wants to list files:
@@ -2937,17 +2866,14 @@ When a user wants to list files:
 \section{Audit}
 
 Each Satellite has a queue of segment stripes that will be audited across
-  a set of storage nodes. The queue is filled via two mechanisms.
-  \begin{itemize}
-  \item In the first mechanism, the Satellite populates the queue periodically
-    by selecting segments randomly, and then stripes within those segments also
-    at random. Because segments have a maximum size, this sufficiently
-    approximates our goal of choosing a byte to audit uniformly at random.
-  \item In the second mechanism, the Satellite chooses a stripe to audit by
-    identifying storage nodes that have had fewer recent audits than other
-    storage nodes. The Satellite will select a stripe at random from the data
-    contained by that storage node.
-  \end{itemize}
+  a set of storage nodes. This queue is filled when the Satellite chooses a
+    stripe to audit by identifying storage nodes that have had fewer recent
+    audits than other storage nodes. The Satellite will select a stripe at
+    random from the data contained by that storage node. Because the audit
+    must also retrieve data from the other nodes in the erasure coded set, many
+    other nodes are audited as well.
+    Because segments have a maximum size, this also sufficiently approximates
+    our goal of choosing a byte to audit uniformly at random.
 
 Satellites will then work to process the queue and report errors.
 \begin{itemize}
@@ -2969,6 +2895,11 @@ Satellites will then work to process the queue and report errors.
   nodes in containment. While in containment, a node will continue to be
   given only the audit it was unresponsive for until it passes or is
   disqualified.
+\item For storage nodes that do respond but the response is judged to be
+incorrect, the full piece will be requested from the storage node and then
+compared with the expected hash of that piece \ref{sec:concrete-piece-hashes}.
+This allows the Satellite to differentiate between dishonest storage nodes and
+dishonest Uplinks.
 \end{itemize}
 
 \section{Data repair}
@@ -2978,7 +2909,8 @@ the second part repairs them. Detection is straightforward.
 
 \begin{itemize}
 \item Each Satellite will periodically ping every storage node it knows
-about, either as part of the audit process or via standard node discovery ping operations.
+about, either as part of the audit process or via standard node discovery ping
+operations.
 \item The Satellite will keep track of nodes that fail to respond and mark
   them as down.
 \item When a node is marked down or is marked bad via the audit process, the
@@ -3021,10 +2953,11 @@ The payment process works as follows:
   believes are currently stored on each storage node. Satellites will keep track
 of payments owed to each storage node for each rollup period, based on
 the data kept on each storage node.
-\item Finally, storage nodes will periodically---defaulting to monthly---send in
-  bandwidth allocation reports. When a
-  Satellite receives a bandwidth allocation report, it calculates the owed
-  funds along with the outstanding data at rest calculations. It then sends the
+\item Storage nodes will periodically send in
+  bandwidth allocation reports (section \ref{baer}).
+\item Finally, when
+  Satellite are ready to pay storage nodes, the Satellite will calculate the owed
+  funds due to bandwidth allocation along with the outstanding data at rest calculations. It then sends the
   funds to the storage node's requested wallet address.
 \end{itemize}
 
@@ -3078,9 +3011,7 @@ naturally.
 
 In our initial concrete implementation, we place significant burdens on the
 Satellite operator to maintain a good service level with high availability,
-high durability, regular payments, and regular backups. We expect a large
-degree of variation in quality of Satellites, which led us to implement our quality
-control program (see section \ref{sec:qc}).
+high durability, regular payments, and regular backups.
 
 Over time, clients of Satellites will want to reduce their dependence on Satellite
 operators and enjoy more efficient data portability between Satellites besides
@@ -3357,7 +3288,7 @@ to any distributed storage system.
 
 \section{Spartacus}
 
-Spartacus attacks, or identity hijacking, can occur when 
+Spartacus attacks, or identity hijacking, can occur when
 any node assumes the identity of another node and receive some fraction of
 messages intended for that node by simply copying its node ID.
 This allows for targeted attacks against specific nodes and data.
@@ -3371,14 +3302,14 @@ the network.
 
 Sybil attacks \cite{sybil-attack}
 involve the creation of large amounts of nodes in an attempt to
-disrupt network operation by hijacking or dropping messages. Our adoption of 
+disrupt network operation by hijacking or dropping messages. Our adoption of
 proof of work identity generation (section \ref{sec:node-id})
 reduces the vulnerability to a degree \cite{skad}.
 
 Further, our storage node reputation system involves a prolonged initial vetting
 period nodes must complete before they are trusted with significant amounts
 of data. This vetting system,
-discussed more in section \ref{sec:concrete-reputation}, 
+discussed more in section \ref{sec:concrete-reputation},
 prevents a large influx of new nodes from taking
 incoming data from existing reputable storage nodes without first proving
 their longevity.
@@ -3430,7 +3361,7 @@ under the Honest Geppetto attack can apply here to help avoid this situation.
 Measuring bandwidth with signatures minimizes the risk for Uplink and storage
 nodes.
 The Uplink can only interact with the storage node by sending a signed
-restricted allocation.
+restricted bandwidth allocation (section \ref{baer}).
 The restriction limits the risk to a very low level.
 The storage node has to comply with the protocol as expected in order to get
 more restricted allocations.
