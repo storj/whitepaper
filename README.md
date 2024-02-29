@@ -1,3 +1,3 @@
-# Storj white paper v3
+# Storj Whitepaper V3
 
-Available at [https://storj.io/white-paper](https://storj.io/white-paper)
+Available at [https://storj.io/whitepaper](https://storj.io/whitepaper)
